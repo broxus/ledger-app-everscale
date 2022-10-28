@@ -75,31 +75,26 @@ void set_amount(const uint8_t* amount, uint8_t amount_length, uint8_t flags, uin
     switch (flags) {
         case NORMAL_FLAG: {
             uint8_t text_size = convert_hex_amount_to_displayable(amount, decimals, amount_length, amount_str);
-            strcpy(amount_str + text_size, " ");
-            strcpy(amount_str + text_size + 1, ticker);
+
+            const char* space = " ";
+            strncpy(amount_str + text_size, space, strlen(space));
+            strncpy(amount_str + text_size + strlen(space), ticker, strlen(ticker));
+
             break;
         }
         case ALL_BALANCE_FLAG: {
-            strcpy(amount_str, "All balance");
+            const char* text = "All balance";
+            strncpy(amount_str, text, strlen(text));
             break;
         }
         case ALL_BALANCE_AND_DELETE_FLAG: {
-            strcpy(amount_str, "All balance and delete account");
+            const char* text = "All balance and delete account";
+            strncpy(amount_str, text, strlen(text));
             break;
         }
         default:
             THROW(ERR_INVALID_FLAG);
     }
-}
-
-void set_all_balance() {
-    char* amount_str = data_context.sign_tr_context.amount_str;
-    strcpy(amount_str, "All balance");
-}
-
-void set_all_balance_and_delete() {
-    char* amount_str = data_context.sign_tr_context.amount_str;
-    strcpy(amount_str, "All balance and delete account");
 }
 
 void deserialize_int_message_header(struct SliceData_t* slice, uint8_t flags, SignTransactionContext_t* ctx) {
@@ -116,12 +111,12 @@ void deserialize_int_message_header(struct SliceData_t* slice, uint8_t flags, Si
     UNUSED(bounced);
 
     // Sender address
-    int8_t src_wc;
+    int8_t src_wc = 0;
     uint8_t src_addr[ADDRESS_LENGTH];
     deserialize_address(slice, &src_wc, src_addr);
 
     // Recipient address
-    int8_t dst_wc;
+    int8_t dst_wc = 0;
     uint8_t dst_address[ADDRESS_LENGTH];
     deserialize_address(slice, &dst_wc, dst_address);
 
@@ -164,7 +159,7 @@ void deserialize_token_body(struct SliceData_t* slice, struct SliceData_t* ref_s
                 slice = ref_slice;
             }
 
-            int8_t wc;
+            int8_t wc = 0;
             uint8_t address[ADDRESS_LENGTH];
             deserialize_address(slice, &wc, address);
 
@@ -190,7 +185,7 @@ void deserialize_token_body(struct SliceData_t* slice, struct SliceData_t* ref_s
                 slice = ref_slice;
             }
 
-            int8_t rgt_wc;
+            int8_t rgt_wc = 0;
             uint8_t rgt_address[ADDRESS_LENGTH];
             deserialize_address(slice, &rgt_wc, rgt_address);
 
@@ -200,7 +195,7 @@ void deserialize_token_body(struct SliceData_t* slice, struct SliceData_t* ref_s
                 slice = ref_slice;
             }
 
-            int8_t wc;
+            int8_t wc = 0;
             uint8_t address[ADDRESS_LENGTH];
             deserialize_address(slice, &wc, address);
 
@@ -229,7 +224,7 @@ void deserialize_multisig_params(struct SliceData_t* slice, uint32_t function_id
         }
         case MULTISIG_SEND_TRANSACTION: {
             // Recipient address
-            int8_t dst_wc;
+            int8_t dst_wc = 0;
             uint8_t dst_address[ADDRESS_LENGTH];
             deserialize_address(slice, &dst_wc, dst_address);
 
@@ -251,7 +246,7 @@ void deserialize_multisig_params(struct SliceData_t* slice, uint32_t function_id
         }
         case MULTISIG_SUBMIT_TRANSACTION: {
             // Recipient address
-            int8_t dst_wc;
+            int8_t dst_wc = 0;
             uint8_t dst_address[ADDRESS_LENGTH];
             deserialize_address(slice, &dst_wc, dst_address);
 
@@ -499,6 +494,9 @@ void prepare_to_sign(struct ByteStream_t* src) {
 
             // Calculate payload hash to sign
             prepare_payload_hash(bc);
+
+            // Detach cell_buffer reference from global boc context
+            memset(bc, 0, sizeof(boc_context));
 
             break;
         }

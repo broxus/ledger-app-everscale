@@ -24,6 +24,12 @@ enum {
 };
 
 enum {
+    TOKEN_BURN = 1445284013,                // Burn
+    TOKEN_TRANSFER = 1944199491,            // Deploy
+    TOKEN_TRANSFER_TO_WALLET = 1185535980,  // Ordinary transfer
+};
+
+enum {
     NORMAL_FLAG = 3,
     ALL_BALANCE_FLAG = 128,
     ALL_BALANCE_AND_DELETE_FLAG = 160

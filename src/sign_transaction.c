@@ -96,6 +96,17 @@ void handleSignTransaction(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t
     context->wallet_type = readUint32BE(dataBuffer + offset);
     offset += sizeof(context->wallet_type);
 
+    context->decimals = dataBuffer[offset];
+    offset += sizeof(context->decimals);
+
+    uint8_t ticker_len = dataBuffer[offset];
+    offset += sizeof(ticker_len);
+
+    VALIDATE(ticker_len != 0 && ticker_len <= MAX_TICKER_LEN, ERR_RANGE_CHECK);
+
+    memcpy(context->ticker, dataBuffer + offset, ticker_len);
+    offset += ticker_len;
+
     uint8_t* msg_begin = dataBuffer + offset;
     uint8_t msg_length = dataLength - offset;
 

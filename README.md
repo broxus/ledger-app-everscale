@@ -1,3 +1,3 @@
-[![Build Status](https://travis-ci.org/pashinov/ledger-app-everscale.svg?branch=master)](https://travis-ci.org/pashinov/ledger-app-everscale)
+![Build Status](https://github.com/broxus/ledger-app-everscale/actions/workflows/ci.yml/badge.svg?branch=master)
 
 # Everscale app for Ledger Wallet

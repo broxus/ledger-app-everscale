@@ -67,7 +67,7 @@ UX_FLOW(ux_sign_flow,
 void handleSign(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t dataLength, volatile unsigned int *flags, volatile unsigned int *tx) {
     UNUSED(tx);
 
-    VALIDATE(p1 == 0 && p2 == 0, ERR_INVALID_REQUEST);
+    VALIDATE(p1 == P1_CONFIRM && p2 == 0, ERR_INVALID_REQUEST);
     SignContext_t* context = &data_context.sign_context;
     VALIDATE(dataLength == (sizeof(context->account_number) + sizeof(context->to_sign)), ERR_INVALID_REQUEST);
 

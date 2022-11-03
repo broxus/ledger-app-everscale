@@ -214,6 +214,57 @@ fn get_ledger() -> (Arc<LedgerWallet>, PublicKey) {
     (ledger, base_pubkey)
 }
 
+fn prepare_wallet_v3_transfer(
+    pubkey: PublicKey,
+    amount: u64,
+    destination: MsgAddressInt,
+    contract: ExistingContract,
+    body: Option<SliceData>,
+) -> anyhow::Result<(ton_types::Cell, Box<dyn UnsignedMessage>)> {
+    let gift = Gift {
+        flags: 3,
+        bounce: true,
+        destination,
+        amount,
+        body,
+        state_init: None,
+    };
+    let expiration = Expiration::Timeout(DEFAULT_EXPIRATION_TIMEOUT);
+
+    let seqno_offset = nekoton::core::ton_wallet::wallet_v3::estimate_seqno_offset(
+        &SimpleClock,
+        &contract.account,
+        &[],
+    );
+
+    let action = nekoton::core::ton_wallet::wallet_v3::prepare_transfer(
+        &SimpleClock,
+        &pubkey,
+        &contract.account,
+        seqno_offset,
+        vec![gift],
+        expiration,
+    )?;
+
+    let unsigned_message = match action {
+        TransferAction::Sign(message) => message,
+        TransferAction::DeployFirst => {
+            anyhow::bail!("WalletV3 unreachable action")
+        }
+    };
+
+    // Sign with null signature to extract payload later
+    let signed_message = unsigned_message.sign(&[0_u8; 64])?;
+    let mut data = signed_message.message.body().trust_me();
+
+    // Skip null signature
+    data.move_by(SIGNATURE_LENGTH * 8)?;
+
+    let payload = data.into_cell();
+
+    Ok((payload, unsigned_message))
+}
+
 fn prepare_ever_wallet_transfer(
     pubkey: PublicKey,
     address: MsgAddressInt,
@@ -370,6 +421,42 @@ async fn main() -> anyhow::Result<()> {
             let contract = client.get_contract_state(&address).await?;
             match contract {
                 Some(contract) => match wallet_type {
+                    WalletType::WalletV3 => {
+                        let (payload, unsigned_message) = prepare_wallet_v3_transfer(
+                            pubkey,
+                            amount,
+                            destination,
+                            contract,
+                            None,
+                        )?;
+
+                        let boc = ton_types::serialize_toc(&payload)?;
+
+                        let signature = ledger.sign_transaction(
+                            account,
+                            wallet_type,
+                            EVER_DECIMALS,
+                            EVER_TICKER,
+                            &boc,
+                        )?;
+
+                        let signed_message =
+                            unsigned_message.sign(&nekoton::crypto::Signature::from(signature))?;
+
+                        println!(
+                            "Sending message with hash '{}'...",
+                            signed_message.message.hash()?.to_hex_string()
+                        );
+
+                        let status = client
+                            .send_message(
+                                signed_message.message,
+                                everscale_jrpc_client::SendOptions::default(),
+                            )
+                            .await?;
+
+                        println!("Send status: {:?}", status);
+                    }
                     WalletType::EverWallet => {
                         let (payload, unsigned_message) = prepare_ever_wallet_transfer(
                             pubkey,
@@ -469,6 +556,42 @@ async fn main() -> anyhow::Result<()> {
                     let token_body = prepare_token_body(amount, &owner, &destination)?;
 
                     match wallet_type {
+                        WalletType::WalletV3 => {
+                            let (payload, unsigned_message) = prepare_wallet_v3_transfer(
+                                pubkey,
+                                ATTACHED_AMOUNT,
+                                owner_token,
+                                owner_contract,
+                                Some(token_body),
+                            )?;
+
+                            let boc = ton_types::serialize_toc(&payload)?;
+
+                            let signature = ledger.sign_transaction(
+                                account,
+                                wallet_type,
+                                token_details.decimals,
+                                token_details.ticker,
+                                &boc,
+                            )?;
+
+                            let signed_message = unsigned_message
+                                .sign(&nekoton::crypto::Signature::from(signature))?;
+
+                            println!(
+                                "Sending message with hash '{}'...",
+                                signed_message.message.hash()?.to_hex_string()
+                            );
+
+                            let status = client
+                                .send_message(
+                                    signed_message.message,
+                                    everscale_jrpc_client::SendOptions::default(),
+                                )
+                                .await?;
+
+                            println!("Send status: {:?}", status);
+                        }
                         WalletType::EverWallet => {
                             let (payload, unsigned_message) = prepare_ever_wallet_transfer(
                                 pubkey,

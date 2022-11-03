@@ -13,4 +13,5 @@ node_modules
 build
 dist
 *.spec
-.DS_Store
+*.DS_Store
+client/target

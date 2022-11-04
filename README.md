@@ -58,23 +58,23 @@ docker build -t ledger-app-builder:latest .
 
 ## Example of Ledger wallet functionality
 
-Install Rust to compile client to interact with Everscale Ledger app
+**Install Rust to compile client to interact with Everscale Ledger app**
 ```bash
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
 
-Build client
+**Build client**
 ```bash
 cargo build --release --manifest-path client/Cargo.toml && \
 cd ./client/target/release
 ```
 
-List of Everscale wallets
+**List of Everscale wallets**
 ```bash
 ./client get-wallets
 ```
 
-Request public key
+**Request public key**
 ```bash
 ./client get-pubkey --account ${LEDGER_ACCOUNT_NUMBER}
 ```
@@ -84,7 +84,7 @@ Request public key
 ./client get-pubkey --account 0
 ```
 
-Request address
+**Request address**
 ```bash
 ./client get-address --account ${LEDGER_ACCOUNT_NUMBER} --wallet ${WALLET_TYPE}
 # send some EVER's to the this address (about 1 should be enough)
@@ -95,7 +95,7 @@ Request address
 ./client get-address --account 0 --wallet EverWallet
 ```
 
-Send EVER transaction
+**Send EVER transaction**
 ```bash
 ./client send-transaction \
     --account 0 \
@@ -113,12 +113,12 @@ Example
     --address ${RECIPIENT_ADDRESS}
 ```
 
-Get list of supported tokens
+**Get list of supported tokens**
 ```bash
 ./client get-tokens
 ```
 
-Send token transaction
+**Send token transaction**
 ```bash
 ./client send-token-transaction \
     --account ${LEDGER_ACCOUNT_NUMBER} \

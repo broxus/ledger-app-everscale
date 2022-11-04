@@ -95,6 +95,16 @@ cd ./client/target/release
 ./client get-address --account 0 --wallet EverWallet
 ```
 
+**Check balance**
+```bash
+./client get-address --account ${LEDGER_ACCOUNT_NUMBER} --wallet ${WALLET_TYPE}
+```
+
+```bash
+# Example
+./client get-balance --account 0 --wallet EverWallet
+```
+
 **Send EVER transaction**
 ```bash
 ./client send-transaction \
@@ -116,6 +126,16 @@ Example
 **Get list of supported tokens**
 ```bash
 ./client get-tokens
+```
+
+**Check token balance**
+```bash
+./client get-address --account ${LEDGER_ACCOUNT_NUMBER} --wallet ${WALLET_TYPE} --token ${TOKEN_NAME}
+```
+
+```bash
+# Example
+./client get-balance --account 0 --wallet EverWallet --token WEVER
 ```
 
 **Send token transaction**

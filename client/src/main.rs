@@ -115,6 +115,12 @@ enum SubCommand {
         /// Token name (WEVER, USDT, USDC, DAI)
         token: String,
     },
+
+    /// List of Everscale Wallets
+    GetWallets,
+
+    /// List of tokens
+    GetTokens,
 }
 
 struct TokenDetails<'a> {
@@ -639,6 +645,14 @@ async fn main() -> anyhow::Result<()> {
                     );
                 }
             }
+        }
+        SubCommand::GetWallets => {
+            println!(
+                "WalletV3\nEverWallet\nSafeMultisig (unimplemented)\nSafeMultisig24h (unimplemented)\nSetcodeMultisig (unimplemented)\nBridgeMultisig (unimplemented)\nSurf (unimplemented)\nMultisig2 (unimplemented)",
+            );
+        }
+        SubCommand::GetTokens => {
+            println!("WEVER\nUSDT\nUSDC\nDAI",);
         }
     };
 

@@ -127,8 +127,8 @@ _This command signs a transaction message_
 ##### Command
 
 | _CLA_ | _INS_ | _P1_ | _P2_ |   _Lc_   |     _Le_ |
-| ----- | :---: | ---: | ---- | :------: | -------: |
-| E0    |  06   |   01 | 00   | variable | variable |
+| ----- |:-----:| ---: | ---- | :------: | -------: |
+| E0    |  05   |   01 | 00   | variable | variable |
 
 ##### Input data
 

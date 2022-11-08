@@ -105,6 +105,18 @@ cd ./client/target/release
 ./client get-balance --account 0 --wallet EverWallet
 ```
 
+**Deploy wallet**
+
+It only applies to Multisig wallets
+```bash
+./client deploy --account ${LEDGER_ACCOUNT_NUMBER} -wallet ${WALLET_TYPE}
+```
+
+```bash
+# Example
+./client deploy --account 0 --wallet SafeMultisig
+```
+
 **Send EVER transaction**
 ```bash
 ./client send-transaction \

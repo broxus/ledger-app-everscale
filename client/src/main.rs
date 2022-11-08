@@ -10,7 +10,7 @@ use everscale_ledger_wallet::locator::Manufacturer;
 use everscale_ledger_wallet::remote_wallet::{initialize_wallet_manager, RemoteWallet};
 use nekoton::core::models::{Expiration, TokenWalletVersion};
 use nekoton::core::token_wallet::{RootTokenContractState, TokenWalletContractState};
-use nekoton::core::ton_wallet::{Gift, MultisigType, TransferAction};
+use nekoton::core::ton_wallet::{Gift, MultisigType, TransferAction, DEFAULT_WORKCHAIN};
 use nekoton::crypto::UnsignedMessage;
 use nekoton::transport::models::ExistingContract;
 use nekoton_abi::num_bigint::BigUint;
@@ -19,7 +19,7 @@ use nekoton_contracts::tip3_1;
 use nekoton_utils::{SimpleClock, TrustMe};
 use rust_decimal::prelude::{FromPrimitive, ToPrimitive};
 use rust_decimal::Decimal;
-use ton_block::{GetRepresentationHash, MsgAddressInt};
+use ton_block::{AccountState, GetRepresentationHash, MsgAddressInt};
 use ton_types::{AccountId, SliceData, UInt256};
 use url::Url;
 
@@ -48,6 +48,7 @@ enum SubCommand {
         #[clap(long, short, action, default_value_t = false)]
         confirm: bool,
     },
+
     /// Get address
     GetAddress {
         #[arg(short, long, default_value_t = 0)]
@@ -129,6 +130,17 @@ enum SubCommand {
         #[arg(short, long)]
         /// Token name (WEVER, USDT, USDC, DAI)
         token: String,
+    },
+
+    /// Deploy wallet
+    Deploy {
+        #[arg(short, long, default_value_t = 0)]
+        /// Number of account on Ledger
+        account: u32,
+
+        #[arg(short, long, default_value_t = ("EverWallet").to_string())]
+        /// Wallet type
+        wallet: String,
     },
 
     /// List of Everscale Wallets
@@ -394,6 +406,51 @@ fn prepare_multisig_wallet_transfer(
     Ok((payload, unsigned_message))
 }
 
+fn prepare_multisig_wallet_deploy(
+    pubkey: PublicKey,
+    wallet_type: WalletType,
+) -> anyhow::Result<(ton_types::Cell, Box<dyn UnsignedMessage>)> {
+    let multisig_type = match wallet_type {
+        WalletType::SafeMultisig => MultisigType::SafeMultisigWallet,
+        WalletType::SafeMultisig24h => MultisigType::SafeMultisigWallet24h,
+        WalletType::SetcodeMultisig => MultisigType::SetcodeMultisigWallet,
+        WalletType::BridgeMultisig => MultisigType::BridgeMultisigWallet,
+        WalletType::Multisig2 => MultisigType::Multisig2,
+        _ => anyhow::bail!("Invalid multisig type"),
+    };
+
+    let expiration = Expiration::Timeout(DEFAULT_EXPIRATION_TIMEOUT);
+
+    let deploy_params = nekoton::core::ton_wallet::multisig::DeployParams {
+        owners: &[pubkey],
+        req_confirms: 1,
+        expiration_time: None,
+    };
+
+    let unsigned_message = nekoton::core::ton_wallet::multisig::prepare_deploy(
+        &SimpleClock,
+        &pubkey,
+        multisig_type,
+        DEFAULT_WORKCHAIN,
+        expiration,
+        deploy_params,
+    )?;
+
+    // Sign with null signature to extract payload later
+    let signed_message = unsigned_message.sign(&[0_u8; 64])?;
+    let mut data = signed_message.message.body().trust_me();
+
+    let first_bit = data.get_next_bit()?;
+    assert!(first_bit);
+
+    // Skip null signature
+    data.move_by(SIGNATURE_LENGTH * 8)?;
+
+    let payload = data.into_cell();
+
+    Ok((payload, unsigned_message))
+}
+
 fn prepare_token_body(
     tokens: BigUint,
     owner: &MsgAddressInt,
@@ -579,6 +636,11 @@ async fn main() -> anyhow::Result<()> {
                     | WalletType::SetcodeMultisig
                     | WalletType::BridgeMultisig
                     | WalletType::Multisig2 => {
+                        if let AccountState::AccountUninit = contract.account.storage.state {
+                            println!("Account haven't deployed yet");
+                            return Ok(());
+                        }
+
                         let (payload, unsigned_message) = prepare_multisig_wallet_transfer(
                             pubkey,
                             address.clone(),
@@ -818,6 +880,13 @@ async fn main() -> anyhow::Result<()> {
                         | WalletType::SetcodeMultisig
                         | WalletType::BridgeMultisig
                         | WalletType::Multisig2 => {
+                            if let AccountState::AccountUninit =
+                                owner_contract.account.storage.state
+                            {
+                                println!("Owner account haven't deployed yet");
+                                return Ok(());
+                            }
+
                             let (payload, unsigned_message) = prepare_multisig_wallet_transfer(
                                 pubkey,
                                 owner,
@@ -872,6 +941,80 @@ async fn main() -> anyhow::Result<()> {
         }
         SubCommand::GetTokens => {
             println!("WEVER\nUSDT\nUSDC\nDAI",);
+        }
+        SubCommand::Deploy { account, wallet } => {
+            let pubkey = ledger.get_pubkey(account, false)?;
+
+            let wallet_type = WalletType::from_str(&wallet).map_err(|s| anyhow::anyhow!(s))?;
+
+            let bytes = ledger.get_address(account, wallet_type, false)?;
+            let address = MsgAddressInt::with_standart(
+                None,
+                ton_block::BASE_WORKCHAIN_ID as i8,
+                AccountId::from(UInt256::from_be_bytes(&bytes)),
+            )?;
+
+            let client = everscale_jrpc_client::JrpcClient::new(
+                vec![Url::parse("https://extension-api.broxus.com/rpc")?],
+                everscale_jrpc_client::JrpcClientOptions::default(),
+            )
+            .await?;
+
+            let contract = client.get_contract_state(&address).await?;
+            match contract {
+                Some(contract) => match wallet_type {
+                    WalletType::WalletV3 | WalletType::EverWallet => {
+                        println!("No need to deploy");
+                    }
+                    WalletType::SafeMultisig
+                    | WalletType::SafeMultisig24h
+                    | WalletType::SetcodeMultisig
+                    | WalletType::BridgeMultisig
+                    | WalletType::Multisig2 => {
+                        if let AccountState::AccountActive { .. } = contract.account.storage.state {
+                            println!("Account have already deployed");
+                            return Ok(());
+                        }
+
+                        let (payload, unsigned_message) =
+                            prepare_multisig_wallet_deploy(pubkey, wallet_type)?;
+
+                        let boc = ton_types::serialize_toc(&payload)?;
+
+                        let signature = ledger.sign_transaction(
+                            account,
+                            wallet_type,
+                            EVER_DECIMALS,
+                            EVER_TICKER,
+                            &boc,
+                        )?;
+
+                        let signed_message =
+                            unsigned_message.sign(&nekoton::crypto::Signature::from(signature))?;
+
+                        println!(
+                            "Sending message with hash '{}'...",
+                            signed_message.message.hash()?.to_hex_string()
+                        );
+
+                        let status = client
+                            .send_message(
+                                signed_message.message,
+                                everscale_jrpc_client::SendOptions::default(),
+                            )
+                            .await?;
+
+                        println!("Send status: {:?}", status);
+                    }
+                    _ => unimplemented!(),
+                },
+                None => {
+                    println!(
+                        "Account state not found. You should send 1 EVER to {}",
+                        address
+                    );
+                }
+            }
         }
     };
 

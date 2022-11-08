@@ -341,9 +341,6 @@ void compute_multisig_address(uint32_t account_number, const uint8_t* wallet, ui
 }
 
 void get_address(const uint32_t account_number, uint32_t wallet_type, uint8_t* address) {
-    memset(&boc_context, 0, sizeof(boc_context));
-    memset(&data_context, 0, sizeof(data_context));
-
     switch (wallet_type) {
         case WALLET_V3: {
             compute_wallet_v3_address(account_number, address);

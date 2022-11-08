@@ -10,6 +10,7 @@ static uint8_t set_result_get_address() {
     G_io_apdu_buffer[tx++] = ADDRESS_LENGTH;
     memmove(G_io_apdu_buffer + tx, data_context.addr_context.address, ADDRESS_LENGTH);
     tx += ADDRESS_LENGTH;
+    reset_app_context();
     return tx;
 }
 

@@ -9,6 +9,7 @@ static uint8_t set_result_get_public_key() {
     G_io_apdu_buffer[tx++] = PUBLIC_KEY_LENGTH;
     memmove(G_io_apdu_buffer + tx, data_context.pk_context.public_key, PUBLIC_KEY_LENGTH);
     tx += PUBLIC_KEY_LENGTH;
+    reset_app_context();
     return tx;
 }
 

@@ -227,7 +227,8 @@ void deserialize_token_body(struct SliceData_t* slice, struct SliceData_t* ref_s
 
 void deserialize_multisig_params(struct SliceData_t* slice, uint32_t function_id, uint8_t* address, SignTransactionContext_t* ctx) {
     switch (function_id) {
-        case MULTISIG_DEPLOY_TRANSACTION: {
+        case MULTISIG_DEPLOY_TRANSACTION:
+        case MULTISIG2_DEPLOY_TRANSACTION: {
             // Address to deploy
             set_dst_address(DEFAULT_WORKCHAIN, address);
 
@@ -261,7 +262,8 @@ void deserialize_multisig_params(struct SliceData_t* slice, uint32_t function_id
 
             break;
         }
-        case MULTISIG_SUBMIT_TRANSACTION: {
+        case MULTISIG_SUBMIT_TRANSACTION:
+        case MULTISIG2_SUBMIT_TRANSACTION: {
             // Recipient address
             int8_t dst_wc = 0;
             uint8_t dst_address[ADDRESS_LENGTH];

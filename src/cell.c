@@ -37,6 +37,9 @@ uint16_t Cell_bit_len(struct Cell_t* self) {
     uint8_t data_size = Cell_get_data_size(self);
 
     uint16_t bit_len = data_size * 8;
+    if ((Cell_get_d2(self) & 0b1) == 0) {
+        return bit_len;
+    }
 
     uint8_t* data = Cell_get_data(self);
     for (uint8_t i = data_size - 1; i >= 0; --i) {

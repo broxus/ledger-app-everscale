@@ -30,6 +30,8 @@ const DEFAULT_EXPIRATION_TIMEOUT: u32 = 60; // sec
 const INITIAL_BALANCE: u64 = 100_000_000; // 0.1 EVER
 const ATTACHED_AMOUNT: u64 = 500_000_000; // 0.5 EVER
 
+const RPC_ENDPOINT: &str = "https://extension-api.broxus.com/rpc";
+
 #[derive(clap::Parser)]
 struct Args {
     #[command(subcommand)]
@@ -509,7 +511,7 @@ async fn main() -> anyhow::Result<()> {
             )?;
 
             let client = everscale_jrpc_client::JrpcClient::new(
-                vec![Url::parse("https://extension-api.broxus.com/rpc")?],
+                vec![Url::parse(RPC_ENDPOINT)?],
                 everscale_jrpc_client::JrpcClientOptions::default(),
             )
             .await?;
@@ -550,7 +552,7 @@ async fn main() -> anyhow::Result<()> {
             )?;
 
             let client = everscale_jrpc_client::JrpcClient::new(
-                vec![Url::parse("https://extension-api.broxus.com/rpc")?],
+                vec![Url::parse(RPC_ENDPOINT)?],
                 everscale_jrpc_client::JrpcClientOptions::default(),
             )
             .await?;
@@ -702,7 +704,7 @@ async fn main() -> anyhow::Result<()> {
             )?;
 
             let client = everscale_jrpc_client::JrpcClient::new(
-                vec![Url::parse("https://extension-api.broxus.com/rpc")?],
+                vec![Url::parse(RPC_ENDPOINT)?],
                 everscale_jrpc_client::JrpcClientOptions::default(),
             )
             .await?;
@@ -781,7 +783,7 @@ async fn main() -> anyhow::Result<()> {
             )?;
 
             let client = everscale_jrpc_client::JrpcClient::new(
-                vec![Url::parse("https://extension-api.broxus.com/rpc")?],
+                vec![Url::parse(RPC_ENDPOINT)?],
                 everscale_jrpc_client::JrpcClientOptions::default(),
             )
             .await?;
@@ -955,7 +957,7 @@ async fn main() -> anyhow::Result<()> {
             )?;
 
             let client = everscale_jrpc_client::JrpcClient::new(
-                vec![Url::parse("https://extension-api.broxus.com/rpc")?],
+                vec![Url::parse(RPC_ENDPOINT)?],
                 everscale_jrpc_client::JrpcClientOptions::default(),
             )
             .await?;

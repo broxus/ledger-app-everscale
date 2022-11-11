@@ -82,7 +82,6 @@ _This command signs a message_
 | _Description_                 | _Length_ |
 |-------------------------------|:--------:|
 | An account number to retrieve |    4     |
-| Wallet number to retrieve     |    4     |
 | A bytes to sign               |    32    |
 
 ##### Output data
@@ -226,6 +225,5 @@ The following standard Status Words are returned for all APDUs - some specific S
 | 6700 |                  Incorrect length                  |
 | 6982 |  Security status not satisfied (Canceled by user)  |
 | 6B0x |                  Invalid request                   |
-| 6B00 |            Incorrect parameter P1 or P2            |
 | 6Fxx | Technical problem (Internal error, please report)  |
 | 9000 |            Normal ending of the command            |

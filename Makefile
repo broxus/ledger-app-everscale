@@ -26,23 +26,47 @@ ifeq ($(TARGET_NAME), TARGET_NANOX)
 else
     APP_LOAD_PARAMS += --appFlags 0x000
 endif
-APP_LOAD_PARAMS += --path "44'/396'"
 APP_LOAD_PARAMS += $(COMMON_LOAD_PARAMS)
 
 # Pending review parameters
 APP_LOAD_PARAMS += --tlvraw 9F:01
 DEFINES += HAVE_PENDING_REVIEW_SCREEN
 
-APPNAME      = "Everscale"
+##################
+# Define Version #
+##################
+
 APPVERSION_M = 1
 APPVERSION_N = 0
-APPVERSION_P = 4
+APPVERSION_P = 5
 APPVERSION   = "$(APPVERSION_M).$(APPVERSION_N).$(APPVERSION_P)"
 
-ifeq ($(TARGET_NAME),TARGET_NANOS)
-    ICONNAME=icons/nanos_app_everscale.gif
+###########################
+# Set Chain environnement #
+###########################
+
+ifeq ($(CHAIN),)
+CHAIN=everscale
+endif
+
+SUPPORTED_CHAINS=$(shell find makefile_conf/chain/ -type f -name '*.mk'| sed 's/.*\/\(.*\).mk/\1/g' | sort)
+
+# Check if chain is available
+ifeq ($(shell test -s ./makefile_conf/chain/$(CHAIN).mk && echo -n yes), yes)
+include ./makefile_conf/chain/$(CHAIN).mk
 else
-    ICONNAME=icons/nanox_app_everscale.gif
+$(error Unsupported CHAIN - use $(SUPPORTED_CHAINS))
+endif
+
+#########
+# Other #
+#########
+
+#prepare hsm generation
+ifeq ($(TARGET_NAME),TARGET_NANOS)
+ICONNAME=icons/nanos_app_$(CHAIN).gif
+else
+ICONNAME=icons/nanox_app_$(CHAIN).gif
 endif
 
 ################
@@ -128,7 +152,7 @@ endif
 WITH_U2F=0
 ifneq ($(WITH_U2F),0)
     DEFINES         += HAVE_U2F HAVE_IO_U2F
-    DEFINES         += U2F_PROXY_MAGIC=\"~EVER\"
+    DEFINES         += U2F_PROXY_MAGIC=\"~$(COIN)\"
 		SDK_SOURCE_PATH += lib_u2f
 endif
 
@@ -149,4 +173,4 @@ include $(BOLOS_SDK)/Makefile.rules
 dep/%.d: %.c Makefile
 
 listvariants:
-	@echo VARIANTS COIN Everscale
+	@echo VARIANTS CHAIN $(SUPPORTED_CHAINS)

@@ -170,5 +170,12 @@ Example
     --token   WEVER
 ```
 
+## Test
+### Integration
+Some tests require interactive approval on the ledger
+```bash
+cargo run --manifest-path tests/Cargo.toml
+```
+
 ## Documentation
 This follows the specification available in the [`api.md`](doc/api.md)

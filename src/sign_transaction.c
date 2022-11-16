@@ -48,15 +48,8 @@ UX_STEP_NOCB(
       .title = "Address",
       .text = data_context.sign_tr_context.address_str,
     });
-UX_STEP_NOCB(
-    ux_sign_transaction_flow_4_step,
-    bnnn_paging,
-    {
-      .title = "Hash",
-      .text = data_context.sign_tr_context.to_sign_str,
-    });
 UX_STEP_CB(
-    ux_sign_transaction_flow_5_step,
+    ux_sign_transaction_flow_4_step,
     pbb,
     send_response(set_result_sign_transaction(), true),
     {
@@ -65,7 +58,7 @@ UX_STEP_CB(
       "and send",
     });
 UX_STEP_CB(
-    ux_sign_transaction_flow_6_step,
+    ux_sign_transaction_flow_5_step,
     pb,
     send_response(0, false),
     {
@@ -78,8 +71,7 @@ UX_FLOW(ux_sign_transaction_flow,
     &ux_sign_transaction_flow_2_step,
     &ux_sign_transaction_flow_3_step,
     &ux_sign_transaction_flow_4_step,
-    &ux_sign_transaction_flow_5_step,
-    &ux_sign_transaction_flow_6_step
+    &ux_sign_transaction_flow_5_step
 );
 
 void handleSignTransaction(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t dataLength, volatile unsigned int *flags, volatile unsigned int *tx) {
@@ -114,9 +106,6 @@ void handleSignTransaction(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t
     ByteStream_init(&src, msg_begin, msg_length);
 
     prepare_to_sign(&src);
-
-    // TODO: remove later
-    snprintf(context->to_sign_str, sizeof(context->to_sign_str), "%.*H", sizeof(context->to_sign), context->to_sign);
 
     ux_flow_init(0, ux_sign_transaction_flow, NULL);
     *flags |= IO_ASYNCH_REPLY;

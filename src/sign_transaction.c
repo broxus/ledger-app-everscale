@@ -85,8 +85,11 @@ void handleSignTransaction(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t
     context->account_number = readUint32BE(dataBuffer + offset);
     offset += sizeof(context->account_number);
 
-    context->wallet_type = readUint32BE(dataBuffer + offset);
-    offset += sizeof(context->wallet_type);
+    context->origin_wallet_type = readUint32BE(dataBuffer + offset);
+    offset += sizeof(context->origin_wallet_type);
+
+    context->current_wallet_type = readUint32BE(dataBuffer + offset);
+    offset += sizeof(context->current_wallet_type);
 
     context->decimals = dataBuffer[offset];
     offset += sizeof(context->decimals);

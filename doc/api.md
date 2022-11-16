@@ -131,14 +131,15 @@ _This command signs a transaction message_
 
 ##### Input data
 
-| _Description_                 | _Length_ |
-|-------------------------------|:--------:|
-| An account number to retrieve |    4     |
-| Wallet number to retrieve     |    4     |
-| Decimals                      |    1     |
-| Ticker lenght                 |    1     |
-| Ticker                        | variable |
-| Serialized transaction        | variable |
+| _Description_                                                | _Length_ |
+|--------------------------------------------------------------|:--------:|
+| An account number to retrieve                                |    4     |
+| Original wallet number to retrieve (to derive address)       |    4     |
+| Current wallet number to retrieve (to parse transaction abi) |    4     |
+| Decimals                                                     |    1     |
+| Ticker lenght                                                |    1     |
+| Ticker                                                       | variable |
+| Serialized transaction                                       | variable |
 
 ##### Output data
 

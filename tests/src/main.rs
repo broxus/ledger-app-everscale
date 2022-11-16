@@ -236,17 +236,22 @@ fn test_ledger_sign_transaction() -> anyhow::Result<()> {
     let cell = data.into_cell();
     let boc = ton_types::serialize_toc(&cell)?;
 
-    let signature =
-        ledger.sign_transaction(account, wallet_type, EVER_DECIMALS, EVER_TICKER, &boc)?;
+    let signature = ledger.sign_transaction(
+        account,
+        wallet_type,
+        wallet_type,
+        EVER_DECIMALS,
+        EVER_TICKER,
+        &boc,
+    )?;
     assert!(public_key.verify(message_hash, &signature).is_ok());
 
     Ok(())
 }
 
 fn main() {
-    match do_run_tests() {
-        Err(e) => Err(e).unwrap(),
-        Ok(()) => (),
+    if let Err(e) = do_run_tests() {
+        Err(e).unwrap()
     }
 }
 

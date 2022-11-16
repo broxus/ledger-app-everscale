@@ -390,7 +390,7 @@ void prepare_to_sign(struct ByteStream_t* src) {
 
     // Get address
     uint8_t address[ADDRESS_LENGTH];
-    get_address(dc->sign_tr_context.account_number, dc->sign_tr_context.wallet_type, address);
+    get_address(dc->sign_tr_context.account_number, dc->sign_tr_context.origin_wallet_type, address);
     memset(bc, 0, sizeof(boc_context));
 
     // Parse transaction boc
@@ -401,7 +401,7 @@ void prepare_to_sign(struct ByteStream_t* src) {
     SliceData_t root_slice;
     SliceData_from_cell(&root_slice, root_cell);
 
-    switch (dc->sign_tr_context.wallet_type) {
+    switch (dc->sign_tr_context.current_wallet_type) {
         case WALLET_V3: {
             uint8_t flags = deserialize_wallet_v3(&root_slice);
 

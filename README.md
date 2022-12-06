@@ -114,7 +114,7 @@ It only applies to Multisig wallets
 
 ```bash
 # Example
-./client deploy --account 0 --wallet SafeMultisig
+./client deploy --account 0 --wallet Multisig2_1
 ```
 
 **Send EVER transaction**
@@ -125,6 +125,8 @@ It only applies to Multisig wallets
     --amount  0.1 \
     --address 0:7094fc3cb69fa1b7bde8e830e2cd74bc9455d93561ce2c562182215686eb45e2
 ```
+
+./client send-transaction --account 0 --wallet Multisig2_1 --amount  0.1 --address 0:7094fc3cb69fa1b7bde8e830e2cd74bc9455d93561ce2c562182215686eb45e2
 
 ```bash
 Example

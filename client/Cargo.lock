@@ -503,7 +503,7 @@ dependencies = [
 [[package]]
 name = "everscale-ledger-wallet"
 version = "0.1.0"
-source = "git+https://github.com/broxus/everscale-ledger-wallet.git#44a4f171a785173debb2eef8697d44df53234a44"
+source = "git+https://github.com/broxus/everscale-ledger-wallet.git#72923e5d88b9d69e552ec2526f26a3ecd4acb0e3"
 dependencies = [
  "anyhow",
  "console",
@@ -1046,7 +1046,7 @@ dependencies = [
 [[package]]
 name = "nekoton"
 version = "0.11.0"
-source = "git+https://github.com/broxus/nekoton.git#a3adb3689b53f2acc5e4cf5e4eb7d2a49f318c84"
+source = "git+https://github.com/broxus/nekoton.git#8fe5c4fdfc23807d51b4f715e24cde86449b7dfc"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1088,7 +1088,7 @@ dependencies = [
 [[package]]
 name = "nekoton-abi"
 version = "0.11.0"
-source = "git+https://github.com/broxus/nekoton.git#a3adb3689b53f2acc5e4cf5e4eb7d2a49f318c84"
+source = "git+https://github.com/broxus/nekoton.git#8fe5c4fdfc23807d51b4f715e24cde86449b7dfc"
 dependencies = [
  "anyhow",
  "base64",
@@ -1114,7 +1114,7 @@ dependencies = [
 [[package]]
 name = "nekoton-contracts"
 version = "0.11.0"
-source = "git+https://github.com/broxus/nekoton.git#a3adb3689b53f2acc5e4cf5e4eb7d2a49f318c84"
+source = "git+https://github.com/broxus/nekoton.git#8fe5c4fdfc23807d51b4f715e24cde86449b7dfc"
 dependencies = [
  "anyhow",
  "nekoton-abi",
@@ -1128,7 +1128,7 @@ dependencies = [
 [[package]]
 name = "nekoton-derive"
 version = "0.11.0"
-source = "git+https://github.com/broxus/nekoton.git#a3adb3689b53f2acc5e4cf5e4eb7d2a49f318c84"
+source = "git+https://github.com/broxus/nekoton.git#8fe5c4fdfc23807d51b4f715e24cde86449b7dfc"
 dependencies = [
  "either",
  "proc-macro2",
@@ -1139,7 +1139,7 @@ dependencies = [
 [[package]]
 name = "nekoton-utils"
 version = "0.11.0"
-source = "git+https://github.com/broxus/nekoton.git#a3adb3689b53f2acc5e4cf5e4eb7d2a49f318c84"
+source = "git+https://github.com/broxus/nekoton.git#8fe5c4fdfc23807d51b4f715e24cde86449b7dfc"
 dependencies = [
  "anyhow",
  "base64",
@@ -1180,7 +1180,6 @@ dependencies = [
  "autocfg",
  "num-integer",
  "num-traits",
- "serde",
 ]
 
 [[package]]

@@ -125,6 +125,12 @@ fn test_ledger_address() -> anyhow::Result<()> {
         "2bb06296f9c0be8d4290517d33018ea903b5de40504192953bf631f2e8b56b0b"
     );
 
+    let multisig2_1 = ledger.get_address(0, WalletType::Multisig2_1, false)?;
+    assert_eq!(
+        hex::encode(&multisig2_1),
+        "bcac3b0b6d2b65b29b18c48b72f76eed1d8dfc86b462086e2731948f1a2550b8"
+    );
+
     Ok(())
 }
 

@@ -363,6 +363,7 @@ fn prepare_multisig_wallet_transfer(
         WalletType::SetcodeMultisig => MultisigType::SetcodeMultisigWallet,
         WalletType::BridgeMultisig => MultisigType::BridgeMultisigWallet,
         WalletType::Multisig2 => MultisigType::Multisig2,
+        WalletType::Multisig2_1 => MultisigType::Multisig2_1,
         _ => anyhow::bail!("Invalid multisig type"),
     };
 
@@ -418,6 +419,7 @@ fn prepare_multisig_wallet_deploy(
         WalletType::SetcodeMultisig => MultisigType::SetcodeMultisigWallet,
         WalletType::BridgeMultisig => MultisigType::BridgeMultisigWallet,
         WalletType::Multisig2 => MultisigType::Multisig2,
+        WalletType::Multisig2_1 => MultisigType::Multisig2_1,
         _ => anyhow::bail!("Invalid multisig type"),
     };
 
@@ -639,7 +641,8 @@ async fn main() -> anyhow::Result<()> {
                     | WalletType::SafeMultisig24h
                     | WalletType::SetcodeMultisig
                     | WalletType::BridgeMultisig
-                    | WalletType::Multisig2 => {
+                    | WalletType::Multisig2
+                    | WalletType::Multisig2_1 => {
                         if let AccountState::AccountUninit = contract.account.storage.state {
                             println!("Account haven't deployed yet");
                             return Ok(());
@@ -886,7 +889,8 @@ async fn main() -> anyhow::Result<()> {
                         | WalletType::SafeMultisig24h
                         | WalletType::SetcodeMultisig
                         | WalletType::BridgeMultisig
-                        | WalletType::Multisig2 => {
+                        | WalletType::Multisig2
+                        | WalletType::Multisig2_1 => {
                             if let AccountState::AccountUninit =
                                 owner_contract.account.storage.state
                             {
@@ -944,7 +948,7 @@ async fn main() -> anyhow::Result<()> {
         }
         SubCommand::GetWallets => {
             println!(
-                "WalletV3\nEverWallet\nSafeMultisig\nSafeMultisig24h\nSetcodeMultisig\nBridgeMultisig\nMultisig2\nSurf (unimplemented)",
+                "WalletV3\nEverWallet\nSafeMultisig\nSafeMultisig24h\nSetcodeMultisig\nBridgeMultisig\nMultisig2\nMultisig2_1\nSurf (unimplemented)",
             );
         }
         SubCommand::GetTokens => {
@@ -978,7 +982,8 @@ async fn main() -> anyhow::Result<()> {
                     | WalletType::SafeMultisig24h
                     | WalletType::SetcodeMultisig
                     | WalletType::BridgeMultisig
-                    | WalletType::Multisig2 => {
+                    | WalletType::Multisig2
+                    | WalletType::Multisig2_1 => {
                         if let AccountState::AccountActive { .. } = contract.account.storage.state {
                             println!("Account have already deployed");
                             return Ok(());

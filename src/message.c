@@ -478,7 +478,8 @@ void prepare_to_sign(struct ByteStream_t* src) {
             break;
         }
         case EVER_WALLET:
-        case MULTISIG_2: {
+        case MULTISIG_2:
+        case MULTISIG_2_1: {
             // Header
             uint32_t function_id = deserialize_contract_header(&root_slice);
 

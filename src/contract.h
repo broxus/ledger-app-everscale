@@ -15,6 +15,7 @@ enum {
     BRIDGE_MULTISIG_WALLET      = 5,
     SURF_WALLET                 = 6,
     MULTISIG_2                  = 7,
+    MULTISIG_2_1                = 8,
 };
 
 enum {

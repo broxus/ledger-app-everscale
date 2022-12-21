@@ -269,9 +269,9 @@ macro_rules! run {
 }
 
 fn do_run_tests() -> anyhow::Result<()> {
-    run!(test_ledger_pubkey);
-    run!(test_ledger_address);
-    run!(test_ledger_sign_message);
+    //run!(test_ledger_pubkey);
+    //run!(test_ledger_address);
+    //run!(test_ledger_sign_message);
     run!(test_ledger_sign_transaction);
 
     Ok(())

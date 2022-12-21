@@ -202,7 +202,7 @@ fn test_ledger_sign_transaction() -> anyhow::Result<()> {
     let destination = MsgAddressInt::from_str(
         "0:df112b59eb82792623575194c60d2f547c68d54366644a3a5e02b8132f3c4c56",
     )?;
-    let body: ton_types::Cell = Default::default();
+    let body: ton_types::Cell = ton_types::deserialize_tree_of_cells(&mut base64::decode("te6ccgECBwEAAUwAAYtz4iFDAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAQFDgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAIBi3PiIUMAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABADAUOAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIBAGLc+IhQwAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAUBQ4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgGAAA=")?.as_slice())?;
 
     let expiration = Expiration::Timeout(DEFAULT_EXPIRATION_TIMEOUT);
 
@@ -228,7 +228,7 @@ fn test_ledger_sign_transaction() -> anyhow::Result<()> {
 
     // Fake sign
     let signature: Signature = [0_u8; 64];
-    let signed = unsigned_message.sign(&signature)?;
+    let signed = unsigned_message.sign_with_pruned_payload(&signature, 2)?;
 
     // Extract message body
     let mut data = signed.message.body().trust_me();

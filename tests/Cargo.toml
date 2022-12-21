@@ -10,6 +10,7 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0"
+base64 = "0.13"
 bigdecimal = "0.3.0"
 clap = { version = "4.0.18", features = ["derive"] }
 hex = "0.4.3"

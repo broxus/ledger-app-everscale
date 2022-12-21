@@ -97,7 +97,7 @@ void handleSignTransaction(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t
     uint8_t ticker_len = dataBuffer[offset];
     offset += sizeof(ticker_len);
 
-    VALIDATE(ticker_len != 0 && ticker_len <= MAX_TICKER_LEN, ERR_TICKET_LENGTH);
+    VALIDATE(ticker_len != 0 && ticker_len <= MAX_TICKER_LEN, ERR_TICKER_LENGTH);
 
     memcpy(context->ticker, dataBuffer + offset, ticker_len);
     offset += ticker_len;

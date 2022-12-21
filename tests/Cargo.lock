@@ -558,7 +558,7 @@ dependencies = [
 [[package]]
 name = "everscale-ledger-wallet"
 version = "0.1.0"
-source = "git+https://github.com/broxus/everscale-ledger-wallet.git#627d9dd3861ab7cf07c796eda01b3012762aae24"
+source = "git+https://github.com/broxus/everscale-ledger-wallet.git#33efd2cba6c8e08ae69f149b6a7308b5dcbf5a6e"
 dependencies = [
  "anyhow",
  "console",

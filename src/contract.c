@@ -356,7 +356,7 @@ void compute_multisig_address(uint32_t account_number, const uint8_t* wallet, ui
     memcpy(address, bc->hashes, HASH_SIZE);
 }
 
-void get_address(const uint32_t account_number, uint32_t wallet_type, uint8_t* address) {
+void get_address(const uint32_t account_number, uint8_t wallet_type, uint8_t* address) {
     switch (wallet_type) {
         case WALLET_V3: {
             compute_wallet_v3_address(account_number, address);

@@ -108,7 +108,7 @@ _This command returns an address for the given account number_
 | _Description_                 | _Length_ |
 |-------------------------------|:--------:|
 | An account number to retrieve |    4     |
-| Wallet number to retrieve     |    4     |
+| Wallet number to retrieve     |    1     |
 
 ##### Output data
 
@@ -134,19 +134,19 @@ _This command signs a transaction message_
 | _Description_                                                | _Length_ |
 |--------------------------------------------------------------|:--------:|
 | An account number to retrieve                                |    4     |
-| Original wallet number to retrieve (to derive address)       |    4     |
-| Current wallet number to retrieve (to parse transaction abi) |    4     |
+| Original wallet number to retrieve (to derive address)       |    1     |
+| Current wallet number to retrieve (to parse transaction abi) |    1     |
 | Decimals                                                     |    1     |
-| Ticker lenght                                                |    1     |
+| Ticker length                                                |    1     |
 | Ticker                                                       | variable |
 | Serialized transaction                                       | variable |
 
 ##### Output data
 
-| _Description_ | _Length_ |
-| ------------- | :------: |
-| Address length |    1     |
-| Signature     |    64    |
+| _Description_   | _Length_ |
+|-----------------| :------: |
+| Address length  |    1     |
+| Signature       |    64    |
 
 ## Transport protocol
 

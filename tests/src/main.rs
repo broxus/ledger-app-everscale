@@ -28,7 +28,7 @@ fn get_ledger() -> (Arc<LedgerWallet>, PublicKey) {
     let wallet_manager = initialize_wallet_manager().expect("Couldn't start wallet manager");
 
     // Update device list
-    const NO_DEVICE_HELP: &str = "No Ledger found, make sure you have a unlocked Ledger connected with the Ledger Wallet Solana running";
+    const NO_DEVICE_HELP: &str = "No Ledger found, make sure you have a unlocked Ledger connected with the Ledger Wallet Everscale running";
     wallet_manager.update_devices().expect(NO_DEVICE_HELP);
     assert!(
         !wallet_manager.list_devices().is_empty(),
@@ -269,9 +269,9 @@ macro_rules! run {
 }
 
 fn do_run_tests() -> anyhow::Result<()> {
-    //run!(test_ledger_pubkey);
-    //run!(test_ledger_address);
-    //run!(test_ledger_sign_message);
+    run!(test_ledger_pubkey);
+    run!(test_ledger_address);
+    run!(test_ledger_sign_message);
     run!(test_ledger_sign_transaction);
 
     Ok(())

@@ -105,7 +105,7 @@ void calc_cell_hash(Cell_t* cell, const uint8_t cell_index) {
     uint8_t hash_buffer[266]; // d1(1) + d2(1) + data(128) + 4 * (depth(2) + hash(32))
 
     uint16_t hash_buffer_offset = 0;
-    hash_buffer[0] = d1;
+    hash_buffer[0] = d1 & 0b00011111;
     hash_buffer[1] = Cell_get_d2(cell);
     hash_buffer_offset += 2;
     uint8_t data_size = Cell_get_data_size(cell);

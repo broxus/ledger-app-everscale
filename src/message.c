@@ -150,7 +150,10 @@ void deserialize_int_message_header(struct SliceData_t* slice, uint8_t flags, Si
 void deserialize_token_body(struct SliceData_t* slice, struct SliceData_t* ref_slice, SignTransactionContext_t* ctx) {
     // FunctionId
     if (SliceData_remaining_bits(slice) < sizeof(uint32_t) * 8) {
-        VALIDATE(ref_slice && ref_slice->data, ERR_SLICE_IS_EMPTY);
+        if (!ref_slice || !ref_slice->data || (SliceData_remaining_bits(ref_slice) < sizeof(uint32_t) * 8)) {
+            // Empty payload is ok
+            return;
+        }
         slice = ref_slice;
     }
 
@@ -220,8 +223,10 @@ void deserialize_token_body(struct SliceData_t* slice, struct SliceData_t* ref_s
 
             break;
         }
-        default:
-            THROW(ERR_INVALID_FUNCTION_ID);
+        default: {
+            // All other methods could be treated as plain transfers
+            break;
+        }
     }
 }
 

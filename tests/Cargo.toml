@@ -1,15 +1,13 @@
 [package]
-name = "ledger-app-solana-tests"
-version = "0.2.0"
-description = "Ledger-app integration tests using Solana tools"
-authors = ["Solana Maintainers <maintainers@solana.com>"]
-repository = "https://github.com/solana-labs/solana"
-license = "Apache-2.0"
-homepage = "https://solana.com/"
+name = "ledger-app-everscale-tests"
+version = "0.1.0"
 edition = "2021"
+description = "Ledger-app integration tests using Everscale tools"
+authors = ["Broxus team"]
 
 [dependencies]
 anyhow = "1.0"
+base64 = "0.13"
 bigdecimal = "0.3.0"
 clap = { version = "4.0.18", features = ["derive"] }
 hex = "0.4.3"

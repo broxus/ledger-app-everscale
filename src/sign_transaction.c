@@ -85,10 +85,10 @@ void handleSignTransaction(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t
     context->account_number = readUint32BE(dataBuffer + offset);
     offset += sizeof(context->account_number);
 
-    context->origin_wallet_type = readUint32BE(dataBuffer + offset);
+    context->origin_wallet_type = dataBuffer[offset];
     offset += sizeof(context->origin_wallet_type);
 
-    context->current_wallet_type = readUint32BE(dataBuffer + offset);
+    context->current_wallet_type = dataBuffer[offset];
     offset += sizeof(context->current_wallet_type);
 
     context->decimals = dataBuffer[offset];
@@ -97,7 +97,7 @@ void handleSignTransaction(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t
     uint8_t ticker_len = dataBuffer[offset];
     offset += sizeof(ticker_len);
 
-    VALIDATE(ticker_len != 0 && ticker_len <= MAX_TICKER_LEN, ERR_RANGE_CHECK);
+    VALIDATE(ticker_len != 0 && ticker_len <= MAX_TICKER_LEN, ERR_TICKER_LENGTH);
 
     memcpy(context->ticker, dataBuffer + offset, ticker_len);
     offset += ticker_len;

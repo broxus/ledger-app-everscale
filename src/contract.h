@@ -41,6 +41,6 @@ enum {
 
 struct ByteStream_t;
 void deserialize_cells_tree(struct ByteStream_t* src);
-void get_address(const uint32_t account_number, uint32_t wallet_type, uint8_t* address);
+void get_address(const uint32_t account_number, uint8_t wallet_type, uint8_t* address);
 
 #endif

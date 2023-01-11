@@ -66,14 +66,17 @@ uint16_t deserialize_cell(struct Cell_t* cell, const uint8_t cell_index, const u
     uint8_t exotic = (d1 & 8) == 8; // exotic
     uint8_t refs_count = d1 & 7;	// refs count
     uint8_t absent = refs_count == 7 && hashes;
+    uint8_t pruned = d1 == PRUNED_BRANCH_D1;
     UNUSED(level);
 
     VALIDATE(!hashes, ERR_INVALID_DATA);
-    VALIDATE(!exotic, ERR_INVALID_DATA); // only ordinary cells are valid
+    VALIDATE(!exotic || pruned, ERR_INVALID_DATA); // only ordinary or pruned cells are valid
     VALIDATE(refs_count <= MAX_REFERENCES_COUNT, ERR_INVALID_DATA);
     VALIDATE(!absent, ERR_INVALID_DATA);
 
     uint8_t data_size = Cell_get_data_size(cell);
+    VALIDATE(!pruned || pruned && (data_size == PRUNED_BRANCH_DATA_SIZE), ERR_INVALID_DATA);
+
     uint8_t* refs = Cell_get_refs(cell, &refs_count);
     for (uint8_t i = 0; i < refs_count; ++i) {
         uint8_t ref = refs[i];
@@ -84,14 +87,28 @@ uint16_t deserialize_cell(struct Cell_t* cell, const uint8_t cell_index, const u
 }
 
 void calc_cell_hash(Cell_t* cell, const uint8_t cell_index) {
-    uint8_t hash_buffer[262]; // d1(1) + d2(1) + data(128) + 4 * (depth(1) + hash(32))
+    BocContext_t* bc = &boc_context;
+
+    uint8_t d1 = Cell_get_d1(cell);
+    if (d1 == PRUNED_BRANCH_D1) {
+        // handle pruned branch case
+        // 1 byte - cell type
+        // 1 byte - level mask
+        // 32 bytes - hash
+        // 2 bytes - cell depth (BE)
+        uint8_t* cell_data = Cell_get_data(cell);
+        memcpy(bc->hashes + cell_index * HASH_SIZE, cell_data + 2, HASH_SIZE);
+        bc->cell_depth[cell_index] = *(cell_data + 2 + HASH_SIZE + 1);
+        return;
+    }
+
+    uint8_t hash_buffer[266]; // d1(1) + d2(1) + data(128) + 4 * (depth(2) + hash(32))
 
     uint16_t hash_buffer_offset = 0;
-    hash_buffer[0] = Cell_get_d1(cell);
+    hash_buffer[0] = d1 & 0b00011111;
     hash_buffer[1] = Cell_get_d2(cell);
     hash_buffer_offset += 2;
     uint8_t data_size = Cell_get_data_size(cell);
-    BocContext_t* bc = &boc_context;
     if (bc->public_key_cell_index && cell_index == bc->public_key_cell_index) {
         memcpy(hash_buffer + hash_buffer_offset, bc->public_key_cell_data, data_size);
     } else {

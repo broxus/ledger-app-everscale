@@ -157,7 +157,7 @@ void deserialize_token_body(struct SliceData_t* slice, struct SliceData_t* ref_s
         slice = ref_slice;
     }
 
-    uint32_t function_id = SliceData_get_next_int(slice, 32);
+    uint32_t function_id = SliceData_get_next_int(slice, sizeof(uint32_t) * 8);
 
     switch (function_id) {
         case TOKEN_TRANSFER:
@@ -198,28 +198,6 @@ void deserialize_token_body(struct SliceData_t* slice, struct SliceData_t* ref_s
             deserialize_amount(slice, amount, sizeof(amount));
 
             set_amount(amount, sizeof(amount), NORMAL_FLAG, ctx->decimals, ctx->ticker);
-
-            // RemainingGasTo Address
-            if (SliceData_remaining_bits(slice) < ADDRESS_LENGTH * 8) {
-                VALIDATE(ref_slice && ref_slice->data, ERR_SLICE_IS_EMPTY);
-                slice = ref_slice;
-            }
-
-            int8_t rgt_wc = 0;
-            uint8_t rgt_address[ADDRESS_LENGTH];
-            deserialize_address(slice, &rgt_wc, rgt_address);
-
-            // CallbackTo Address
-            if (SliceData_remaining_bits(slice) < ADDRESS_LENGTH * 8) {
-                VALIDATE(ref_slice && ref_slice->data, ERR_SLICE_IS_EMPTY);
-                slice = ref_slice;
-            }
-
-            int8_t wc = 0;
-            uint8_t address[ADDRESS_LENGTH];
-            deserialize_address(slice, &wc, address);
-
-            set_dst_address(wc, address);
 
             break;
         }

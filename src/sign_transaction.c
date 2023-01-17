@@ -38,29 +38,29 @@ UX_STEP_NOCB(
     ux_sign_transaction_burn,
     bnnn_paging,
     {
-      .title = "Burn",
-      .text = " "
+      .title = "Type",
+      .text = "Burn"
     });
 UX_STEP_NOCB(
     ux_sign_transaction_deploy,
     bnnn_paging,
     {
-      .title = "Deploy",
-      .text = " "
+      .title = "Type",
+      .text = "Deploy"
     });
 UX_STEP_NOCB(
     ux_sign_transaction_confirm,
     bnnn_paging,
     {
-      .title = "Confirm",
-      .text = " "
+      .title = "Type",
+      .text = "Confirm"
     });
 UX_STEP_NOCB(
     ux_sign_transaction_transfer,
     bnnn_paging,
     {
-      .title = "Transfer",
-      .text = " "
+      .title = "Type",
+      .text = "Transfer"
     });
 UX_STEP_NOCB(
     ux_sign_transaction_amount,

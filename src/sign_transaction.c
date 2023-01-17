@@ -38,28 +38,28 @@ UX_STEP_NOCB(
     ux_sign_transaction_burn,
     bnnn_paging,
     {
-      .title = "Type",
+      .title = "Action",
       .text = "Burn"
     });
 UX_STEP_NOCB(
     ux_sign_transaction_deploy,
     bnnn_paging,
     {
-      .title = "Type",
+      .title = "Action",
       .text = "Deploy"
     });
 UX_STEP_NOCB(
     ux_sign_transaction_confirm,
     bnnn_paging,
     {
-      .title = "Type",
+      .title = "Action",
       .text = "Confirm"
     });
 UX_STEP_NOCB(
     ux_sign_transaction_transfer,
     bnnn_paging,
     {
-      .title = "Type",
+      .title = "Action",
       .text = "Transfer"
     });
 UX_STEP_NOCB(

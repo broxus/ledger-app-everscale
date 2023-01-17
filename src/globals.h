@@ -73,9 +73,6 @@ typedef struct SignTransactionContext_t {
     uint8_t current_wallet_type;
     uint8_t decimals;
     char ticker[MAX_TICKER_LEN];
-
-    // TODO: debug info
-    char prepend_address_str[65];
 } SignTransactionContext_t;
 
 typedef union {

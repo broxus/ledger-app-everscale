@@ -77,13 +77,6 @@ UX_STEP_NOCB(
       .text = data_context.sign_tr_context.address_str,
     });
 UX_STEP_NOCB(
-    ux_sign_transaction_prepend,
-    bnnn_paging,
-    {
-      .title = "Prepend address",
-      .text = data_context.sign_tr_context.prepend_address_str,
-    });
-UX_STEP_NOCB(
     ux_sign_transaction_transaction_id,
     bnnn_paging,
     {
@@ -110,7 +103,6 @@ UX_STEP_CB(
 
 UX_FLOW(ux_sign_transaction_burn_flow,
     &ux_sign_transaction_intro,
-    &ux_sign_transaction_prepend,
     &ux_sign_transaction_burn,
     &ux_sign_transaction_amount,
     &ux_sign_transaction_accept,
@@ -119,7 +111,6 @@ UX_FLOW(ux_sign_transaction_burn_flow,
 
 UX_FLOW(ux_sign_transaction_deploy_flow,
     &ux_sign_transaction_intro,
-    &ux_sign_transaction_prepend,
     &ux_sign_transaction_deploy,
     &ux_sign_transaction_address,
     &ux_sign_transaction_accept,
@@ -128,7 +119,6 @@ UX_FLOW(ux_sign_transaction_deploy_flow,
 
 UX_FLOW(ux_sign_transaction_confirm_flow,
     &ux_sign_transaction_intro,
-    &ux_sign_transaction_prepend,
     &ux_sign_transaction_confirm,
     &ux_sign_transaction_transaction_id,
     &ux_sign_transaction_accept,
@@ -137,7 +127,6 @@ UX_FLOW(ux_sign_transaction_confirm_flow,
 
 UX_FLOW(ux_sign_transaction_transfer_flow,
     &ux_sign_transaction_intro,
-    &ux_sign_transaction_prepend,
     &ux_sign_transaction_transfer,
     &ux_sign_transaction_amount,
     &ux_sign_transaction_address,
@@ -188,9 +177,6 @@ void handleSignTransaction(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t
     } else {
         memcpy(prepend_address, address, ADDRESS_LENGTH);
     }
-
-    // TODO: debug info
-    snprintf(&data_context.sign_tr_context.prepend_address_str, sizeof(&data_context.sign_tr_context.prepend_address_str), "%.*H", sizeof(prepend_address), prepend_address);
 
     uint8_t* msg_begin = dataBuffer + offset;
     uint8_t msg_length = dataLength - offset;

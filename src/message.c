@@ -97,11 +97,11 @@ void set_amount(const uint8_t* amount, uint8_t amount_length, uint8_t flags, uin
     }
 }
 
-void set_transaction_id(const uint8_t* transaction_id, uint8_t transaction_id_length) {
+void set_transaction_id(const uint8_t* transaction_id) {
     char* transaction_id_str = data_context.sign_tr_context.transaction_id_str;
     memset(transaction_id_str, 0, sizeof(data_context.sign_tr_context.transaction_id_str));
 
-    convert_hex_amount_to_displayable(transaction_id, 9, transaction_id_length, transaction_id_str);
+    snprintf(transaction_id_str, sizeof(data_context.sign_tr_context.transaction_id_str), "%.*H", TRANSACTION_ID_LENGTH, transaction_id);
 }
 
 void deserialize_int_message_header(struct SliceData_t* slice, uint8_t flags, SignTransactionContext_t* ctx) {
@@ -302,11 +302,10 @@ int deserialize_multisig_params(struct SliceData_t* slice, uint32_t function_id,
         }
         case MULTISIG_CONFIRM_TRANSACTION: {
             // Transaction id
-            uint8_t id_length = 8;
-            uint8_t id[id_length];
-            deserialize_value(slice, id, id_length);
+            uint8_t id[TRANSACTION_ID_LENGTH];
+            deserialize_value(slice, id, sizeof(id));
 
-            set_transaction_id(id, id_length);
+            set_transaction_id(id);
 
             // Set ux sign flow
             sign_transaction_flow = SIGN_TRANSACTION_FLOW_CONFIRM;

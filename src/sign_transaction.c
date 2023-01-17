@@ -77,11 +77,11 @@ UX_STEP_NOCB(
       .text = data_context.sign_tr_context.address_str,
     });
 UX_STEP_NOCB(
-    ux_sign_transaction_pubkey,
+    ux_sign_transaction_prepend,
     bnnn_paging,
     {
-      .title = "Pubkey",
-      .text = data_context.sign_tr_context.public_key_str,
+      .title = "Prepend address",
+      .text = data_context.sign_tr_context.prepend_address_str,
     });
 UX_STEP_NOCB(
     ux_sign_transaction_transaction_id,
@@ -110,7 +110,7 @@ UX_STEP_CB(
 
 UX_FLOW(ux_sign_transaction_burn_flow,
     &ux_sign_transaction_intro,
-    &ux_sign_transaction_pubkey,
+    &ux_sign_transaction_prepend,
     &ux_sign_transaction_burn,
     &ux_sign_transaction_amount,
     &ux_sign_transaction_accept,
@@ -119,7 +119,7 @@ UX_FLOW(ux_sign_transaction_burn_flow,
 
 UX_FLOW(ux_sign_transaction_deploy_flow,
     &ux_sign_transaction_intro,
-    &ux_sign_transaction_pubkey,
+    &ux_sign_transaction_prepend,
     &ux_sign_transaction_deploy,
     &ux_sign_transaction_address,
     &ux_sign_transaction_accept,
@@ -128,7 +128,7 @@ UX_FLOW(ux_sign_transaction_deploy_flow,
 
 UX_FLOW(ux_sign_transaction_confirm_flow,
     &ux_sign_transaction_intro,
-    &ux_sign_transaction_pubkey,
+    &ux_sign_transaction_prepend,
     &ux_sign_transaction_confirm,
     &ux_sign_transaction_transaction_id,
     &ux_sign_transaction_accept,
@@ -137,7 +137,7 @@ UX_FLOW(ux_sign_transaction_confirm_flow,
 
 UX_FLOW(ux_sign_transaction_transfer_flow,
     &ux_sign_transaction_intro,
-    &ux_sign_transaction_pubkey,
+    &ux_sign_transaction_prepend,
     &ux_sign_transaction_transfer,
     &ux_sign_transaction_amount,
     &ux_sign_transaction_address,
@@ -173,13 +173,32 @@ void handleSignTransaction(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t
     memcpy(context->ticker, dataBuffer + offset, ticker_len);
     offset += ticker_len;
 
+    // Get address
+    uint8_t address[ADDRESS_LENGTH];
+    get_address(context->account_number, context->origin_wallet_type, address);
+    memset(&boc_context, 0, sizeof(boc_context));
+
+    uint8_t address_present = dataBuffer[offset];
+    offset += sizeof(address_present);
+
+    uint8_t prepend_address[ADDRESS_LENGTH];
+    if (address_present) {
+        memcpy(prepend_address, dataBuffer + offset, ADDRESS_LENGTH);
+        offset += sizeof(address);
+    } else {
+        memcpy(prepend_address, address, ADDRESS_LENGTH);
+    }
+
+    // TODO: debug info
+    snprintf(&data_context.sign_tr_context.prepend_address_str, sizeof(&data_context.sign_tr_context.prepend_address_str), "%.*H", sizeof(prepend_address), prepend_address);
+
     uint8_t* msg_begin = dataBuffer + offset;
     uint8_t msg_length = dataLength - offset;
 
     ByteStream_t src;
     ByteStream_init(&src, msg_begin, msg_length);
 
-    int flow = prepare_to_sign(&src);
+    int flow = prepare_to_sign(&src, address, prepend_address);
 
     switch (flow) {
         case SIGN_TRANSACTION_FLOW_TRANSFER:

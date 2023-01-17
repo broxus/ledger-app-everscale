@@ -405,19 +405,10 @@ void prepend_address_to_cell(uint8_t* cell_buffer, uint16_t cell_buffer_size, st
     cell->cell_begin = cell_buffer;
 }
 
-int prepare_to_sign(struct ByteStream_t* src) {
+int prepare_to_sign(struct ByteStream_t* src, uint8_t* address, uint8_t* prepend_address) {
     // Init context
     BocContext_t* bc = &boc_context;
     DataContext_t* dc = &data_context;
-
-    // TODO: debug info
-    get_public_key(dc->sign_tr_context.account_number, dc->sign_tr_context.public_key);
-    snprintf(dc->sign_tr_context.public_key_str, sizeof(dc->sign_tr_context.public_key_str), "%.*H", sizeof(dc->sign_tr_context.public_key), dc->sign_tr_context.public_key);
-
-    // Get address
-    uint8_t address[ADDRESS_LENGTH];
-    get_address(dc->sign_tr_context.account_number, dc->sign_tr_context.origin_wallet_type, address);
-    memset(bc, 0, sizeof(boc_context));
 
     // Parse transaction boc
     deserialize_cells_tree(src);
@@ -541,7 +532,7 @@ int prepare_to_sign(struct ByteStream_t* src) {
 
             // Prepend address to root cell
             uint8_t cell_buffer[130]; // d1(1) + d2(1) + data(128)
-            prepend_address_to_cell(cell_buffer, sizeof(cell_buffer), root_cell, address);
+            prepend_address_to_cell(cell_buffer, sizeof(cell_buffer), root_cell, prepend_address);
 
             // Calculate payload hash to sign
             prepare_payload_hash(bc);

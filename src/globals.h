@@ -75,8 +75,7 @@ typedef struct SignTransactionContext_t {
     char ticker[MAX_TICKER_LEN];
 
     // TODO: debug info
-    uint8_t public_key[PUBLIC_KEY_LENGTH];
-    char public_key_str[65];
+    char prepend_address_str[65];
 } SignTransactionContext_t;
 
 typedef union {

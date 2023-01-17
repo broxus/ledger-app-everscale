@@ -6,6 +6,6 @@
 #define DEFAULT_WORKCHAIN 0
 
 struct ByteStream_t;
-int prepare_to_sign(struct ByteStream_t* src);
+int prepare_to_sign(struct ByteStream_t* src, uint8_t* address, uint8_t* prepend_address);
 
 #endif

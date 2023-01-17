@@ -73,7 +73,10 @@ typedef struct SignTransactionContext_t {
     uint8_t current_wallet_type;
     uint8_t decimals;
     char ticker[MAX_TICKER_LEN];
-    uint8_t public_key_str[PUBLIC_KEY_LENGTH]; // TODO: remove
+
+    // TODO: debug info
+    uint8_t public_key[PUBLIC_KEY_LENGTH];
+    char public_key_str[65];
 } SignTransactionContext_t;
 
 typedef union {

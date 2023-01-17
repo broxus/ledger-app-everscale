@@ -410,8 +410,9 @@ int prepare_to_sign(struct ByteStream_t* src) {
     BocContext_t* bc = &boc_context;
     DataContext_t* dc = &data_context;
 
-    // TODO: remove
-    get_public_key(dc->sign_tr_context.account_number, dc->sign_tr_context.public_key_str);
+    // TODO: debug info
+    get_public_key(dc->sign_tr_context.account_number, dc->sign_tr_context.public_key);
+    snprintf(dc->sign_tr_context.public_key_str, sizeof(dc->sign_tr_context.public_key_str), "%.*H", sizeof(dc->sign_tr_context.public_key), dc->sign_tr_context.public_key);
 
     // Get address
     uint8_t address[ADDRESS_LENGTH];

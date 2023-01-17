@@ -27,7 +27,7 @@ static uint8_t set_result_sign_transaction() {
 }
 
 UX_STEP_NOCB(
-    ux_sign_transaction_flow_1_step,
+    ux_sign_transaction_intro,
     pnn,
     {
       &C_icon_eye,
@@ -35,21 +35,56 @@ UX_STEP_NOCB(
       "transaction",
     });
 UX_STEP_NOCB(
-    ux_sign_transaction_flow_2_step,
+    ux_sign_transaction_burn,
+    bnnn_paging,
+    {
+      .title = "Burn",
+      .text = " "
+    });
+UX_STEP_NOCB(
+    ux_sign_transaction_deploy,
+    bnnn_paging,
+    {
+      .title = "Deploy",
+      .text = " "
+    });
+UX_STEP_NOCB(
+    ux_sign_transaction_confirm,
+    bnnn_paging,
+    {
+      .title = "Confirm",
+      .text = " "
+    });
+UX_STEP_NOCB(
+    ux_sign_transaction_transfer,
+    bnnn_paging,
+    {
+      .title = "Transfer",
+      .text = " "
+    });
+UX_STEP_NOCB(
+    ux_sign_transaction_amount,
     bnnn_paging,
     {
       .title = "Amount",
       .text = data_context.sign_tr_context.amount_str,
     });
 UX_STEP_NOCB(
-    ux_sign_transaction_flow_3_step,
+    ux_sign_transaction_address,
     bnnn_paging,
     {
       .title = "Address",
       .text = data_context.sign_tr_context.address_str,
     });
+UX_STEP_NOCB(
+    ux_sign_transaction_transaction_id,
+    bnnn_paging,
+    {
+      .title = "Transaction id",
+      .text = data_context.sign_tr_context.transaction_id_str,
+    });
 UX_STEP_CB(
-    ux_sign_transaction_flow_4_step,
+    ux_sign_transaction_accept,
     pbb,
     send_response(set_result_sign_transaction(), true),
     {
@@ -58,7 +93,7 @@ UX_STEP_CB(
       "and send",
     });
 UX_STEP_CB(
-    ux_sign_transaction_flow_5_step,
+    ux_sign_transaction_reject,
     pb,
     send_response(0, false),
     {
@@ -66,12 +101,37 @@ UX_STEP_CB(
       "Reject",
     });
 
-UX_FLOW(ux_sign_transaction_flow,
-    &ux_sign_transaction_flow_1_step,
-    &ux_sign_transaction_flow_2_step,
-    &ux_sign_transaction_flow_3_step,
-    &ux_sign_transaction_flow_4_step,
-    &ux_sign_transaction_flow_5_step
+UX_FLOW(ux_sign_transaction_burn_flow,
+    &ux_sign_transaction_intro,
+    &ux_sign_transaction_burn,
+    &ux_sign_transaction_amount,
+    &ux_sign_transaction_accept,
+    &ux_sign_transaction_reject
+);
+
+UX_FLOW(ux_sign_transaction_deploy_flow,
+    &ux_sign_transaction_intro,
+    &ux_sign_transaction_deploy,
+    &ux_sign_transaction_address,
+    &ux_sign_transaction_accept,
+    &ux_sign_transaction_reject
+);
+
+UX_FLOW(ux_sign_transaction_confirm_flow,
+    &ux_sign_transaction_intro,
+    &ux_sign_transaction_confirm,
+    &ux_sign_transaction_transaction_id,
+    &ux_sign_transaction_accept,
+    &ux_sign_transaction_reject
+);
+
+UX_FLOW(ux_sign_transaction_transfer_flow,
+    &ux_sign_transaction_intro,
+    &ux_sign_transaction_transfer,
+    &ux_sign_transaction_amount,
+    &ux_sign_transaction_address,
+    &ux_sign_transaction_accept,
+    &ux_sign_transaction_reject
 );
 
 void handleSignTransaction(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t dataLength, volatile unsigned int *flags, volatile unsigned int *tx) {
@@ -110,6 +170,22 @@ void handleSignTransaction(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t
 
     prepare_to_sign(&src);
 
-    ux_flow_init(0, ux_sign_transaction_flow, NULL);
+    switch (prepare_to_sign(&src)) {
+        case SIGN_TRANSACTION_FLOW_TRANSFER:
+            ux_flow_init(0, ux_sign_transaction_transfer_flow, NULL);
+            break;
+        case SIGN_TRANSACTION_FLOW_DEPLOY:
+            ux_flow_init(0, ux_sign_transaction_deploy_flow, NULL);
+            break;
+        case SIGN_TRANSACTION_FLOW_CONFIRM:
+            ux_flow_init(0, ux_sign_transaction_confirm_flow, NULL);
+            break;
+        case SIGN_TRANSACTION_FLOW_BURN:
+            ux_flow_init(0, ux_sign_transaction_burn_flow, NULL);
+            break;
+        default:
+            THROW(ERR_INVALID_REQUEST);
+    }
+
     *flags |= IO_ASYNCH_REPLY;
 }

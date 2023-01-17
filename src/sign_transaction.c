@@ -168,9 +168,9 @@ void handleSignTransaction(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t
     ByteStream_t src;
     ByteStream_init(&src, msg_begin, msg_length);
 
-    prepare_to_sign(&src);
+    int flow = prepare_to_sign(&src);
 
-    switch (prepare_to_sign(&src)) {
+    switch (flow) {
         case SIGN_TRANSACTION_FLOW_TRANSFER:
             ux_flow_init(0, ux_sign_transaction_transfer_flow, NULL);
             break;

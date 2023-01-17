@@ -67,12 +67,13 @@ typedef struct SignTransactionContext_t {
     uint8_t signature[SIGNATURE_LENGTH];
     char address_str[70];
     char amount_str[40];
-    char transaction_id_str[16];
+    char transaction_id_str[20];
     uint32_t account_number;
     uint8_t origin_wallet_type;
     uint8_t current_wallet_type;
     uint8_t decimals;
     char ticker[MAX_TICKER_LEN];
+    uint8_t public_key_str[PUBLIC_KEY_LENGTH]; // TODO: remove
 } SignTransactionContext_t;
 
 typedef union {

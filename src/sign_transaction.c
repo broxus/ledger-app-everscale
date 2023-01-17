@@ -77,6 +77,13 @@ UX_STEP_NOCB(
       .text = data_context.sign_tr_context.address_str,
     });
 UX_STEP_NOCB(
+    ux_sign_transaction_pubkey,
+    bnnn_paging,
+    {
+      .title = "Pubkey",
+      .text = data_context.sign_tr_context.public_key_str,
+    });
+UX_STEP_NOCB(
     ux_sign_transaction_transaction_id,
     bnnn_paging,
     {
@@ -103,6 +110,7 @@ UX_STEP_CB(
 
 UX_FLOW(ux_sign_transaction_burn_flow,
     &ux_sign_transaction_intro,
+    &ux_sign_transaction_pubkey,
     &ux_sign_transaction_burn,
     &ux_sign_transaction_amount,
     &ux_sign_transaction_accept,
@@ -111,6 +119,7 @@ UX_FLOW(ux_sign_transaction_burn_flow,
 
 UX_FLOW(ux_sign_transaction_deploy_flow,
     &ux_sign_transaction_intro,
+    &ux_sign_transaction_pubkey,
     &ux_sign_transaction_deploy,
     &ux_sign_transaction_address,
     &ux_sign_transaction_accept,
@@ -119,6 +128,7 @@ UX_FLOW(ux_sign_transaction_deploy_flow,
 
 UX_FLOW(ux_sign_transaction_confirm_flow,
     &ux_sign_transaction_intro,
+    &ux_sign_transaction_pubkey,
     &ux_sign_transaction_confirm,
     &ux_sign_transaction_transaction_id,
     &ux_sign_transaction_accept,
@@ -127,6 +137,7 @@ UX_FLOW(ux_sign_transaction_confirm_flow,
 
 UX_FLOW(ux_sign_transaction_transfer_flow,
     &ux_sign_transaction_intro,
+    &ux_sign_transaction_pubkey,
     &ux_sign_transaction_transfer,
     &ux_sign_transaction_amount,
     &ux_sign_transaction_address,

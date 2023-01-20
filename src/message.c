@@ -470,8 +470,7 @@ int prepare_to_sign(struct ByteStream_t* src, uint8_t* address, uint8_t* prepend
             uint32_t function_id = deserialize_contract_header(&root_slice);
 
             // Gift
-            VALIDATE(bc->cells_count > GIFT_CELL_INDEX, ERR_INVALID_CELL_INDEX);
-            Cell_t* gift_cell = &bc->cells[GIFT_CELL_INDEX];
+            Cell_t* gift_cell = function_id == MULTISIG_CONFIRM_TRANSACTION ? root_cell : &bc->cells[GIFT_CELL_INDEX];
 
             SliceData_t gift_slice;
             SliceData_from_cell(&gift_slice, gift_cell);

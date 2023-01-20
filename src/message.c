@@ -482,6 +482,7 @@ int prepare_to_sign(struct ByteStream_t* src, uint8_t* address, uint8_t* prepend
 
             // Gift body
             if (gift_refs_count) {
+                VALIDATE(bc->cells_count > GIFT_CELL_INDEX + 1, ERR_INVALID_CELL_INDEX);
                 Cell_t* body_cell = &bc->cells[GIFT_CELL_INDEX + 1];
 
                 SliceData_t body_slice;

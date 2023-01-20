@@ -54,7 +54,7 @@ docker build -t ledger-app-builder:latest .
     root@656be163fe84:/app# BOLOS_SDK=$NANOSP_SDK make
 
 5. Load app
-* To load application on Ledger see this [guide](https://developers.ledger.com/docs/nano-app/load/)
+* To load application on Ledger see guide for [linux](https://developers.ledger.com/docs/embedded-app/load-linux/) or [macos](https://developers.ledger.com/docs/embedded-app/load-mac/).
 
 ## Example of Ledger wallet functionality
 

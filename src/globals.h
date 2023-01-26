@@ -13,6 +13,7 @@
 
 #define PUBLIC_KEY_LENGTH 32
 #define ADDRESS_LENGTH 32
+#define TRANSACTION_ID_LENGTH 8
 #define BIP32_PATH 5
 #define AMOUNT_LENGHT 16
 #define TO_SIGN_LENGTH 32
@@ -66,6 +67,7 @@ typedef struct SignTransactionContext_t {
     uint8_t signature[SIGNATURE_LENGTH];
     char address_str[70];
     char amount_str[40];
+    char transaction_id_str[20];
     uint32_t account_number;
     uint8_t origin_wallet_type;
     uint8_t current_wallet_type;

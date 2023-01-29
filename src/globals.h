@@ -17,6 +17,8 @@
 #define BIP32_PATH 5
 #define AMOUNT_LENGHT 16
 #define TO_SIGN_LENGTH 32
+#define TO_SIGN_WITH_CHAIN_ID_LENGTH 36
+#define CHAIN_ID_LENGTH 4
 #define SIGNATURE_LENGTH 64
 #define MAX_AMOUNT_LENGTH 0x10
 #define HASH_SIZE 32
@@ -56,14 +58,20 @@ typedef struct PublicKeyContext_t {
 } PublicKeyContext_t;
 
 typedef struct SignContext_t {
+    bool sign_with_chain_id;
+    uint8_t chain_id[CHAIN_ID_LENGTH];
     uint8_t to_sign[TO_SIGN_LENGTH];
+    uint8_t to_sign_with_chain_id[TO_SIGN_WITH_CHAIN_ID_LENGTH];
     uint8_t signature[SIGNATURE_LENGTH];
     uint32_t account_number;
-    char to_sign_str[65];
+    char to_sign_str[73];
 } SignContext_t;
 
 typedef struct SignTransactionContext_t {
+    bool sign_with_chain_id;
+    uint8_t chain_id[CHAIN_ID_LENGTH];
     uint8_t to_sign[TO_SIGN_LENGTH];
+    uint8_t to_sign_with_chain_id[TO_SIGN_WITH_CHAIN_ID_LENGTH];
     uint8_t signature[SIGNATURE_LENGTH];
     char address_str[70];
     char amount_str[40];

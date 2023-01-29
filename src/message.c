@@ -325,7 +325,12 @@ void prepare_payload_hash(BocContext_t* bc) {
         calc_cell_hash(cell, i);
     }
 
-    memcpy(data_context.sign_tr_context.to_sign, &bc->hashes[ROOT_CELL_INDEX * HASH_SIZE], TO_SIGN_LENGTH);
+    if (data_context.sign_tr_context.sign_with_chain_id) {
+        memcpy(data_context.sign_tr_context.to_sign_with_chain_id, data_context.sign_tr_context.chain_id, CHAIN_ID_LENGTH);
+        memcpy(data_context.sign_tr_context.to_sign_with_chain_id + CHAIN_ID_LENGTH, &bc->hashes[ROOT_CELL_INDEX * HASH_SIZE], TO_SIGN_LENGTH);
+    } else {
+        memcpy(data_context.sign_tr_context.to_sign, &bc->hashes[ROOT_CELL_INDEX * HASH_SIZE], TO_SIGN_LENGTH);
+    }
 }
 
 uint32_t deserialize_wallet_v3(struct SliceData_t* slice) {

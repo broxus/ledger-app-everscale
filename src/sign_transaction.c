@@ -12,7 +12,11 @@ static uint8_t set_result_sign_transaction() {
     BEGIN_TRY {
         TRY {
             get_private_key(context->account_number, &privateKey);
-            cx_eddsa_sign(&privateKey, CX_LAST, CX_SHA512, context->to_sign, TO_SIGN_LENGTH, NULL, 0, context->signature, SIGNATURE_LENGTH, NULL);
+            if (!context->sign_with_chain_id) {
+                cx_eddsa_sign(&privateKey, CX_LAST, CX_SHA512, context->to_sign, TO_SIGN_LENGTH, NULL, 0, context->signature, SIGNATURE_LENGTH, NULL);
+            } else {
+                cx_eddsa_sign(&privateKey, CX_LAST, CX_SHA512, context->to_sign_with_chain_id, TO_SIGN_WITH_CHAIN_ID_LENGTH, NULL, 0, context->signature, SIGNATURE_LENGTH, NULL);
+            }
         } FINALLY {
             memset(&privateKey, 0, sizeof(privateKey));
         }
@@ -148,9 +152,6 @@ void handleSignTransaction(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t
     context->origin_wallet_type = dataBuffer[offset];
     offset += sizeof(context->origin_wallet_type);
 
-    context->current_wallet_type = dataBuffer[offset];
-    offset += sizeof(context->current_wallet_type);
-
     context->decimals = dataBuffer[offset];
     offset += sizeof(context->decimals);
 
@@ -162,20 +163,37 @@ void handleSignTransaction(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t
     memcpy(context->ticker, dataBuffer + offset, ticker_len);
     offset += ticker_len;
 
+    uint8_t metadata = dataBuffer[offset];
+    offset += sizeof(metadata);
+
+    // Read wallet type if present
+    if (metadata & 0x01) {
+        context->current_wallet_type = dataBuffer[offset];
+        offset += sizeof(context->current_wallet_type);
+    } else {
+        context->current_wallet_type = context->origin_wallet_type;
+    }
+
     // Get address
     uint8_t address[ADDRESS_LENGTH];
     get_address(context->account_number, context->origin_wallet_type, address);
     memset(&boc_context, 0, sizeof(boc_context));
 
-    uint8_t address_present = dataBuffer[offset];
-    offset += sizeof(address_present);
-
+    // Read initial address if present
     uint8_t prepend_address[ADDRESS_LENGTH];
-    if (address_present) {
+    if (metadata & 0x02) {
         memcpy(prepend_address, dataBuffer + offset, ADDRESS_LENGTH);
         offset += sizeof(address);
     } else {
         memcpy(prepend_address, address, ADDRESS_LENGTH);
+    }
+
+    // Read chain id if present
+    if (metadata & 0x04) {
+        context->sign_with_chain_id = true;
+
+        memcpy(context->chain_id, dataBuffer + offset, CHAIN_ID_LENGTH);
+        offset += sizeof(context->chain_id);
     }
 
     uint8_t* msg_begin = dataBuffer + offset;

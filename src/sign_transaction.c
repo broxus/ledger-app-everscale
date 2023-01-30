@@ -15,7 +15,7 @@ static uint8_t set_result_sign_transaction() {
             if (!context->sign_with_chain_id) {
                 cx_eddsa_sign(&privateKey, CX_LAST, CX_SHA512, context->to_sign, TO_SIGN_LENGTH, NULL, 0, context->signature, SIGNATURE_LENGTH, NULL);
             } else {
-                cx_eddsa_sign(&privateKey, CX_LAST, CX_SHA512, context->to_sign_with_chain_id, TO_SIGN_WITH_CHAIN_ID_LENGTH, NULL, 0, context->signature, SIGNATURE_LENGTH, NULL);
+                cx_eddsa_sign(&privateKey, CX_LAST, CX_SHA512, context->to_sign, CHAIN_ID_LENGTH + TO_SIGN_LENGTH, NULL, 0, context->signature, SIGNATURE_LENGTH, NULL);
             }
         } FINALLY {
             memset(&privateKey, 0, sizeof(privateKey));
@@ -167,7 +167,7 @@ void handleSignTransaction(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t
     offset += sizeof(metadata);
 
     // Read wallet type if present
-    if (metadata & 0x01) {
+    if (metadata & FLAG_WITH_WALLET_ID) {
         context->current_wallet_type = dataBuffer[offset];
         offset += sizeof(context->current_wallet_type);
     } else {
@@ -181,7 +181,7 @@ void handleSignTransaction(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t
 
     // Read initial address if present
     uint8_t prepend_address[ADDRESS_LENGTH];
-    if (metadata & 0x02) {
+    if (metadata & FLAG_WITH_ADDR) {
         memcpy(prepend_address, dataBuffer + offset, ADDRESS_LENGTH);
         offset += sizeof(address);
     } else {
@@ -189,7 +189,7 @@ void handleSignTransaction(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t
     }
 
     // Read chain id if present
-    if (metadata & 0x04) {
+    if (metadata & FLAG_WITH_CHAIN_ID) {
         context->sign_with_chain_id = true;
 
         memcpy(context->chain_id, dataBuffer + offset, CHAIN_ID_LENGTH);

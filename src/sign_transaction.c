@@ -201,6 +201,8 @@ void handleSignTransaction(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t
 
         memcpy(context->chain_id, dataBuffer + offset, CHAIN_ID_LENGTH);
         offset += sizeof(context->chain_id);
+    } else {
+        context->sign_with_chain_id = false;
     }
 
     uint8_t* msg_begin = dataBuffer + offset;

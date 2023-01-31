@@ -64,7 +64,7 @@ typedef struct PublicKeyContext_t {
 typedef struct SignContext_t {
     bool sign_with_chain_id;
     uint8_t chain_id[CHAIN_ID_LENGTH];
-    uint8_t to_sign[TO_SIGN_LENGTH];
+    uint8_t to_sign[CHAIN_ID_LENGTH + TO_SIGN_LENGTH];
     uint8_t signature[SIGNATURE_LENGTH];
     uint32_t account_number;
     char to_sign_str[73];
@@ -73,7 +73,7 @@ typedef struct SignContext_t {
 typedef struct SignTransactionContext_t {
     bool sign_with_chain_id;
     uint8_t chain_id[CHAIN_ID_LENGTH];
-    uint8_t to_sign[TO_SIGN_LENGTH];
+    uint8_t to_sign[CHAIN_ID_LENGTH + TO_SIGN_LENGTH];
     uint8_t signature[SIGNATURE_LENGTH];
     char address_str[70];
     char amount_str[40];

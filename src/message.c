@@ -386,7 +386,7 @@ void prepend_address_to_cell(uint8_t* cell_buffer, uint16_t cell_buffer_size, st
 
     // Append workchain
     uint8_t wc_buf[] = { wc };
-    SliceData_append(&slice, gwc_buf, 8, false);
+    SliceData_append(&slice, wc_buf, 8, false);
 
     // Append address
     SliceData_append(&slice, address, ADDRESS_LENGTH * 8, false);

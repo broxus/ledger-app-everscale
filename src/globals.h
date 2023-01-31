@@ -36,7 +36,7 @@
 
 #define FLAG_WITH_WALLET_ID 0x01
 #define FLAG_WITH_WORKCHAIN_ID 0x02
-#define FLAG_WITH_ADDRESS_HEX 0x04
+#define FLAG_WITH_ADDRESS 0x04
 #define FLAG_WITH_CHAIN_ID 0x08
 
 void reset_app_context(void);

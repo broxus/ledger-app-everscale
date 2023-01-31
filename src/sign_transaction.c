@@ -188,7 +188,7 @@ void handleSignTransaction(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t
 
     // Read initial address if present
     uint8_t prepend_address[ADDRESS_LENGTH];
-    if (metadata & FLAG_WITH_ADDRESS_HEX) {
+    if (metadata & FLAG_WITH_ADDRESS) {
         memcpy(prepend_address, dataBuffer + offset, ADDRESS_LENGTH);
         offset += sizeof(address);
     } else {

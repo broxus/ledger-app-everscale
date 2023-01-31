@@ -179,9 +179,16 @@ void handleSignTransaction(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t
     get_address(context->account_number, context->origin_wallet_type, address);
     memset(&boc_context, 0, sizeof(boc_context));
 
+    // Read wc if present
+    uint8_t wc = DEFAULT_WORKCHAIN_ID;
+    if (metadata & FLAG_WITH_WORKCHAIN_ID) {
+        wc = dataBuffer[offset];
+        offset += sizeof(wc);
+    }
+
     // Read initial address if present
     uint8_t prepend_address[ADDRESS_LENGTH];
-    if (metadata & FLAG_WITH_ADDR) {
+    if (metadata & FLAG_WITH_ADDRESS_HEX) {
         memcpy(prepend_address, dataBuffer + offset, ADDRESS_LENGTH);
         offset += sizeof(address);
     } else {
@@ -202,7 +209,7 @@ void handleSignTransaction(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t
     ByteStream_t src;
     ByteStream_init(&src, msg_begin, msg_length);
 
-    int flow = prepare_to_sign(&src, address, prepend_address);
+    int flow = prepare_to_sign(&src, wc, address, prepend_address);
 
     switch (flow) {
         case SIGN_TRANSACTION_FLOW_TRANSFER:

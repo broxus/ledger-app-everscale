@@ -142,8 +142,9 @@ _This command signs a transaction message_
 | Ticker                                                                         | variable |
 | Metadata                                                                       |    1     |
 | Current wallet number to parse transaction abi (Optional: metadata b'00000001) |    1     |
-| Deploy contract address (Optional: metadata b'00000010)                        |    32    |
-| Chain ID (Optional: metadata b'00000100)                                       |    4     |
+| Workchain ID (Optional: metadata b'00000010)                                   |    1     |
+| Deploy contract address (Optional: metadata b'00000100)                        |    32    |
+| Chain ID (Optional: metadata b'00001000)                                       |    4     |
 | Serialized transaction                                                         | variable |
 
 ##### Output data

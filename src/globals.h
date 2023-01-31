@@ -35,8 +35,9 @@
 #define MAX_PUBLIC_KEY_CELL_DATA_SIZE 36 // label(3) + public key(32) + tag(1)
 
 #define FLAG_WITH_WALLET_ID 0x01
-#define FLAG_WITH_ADDR 0x02
-#define FLAG_WITH_CHAIN_ID 0x04
+#define FLAG_WITH_WORKCHAIN_ID 0x02
+#define FLAG_WITH_ADDRESS_HEX 0x04
+#define FLAG_WITH_CHAIN_ID 0x08
 
 void reset_app_context(void);
 

@@ -474,11 +474,17 @@ int prepare_to_sign(struct ByteStream_t* src, uint8_t wc, uint8_t* address, uint
             // Header
             uint32_t function_id = deserialize_contract_header(&root_slice);
 
+            bool in_same_cell = function_id == MULTISIG_CONFIRM_TRANSACTION;
+
             // Gift
-            Cell_t* gift_cell = function_id == MULTISIG_CONFIRM_TRANSACTION ? root_cell : &bc->cells[GIFT_CELL_INDEX];
+            Cell_t* gift_cell = in_same_cell ? root_cell : &bc->cells[GIFT_CELL_INDEX];
 
             SliceData_t gift_slice;
-            SliceData_from_cell(&gift_slice, gift_cell);
+            if (in_same_cell) {
+                gift_slice = root_slice;
+            } else {
+                SliceData_from_cell(&gift_slice, gift_cell);
+            }
 
             sign_transaction_flow = deserialize_multisig_params(&gift_slice, function_id, wc, address, &dc->sign_tr_context);
 

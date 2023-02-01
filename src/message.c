@@ -58,7 +58,7 @@ void deserialize_value(struct SliceData_t* slice, uint8_t* value, uint8_t value_
 
 void set_dst_address(uint8_t wc, const uint8_t* address) {
     char wc_temp[6]; // snprintf always returns zero
-    snprintf(wc_temp, sizeof(wc_temp), "%d:", wc);
+    snprintf(wc_temp, sizeof(wc_temp), "%d:", (int8_t)wc);
     int wc_len = strlen(wc_temp);
 
     char* address_str = data_context.sign_tr_context.address_str;

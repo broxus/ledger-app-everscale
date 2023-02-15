@@ -17,6 +17,7 @@
 #define BIP32_PATH 5
 #define AMOUNT_LENGHT 16
 #define TO_SIGN_LENGTH 32
+#define CHAIN_ID_LENGTH 4
 #define SIGNATURE_LENGTH 64
 #define MAX_AMOUNT_LENGTH 0x10
 #define HASH_SIZE 32
@@ -32,6 +33,11 @@
 #define MAX_CONTRACT_CELLS_COUNT 7
 #define HASHES_BUFFER_SIZE (MAX_CONTRACT_CELLS_COUNT * HASH_SIZE)
 #define MAX_PUBLIC_KEY_CELL_DATA_SIZE 36 // label(3) + public key(32) + tag(1)
+
+#define FLAG_WITH_WALLET_ID 0x01
+#define FLAG_WITH_WORKCHAIN_ID 0x02
+#define FLAG_WITH_ADDRESS 0x04
+#define FLAG_WITH_CHAIN_ID 0x08
 
 void reset_app_context(void);
 
@@ -56,14 +62,18 @@ typedef struct PublicKeyContext_t {
 } PublicKeyContext_t;
 
 typedef struct SignContext_t {
-    uint8_t to_sign[TO_SIGN_LENGTH];
+    bool sign_with_chain_id;
+    uint8_t chain_id[CHAIN_ID_LENGTH];
+    uint8_t to_sign[CHAIN_ID_LENGTH + TO_SIGN_LENGTH];
     uint8_t signature[SIGNATURE_LENGTH];
     uint32_t account_number;
-    char to_sign_str[65];
+    char to_sign_str[73];
 } SignContext_t;
 
 typedef struct SignTransactionContext_t {
-    uint8_t to_sign[TO_SIGN_LENGTH];
+    bool sign_with_chain_id;
+    uint8_t chain_id[CHAIN_ID_LENGTH];
+    uint8_t to_sign[CHAIN_ID_LENGTH + TO_SIGN_LENGTH];
     uint8_t signature[SIGNATURE_LENGTH];
     char address_str[70];
     char amount_str[40];

@@ -58,7 +58,7 @@ void deserialize_value(struct SliceData_t* slice, uint8_t* value, uint8_t value_
 
 void set_dst_address(uint8_t wc, const uint8_t* address) {
     char wc_temp[6]; // snprintf always returns zero
-    snprintf(wc_temp, sizeof(wc_temp), "%d:", wc);
+    snprintf(wc_temp, sizeof(wc_temp), "%d:", (int8_t)wc);
     int wc_len = strlen(wc_temp);
 
     char* address_str = data_context.sign_tr_context.address_str;
@@ -228,14 +228,14 @@ int deserialize_token_body(struct SliceData_t* slice, struct SliceData_t* ref_sl
     return sign_transaction_flow;
 }
 
-int deserialize_multisig_params(struct SliceData_t* slice, uint32_t function_id, uint8_t* address, SignTransactionContext_t* ctx) {
+int deserialize_multisig_params(struct SliceData_t* slice, uint32_t function_id, uint8_t wc, uint8_t* address, SignTransactionContext_t* ctx) {
     int sign_transaction_flow = SIGN_TRANSACTION_FLOW_ERROR;
 
     switch (function_id) {
         case MULTISIG_DEPLOY_TRANSACTION:
         case MULTISIG2_DEPLOY_TRANSACTION: {
             // Address to deploy
-            set_dst_address(DEFAULT_WORKCHAIN, address);
+            set_dst_address(wc, address);
 
             // Set ux sign flow
             sign_transaction_flow = SIGN_TRANSACTION_FLOW_DEPLOY;
@@ -325,7 +325,12 @@ void prepare_payload_hash(BocContext_t* bc) {
         calc_cell_hash(cell, i);
     }
 
-    memcpy(data_context.sign_tr_context.to_sign, &bc->hashes[ROOT_CELL_INDEX * HASH_SIZE], TO_SIGN_LENGTH);
+    if (!data_context.sign_tr_context.sign_with_chain_id) {
+        memcpy(data_context.sign_tr_context.to_sign, &bc->hashes[ROOT_CELL_INDEX * HASH_SIZE], TO_SIGN_LENGTH);
+    } else {
+        memcpy(data_context.sign_tr_context.to_sign, data_context.sign_tr_context.chain_id, CHAIN_ID_LENGTH);
+        memcpy(data_context.sign_tr_context.to_sign + CHAIN_ID_LENGTH, &bc->hashes[ROOT_CELL_INDEX * HASH_SIZE], TO_SIGN_LENGTH);
+    }
 }
 
 uint32_t deserialize_wallet_v3(struct SliceData_t* slice) {
@@ -362,7 +367,7 @@ uint32_t deserialize_contract_header(struct SliceData_t* slice) {
     return function_id;
 }
 
-void prepend_address_to_cell(uint8_t* cell_buffer, uint16_t cell_buffer_size, struct Cell_t* cell, uint8_t* address) {
+void prepend_address_to_cell(uint8_t* cell_buffer, uint16_t cell_buffer_size, struct Cell_t* cell, uint8_t wc, uint8_t* address) {
     uint16_t bit_len = Cell_bit_len(cell);
     bit_len += 267; // Prefix(2) + Anycast(1) + WorkchainId(8) + Address(32 * 8)
 
@@ -380,8 +385,8 @@ void prepend_address_to_cell(uint8_t* cell_buffer, uint16_t cell_buffer_size, st
     SliceData_append(&slice, prefix, 3, false);
 
     // Append workchain
-    uint8_t wc[] = { 0x00 };
-    SliceData_append(&slice, wc, 8, false);
+    uint8_t wc_buf[] = { wc };
+    SliceData_append(&slice, wc_buf, 8, false);
 
     // Append address
     SliceData_append(&slice, address, ADDRESS_LENGTH * 8, false);
@@ -405,7 +410,7 @@ void prepend_address_to_cell(uint8_t* cell_buffer, uint16_t cell_buffer_size, st
     cell->cell_begin = cell_buffer;
 }
 
-int prepare_to_sign(struct ByteStream_t* src, uint8_t* address, uint8_t* prepend_address) {
+int prepare_to_sign(struct ByteStream_t* src, uint8_t wc, uint8_t* address, uint8_t* prepend_address) {
     // Init context
     BocContext_t* bc = &boc_context;
     DataContext_t* dc = &data_context;
@@ -469,13 +474,19 @@ int prepare_to_sign(struct ByteStream_t* src, uint8_t* address, uint8_t* prepend
             // Header
             uint32_t function_id = deserialize_contract_header(&root_slice);
 
+            bool in_same_cell = function_id == MULTISIG_CONFIRM_TRANSACTION;
+
             // Gift
-            Cell_t* gift_cell = function_id == MULTISIG_CONFIRM_TRANSACTION ? root_cell : &bc->cells[GIFT_CELL_INDEX];
+            Cell_t* gift_cell = in_same_cell ? root_cell : &bc->cells[GIFT_CELL_INDEX];
 
             SliceData_t gift_slice;
-            SliceData_from_cell(&gift_slice, gift_cell);
+            if (in_same_cell) {
+                gift_slice = root_slice;
+            } else {
+                SliceData_from_cell(&gift_slice, gift_cell);
+            }
 
-            sign_transaction_flow = deserialize_multisig_params(&gift_slice, function_id, address, &dc->sign_tr_context);
+            sign_transaction_flow = deserialize_multisig_params(&gift_slice, function_id, wc, address, &dc->sign_tr_context);
 
             uint8_t gift_refs_count;
             Cell_get_refs(gift_cell, &gift_refs_count);
@@ -511,7 +522,7 @@ int prepare_to_sign(struct ByteStream_t* src, uint8_t* address, uint8_t* prepend
             SliceData_t gift_slice;
             SliceData_from_cell(&gift_slice, gift_cell);
 
-            sign_transaction_flow = deserialize_multisig_params(&gift_slice, function_id, address, &dc->sign_tr_context);
+            sign_transaction_flow = deserialize_multisig_params(&gift_slice, function_id, wc, address, &dc->sign_tr_context);
 
             uint8_t gift_refs_count;
             Cell_get_refs(gift_cell, &gift_refs_count);
@@ -531,7 +542,7 @@ int prepare_to_sign(struct ByteStream_t* src, uint8_t* address, uint8_t* prepend
 
             // Prepend address to root cell
             uint8_t cell_buffer[130]; // d1(1) + d2(1) + data(128)
-            prepend_address_to_cell(cell_buffer, sizeof(cell_buffer), root_cell, prepend_address);
+            prepend_address_to_cell(cell_buffer, sizeof(cell_buffer), root_cell, wc, prepend_address);
 
             // Calculate payload hash to sign
             prepare_payload_hash(bc);

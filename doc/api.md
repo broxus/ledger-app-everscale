@@ -79,10 +79,12 @@ _This command signs a message_
 
 ##### Input data
 
-| _Description_                 | _Length_ |
-|-------------------------------|:--------:|
-| An account number to retrieve |    4     |
-| A bytes to sign               |    32    |
+| _Description_                              | _Length_ |
+|--------------------------------------------|:--------:|
+| An account number to retrieve              |    4     |
+| Metadata                                   |    1     |
+| Chain ID (Optional: metadata b'00000100)   |    4     |
+| A bytes to sign                            |    32    |
 
 ##### Output data
 
@@ -131,15 +133,19 @@ _This command signs a transaction message_
 
 ##### Input data
 
-| _Description_                                                | _Length_ |
-|--------------------------------------------------------------|:--------:|
-| An account number to retrieve                                |    4     |
-| Original wallet number to retrieve (to derive address)       |    1     |
-| Current wallet number to retrieve (to parse transaction abi) |    1     |
-| Decimals                                                     |    1     |
-| Ticker length                                                |    1     |
-| Ticker                                                       | variable |
-| Serialized transaction                                       | variable |
+| _Description_                                                                  | _Length_ |
+|--------------------------------------------------------------------------------|:--------:|
+| An account number to retrieve                                                  |    4     |
+| Original wallet number to derive address                                       |    1     |
+| Decimals                                                                       |    1     |
+| Ticker length                                                                  |    1     |
+| Ticker                                                                         | variable |
+| Metadata                                                                       |    1     |
+| Current wallet number to parse transaction abi (Optional: metadata b'00000001) |    1     |
+| Workchain ID (Optional: metadata b'00000010)                                   |    1     |
+| Deploy contract address (Optional: metadata b'00000100)                        |    32    |
+| Chain ID (Optional: metadata b'00001000)                                       |    4     |
+| Serialized transaction                                                         | variable |
 
 ##### Output data
 

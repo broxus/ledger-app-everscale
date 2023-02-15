@@ -9,7 +9,11 @@ static uint8_t set_result_sign() {
     BEGIN_TRY {
         TRY {
             get_private_key(context->account_number, &privateKey);
-            cx_eddsa_sign(&privateKey, CX_LAST, CX_SHA512, context->to_sign, TO_SIGN_LENGTH, NULL, 0, context->signature, SIGNATURE_LENGTH, NULL);
+            if (!context->sign_with_chain_id) {
+                cx_eddsa_sign(&privateKey, CX_LAST, CX_SHA512, context->to_sign, TO_SIGN_LENGTH, NULL, 0, context->signature, SIGNATURE_LENGTH, NULL);
+            } else {
+                cx_eddsa_sign(&privateKey, CX_LAST, CX_SHA512, context->to_sign, CHAIN_ID_LENGTH + TO_SIGN_LENGTH, NULL, 0, context->signature, SIGNATURE_LENGTH, NULL);
+            }
         } FINALLY {
             memset(&privateKey, 0, sizeof(privateKey));
         }
@@ -69,11 +73,31 @@ void handleSign(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t dataLength
 
     VALIDATE(p1 == P1_CONFIRM && p2 == 0, ERR_INVALID_REQUEST);
     SignContext_t* context = &data_context.sign_context;
-    VALIDATE(dataLength == (sizeof(context->account_number) + sizeof(context->to_sign)), ERR_INVALID_REQUEST);
 
-    context->account_number = readUint32BE(dataBuffer);
-    memcpy(context->to_sign, dataBuffer + sizeof(context->account_number), TO_SIGN_LENGTH);
-    snprintf(context->to_sign_str, sizeof(context->to_sign_str), "%.*H", sizeof(context->to_sign), context->to_sign);
+    size_t offset = 0;
+
+    context->account_number = readUint32BE(dataBuffer + offset);
+    offset += sizeof(context->account_number);
+
+    uint8_t metadata = dataBuffer[offset];
+    offset += sizeof(metadata);
+
+    // Read chain id if present
+    if (metadata & FLAG_WITH_CHAIN_ID) {
+        context->sign_with_chain_id = true;
+
+        memcpy(context->chain_id, dataBuffer + offset, CHAIN_ID_LENGTH);
+        offset += sizeof(context->chain_id);
+    }
+
+    if (!context->sign_with_chain_id) {
+        memcpy(context->to_sign, dataBuffer + offset, TO_SIGN_LENGTH);
+        snprintf(context->to_sign_str, sizeof(context->to_sign_str), "%.*H", TO_SIGN_LENGTH, context->to_sign);
+    } else {
+        memcpy(context->to_sign, context->chain_id, CHAIN_ID_LENGTH);
+        memcpy(context->to_sign + CHAIN_ID_LENGTH, dataBuffer + offset, TO_SIGN_LENGTH);
+        snprintf(context->to_sign_str, sizeof(context->to_sign_str), "%.*H", CHAIN_ID_LENGTH + TO_SIGN_LENGTH, context->to_sign);
+    }
 
     ux_flow_init(0, ux_sign_flow, NULL);
     *flags |= IO_ASYNCH_REPLY;

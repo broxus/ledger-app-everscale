@@ -1,3 +1,9 @@
+<p align="center">
+  <a href="https://github.com/venom-blockchain/developer-program">
+    <img src="https://raw.githubusercontent.com/venom-blockchain/developer-program/main/vf-dev-program.png" alt="Logo" width="366.8" height="146.4">
+  </a>
+</p>
+
 ![Build Status](https://github.com/broxus/ledger-app-everscale/actions/workflows/ci.yml/badge.svg?branch=master)
 
 # Everscale app for Ledger Wallet

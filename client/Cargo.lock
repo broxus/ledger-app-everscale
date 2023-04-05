@@ -465,14 +465,15 @@ dependencies = [
 
 [[package]]
 name = "everscale-jrpc-client"
-version = "0.1.1"
-source = "git+https://github.com/broxus/everscale-jrpc.git#818acdcb2a32ac5bcffa3ccbea998258249aebf8"
+version = "0.5.0"
+source = "git+https://github.com/broxus/everscale-jrpc.git#8d1fe4e34556da74dd411c4c7913edd0db6e5e5d"
 dependencies = [
  "anyhow",
  "base64",
  "everscale-jrpc-models",
  "futures",
- "log",
+ "hex",
+ "itertools",
  "nekoton",
  "nekoton-abi",
  "nekoton-utils",
@@ -487,12 +488,13 @@ dependencies = [
  "ton_block",
  "ton_executor",
  "ton_types",
+ "tracing",
 ]
 
 [[package]]
 name = "everscale-jrpc-models"
 version = "0.1.0"
-source = "git+https://github.com/broxus/everscale-jrpc.git#818acdcb2a32ac5bcffa3ccbea998258249aebf8"
+source = "git+https://github.com/broxus/everscale-jrpc.git#8d1fe4e34556da74dd411c4c7913edd0db6e5e5d"
 dependencies = [
  "nekoton-abi",
  "nekoton-utils",
@@ -503,7 +505,7 @@ dependencies = [
 [[package]]
 name = "everscale-ledger-wallet"
 version = "0.1.0"
-source = "git+https://github.com/broxus/everscale-ledger-wallet.git#5dbbda2813f5bb501ea2fd486209f4d9d04ec1cc"
+source = "git+https://github.com/broxus/everscale-ledger-wallet.git#1cc344d6d13818905d01869df6498a85f78560bd"
 dependencies = [
  "anyhow",
  "console",
@@ -731,9 +733,9 @@ checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 
 [[package]]
 name = "hidapi"
-version = "1.5.0"
+version = "2.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "798154e4b6570af74899d71155fb0072d5b17e6aa12f39c8ef22c60fb8ec99e7"
+checksum = "7461dc5aae7f2f360289bae7d169690e51c182d4b5a56adeb8c7f312965f0411"
 dependencies = [
  "cc",
  "libc",
@@ -886,6 +888,15 @@ name = "ipnet"
 version = "2.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f88c5561171189e69df9d98bcf18fd5f9558300f7ea7b801eb8a0fd748bd8745"
+
+[[package]]
+name = "itertools"
+version = "0.10.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b0fd2260e829bddf4cb6ea802289de2f86d6a7a690192fbe91b3f46e0f2c8473"
+dependencies = [
+ "either",
+]
 
 [[package]]
 name = "itoa"
@@ -1046,7 +1057,7 @@ dependencies = [
 [[package]]
 name = "nekoton"
 version = "0.11.0"
-source = "git+https://github.com/broxus/nekoton.git#8fe5c4fdfc23807d51b4f715e24cde86449b7dfc"
+source = "git+https://github.com/broxus/nekoton.git#6e47c73f300e19d58542da4fe067170140eeab0b"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1088,7 +1099,7 @@ dependencies = [
 [[package]]
 name = "nekoton-abi"
 version = "0.11.0"
-source = "git+https://github.com/broxus/nekoton.git#8fe5c4fdfc23807d51b4f715e24cde86449b7dfc"
+source = "git+https://github.com/broxus/nekoton.git#6e47c73f300e19d58542da4fe067170140eeab0b"
 dependencies = [
  "anyhow",
  "base64",
@@ -1114,7 +1125,7 @@ dependencies = [
 [[package]]
 name = "nekoton-contracts"
 version = "0.11.0"
-source = "git+https://github.com/broxus/nekoton.git#8fe5c4fdfc23807d51b4f715e24cde86449b7dfc"
+source = "git+https://github.com/broxus/nekoton.git#6e47c73f300e19d58542da4fe067170140eeab0b"
 dependencies = [
  "anyhow",
  "nekoton-abi",
@@ -1128,7 +1139,7 @@ dependencies = [
 [[package]]
 name = "nekoton-derive"
 version = "0.11.0"
-source = "git+https://github.com/broxus/nekoton.git#8fe5c4fdfc23807d51b4f715e24cde86449b7dfc"
+source = "git+https://github.com/broxus/nekoton.git#6e47c73f300e19d58542da4fe067170140eeab0b"
 dependencies = [
  "either",
  "proc-macro2",
@@ -1139,7 +1150,7 @@ dependencies = [
 [[package]]
 name = "nekoton-utils"
 version = "0.11.0"
-source = "git+https://github.com/broxus/nekoton.git#8fe5c4fdfc23807d51b4f715e24cde86449b7dfc"
+source = "git+https://github.com/broxus/nekoton.git#6e47c73f300e19d58542da4fe067170140eeab0b"
 dependencies = [
  "anyhow",
  "base64",
@@ -1915,7 +1926,7 @@ dependencies = [
 [[package]]
 name = "ton_abi"
 version = "2.1.0"
-source = "git+https://github.com/broxus/ton-labs-abi#5429246f11bdb794910c295a5aab4318accdd894"
+source = "git+https://github.com/broxus/ton-labs-abi#7c0c82f65d94e6fff8ea5822808cbc0ffeb1d0d7"
 dependencies = [
  "anyhow",
  "base64",
@@ -2025,8 +2036,21 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8ce8c33a8d48bd45d624a6e523445fd21ec13d3653cd51f681abf67418f54eb8"
 dependencies = [
  "cfg-if",
+ "log",
  "pin-project-lite",
+ "tracing-attributes",
  "tracing-core",
+]
+
+[[package]]
+name = "tracing-attributes"
+version = "0.1.23"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4017f8f45139870ca7e672686113917c71c7a6e02d4924eda67186083c03081a"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
 ]
 
 [[package]]

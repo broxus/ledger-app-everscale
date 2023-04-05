@@ -576,9 +576,11 @@ async fn main() -> anyhow::Result<()> {
                         let signature = ledger.sign_transaction(
                             account,
                             wallet_type,
-                            wallet_type,
                             EVER_DECIMALS,
                             EVER_TICKER,
+                            None,
+                            None,
+                            None,
                             &boc,
                         )?;
 
@@ -614,9 +616,11 @@ async fn main() -> anyhow::Result<()> {
                         let signature = ledger.sign_transaction(
                             account,
                             wallet_type,
-                            wallet_type,
                             EVER_DECIMALS,
                             EVER_TICKER,
+                            None,
+                            None,
+                            None,
                             &boc,
                         )?;
 
@@ -662,9 +666,11 @@ async fn main() -> anyhow::Result<()> {
                         let signature = ledger.sign_transaction(
                             account,
                             wallet_type,
-                            wallet_type,
                             EVER_DECIMALS,
                             EVER_TICKER,
+                            None,
+                            None,
+                            None,
                             &boc,
                         )?;
 
@@ -824,9 +830,11 @@ async fn main() -> anyhow::Result<()> {
                             let signature = ledger.sign_transaction(
                                 account,
                                 wallet_type,
-                                wallet_type,
                                 token_details.decimals,
                                 token_details.ticker,
+                                None,
+                                None,
+                                None,
                                 &boc,
                             )?;
 
@@ -862,9 +870,11 @@ async fn main() -> anyhow::Result<()> {
                             let signature = ledger.sign_transaction(
                                 account,
                                 wallet_type,
-                                wallet_type,
                                 token_details.decimals,
                                 token_details.ticker,
+                                None,
+                                None,
+                                None,
                                 &boc,
                             )?;
 
@@ -912,9 +922,11 @@ async fn main() -> anyhow::Result<()> {
                             let signature = ledger.sign_transaction(
                                 account,
                                 wallet_type,
-                                wallet_type,
                                 token_details.decimals,
                                 token_details.ticker,
+                                None,
+                                None,
+                                None,
                                 &boc,
                             )?;
 
@@ -997,9 +1009,11 @@ async fn main() -> anyhow::Result<()> {
                         let signature = ledger.sign_transaction(
                             account,
                             wallet_type,
-                            wallet_type,
                             EVER_DECIMALS,
                             EVER_TICKER,
+                            None,
+                            None,
+                            None,
                             &boc,
                         )?;
 

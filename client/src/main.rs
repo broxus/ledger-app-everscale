@@ -94,6 +94,10 @@ enum SubCommand {
         #[arg(long)]
         /// Destination address
         address: String,
+
+        #[arg(long)]
+        /// Chain ID
+        chain_id: u32,
     },
 
     /// Get balance
@@ -536,6 +540,7 @@ async fn main() -> anyhow::Result<()> {
             wallet,
             amount,
             address,
+            chain_id,
         } => {
             let amount = (Decimal::from_str(&amount)? * Decimal::from(1_000_000_000))
                 .to_u64()
@@ -580,7 +585,7 @@ async fn main() -> anyhow::Result<()> {
                             EVER_TICKER,
                             None,
                             None,
-                            None,
+                            Some(chain_id),
                             &boc,
                         )?;
 
@@ -620,7 +625,7 @@ async fn main() -> anyhow::Result<()> {
                             EVER_TICKER,
                             None,
                             None,
-                            None,
+                            Some(chain_id),
                             &boc,
                         )?;
 
@@ -670,7 +675,7 @@ async fn main() -> anyhow::Result<()> {
                             EVER_TICKER,
                             None,
                             None,
-                            None,
+                            Some(chain_id),
                             &boc,
                         )?;
 

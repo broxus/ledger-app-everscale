@@ -177,13 +177,17 @@ unsigned char io_event(unsigned char channel) {
 
     // can't have more than one tag in the reply, not supported yet.
     switch (G_io_seproxyhal_spi_buffer[0]) {
+#ifdef HAVE_NBGL
         case SEPROXYHAL_TAG_FINGER_EVENT:
             UX_FINGER_EVENT(G_io_seproxyhal_spi_buffer);
             break;
+#endif  // HAVE_NBGL
 
+#ifdef HAVE_BAGL
         case SEPROXYHAL_TAG_BUTTON_PUSH_EVENT:
             UX_BUTTON_PUSH_EVENT(G_io_seproxyhal_spi_buffer);
             break;
+#endif  // HAVE_BAGL
 
         case SEPROXYHAL_TAG_STATUS_EVENT:
             if (G_io_apdu_media == IO_APDU_MEDIA_USB_HID && !(U4BE(G_io_seproxyhal_spi_buffer, 3) & SEPROXYHAL_TAG_STATUS_EVENT_FLAG_USB_POWERED)) {
@@ -195,23 +199,16 @@ unsigned char io_event(unsigned char channel) {
             break;
 
         case SEPROXYHAL_TAG_DISPLAY_PROCESSED_EVENT:
+#ifdef HAVE_BAGL
             UX_DISPLAYED_EVENT({});
+#endif  // HAVE_BAGL
             break;
 
         case SEPROXYHAL_TAG_TICKER_EVENT:
-            UX_TICKER_EVENT(G_io_seproxyhal_spi_buffer,
-            {
-#ifndef TARGET_NANOX
-                if (UX_ALLOWED) {
-                    if (ux_step_count) {
-                    // prepare next screen
-                    ux_step = (ux_step+1)%ux_step_count;
-                    // redisplay screen
-                    UX_REDISPLAY();
-                    }
-                }
-#endif // TARGET_NANOX
-            });
+            UX_TICKER_EVENT(G_io_seproxyhal_spi_buffer, {});
+            break;
+        default:
+            UX_DEFAULT_EVENT();
             break;
     }
 
@@ -283,6 +280,11 @@ __attribute__((section(".boot"))) int main(void) {
             TRY {
                 io_seproxyhal_init();
 
+#ifdef HAVE_BLE
+                // grab the current plane mode setting
+                G_io_app.plane_mode = os_setting_get(OS_SETTING_PLANEMODE, NULL, 0);
+#endif  // HAVE_BLE
+
                 nv_app_state_init();
 
                 USB_power(0);
@@ -292,7 +294,7 @@ __attribute__((section(".boot"))) int main(void) {
 
 #ifdef HAVE_BLE
                 BLE_power(0, NULL);
-                BLE_power(1, "Nano X");
+                BLE_power(1, NULL);
 #endif // HAVE_BLE
 
                 app_main();

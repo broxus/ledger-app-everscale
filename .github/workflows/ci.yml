@@ -23,6 +23,8 @@ jobs:
           name: nanox
         - path: $NANOSP_SDK
           name: nanosp
+        - path: $STAX_SDK
+          name: stax
     steps:
       - uses: actions/checkout@v2
       - name: Build application for SDK ${{ matrix.sdk.name }}

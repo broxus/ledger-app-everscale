@@ -60,11 +60,11 @@ void get_private_key(uint32_t account_number, cx_ecfp_private_key_t *privateKey)
                                      privateKey);
         }
         CATCH_OTHER(e) {
-            explicit_bzero(&privateKey, sizeof(privateKey));
+            explicit_bzero(&privateKeyData, sizeof(privateKeyData));
             THROW(e);
         }
         FINALLY {
-            explicit_bzero(&privateKey, sizeof(privateKey));
+            explicit_bzero(&privateKeyData, sizeof(privateKeyData));
         }
     }
     END_TRY;

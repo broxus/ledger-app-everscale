@@ -68,7 +68,7 @@ UX_FLOW(ux_sign_flow,
     &ux_sign_flow_4_step
 );
 
-void handleSign(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t dataLength, volatile unsigned int *flags, volatile unsigned int *tx) {
+void handleSign(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, __attribute__((unused)) uint16_t dataLength, volatile unsigned int *flags, volatile unsigned int *tx) {
     UNUSED(tx);
 
     VALIDATE(p1 == P1_CONFIRM && p2 == 0, ERR_INVALID_REQUEST);

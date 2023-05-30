@@ -70,25 +70,31 @@ void set_dst_address(uint8_t wc, const uint8_t* address) {
 
 void set_amount(const uint8_t* amount, uint8_t amount_length, uint8_t flags, uint8_t decimals, const char* ticker) {
     char* amount_str = data_context.sign_tr_context.amount_str;
-    memset(amount_str, 0, sizeof(data_context.sign_tr_context.amount_str));
+    size_t amount_str_size = sizeof(data_context.sign_tr_context.amount_str);
+
+    memset(amount_str, 0, amount_str_size);
 
     switch (flags) {
         case NORMAL_FLAG: {
-            uint8_t text_size = convert_hex_amount_to_displayable(amount, decimals, amount_length, amount_str);
-
             const char* space = " ";
+            uint8_t text_size = convert_hex_amount_to_displayable(amount, decimals, amount_length, amount_str);
+            VALIDATE(amount_str_size >= text_size + strlen(space) + strlen(ticker), ERR_INVALID_DATA);
+
             strncpy(amount_str + text_size, space, strlen(space));
             strncpy(amount_str + text_size + strlen(space), ticker, strlen(ticker));
-
             break;
         }
         case ALL_BALANCE_FLAG: {
             const char* text = "All balance";
+            VALIDATE(amount_str_size >= strlen(text), ERR_INVALID_DATA);
+
             strncpy(amount_str, text, strlen(text));
             break;
         }
         case ALL_BALANCE_AND_DELETE_FLAG: {
             const char* text = "All balance and delete account";
+            VALIDATE(amount_str_size >= strlen(text), ERR_INVALID_DATA);
+
             strncpy(amount_str, text, strlen(text));
             break;
         }
@@ -131,9 +137,11 @@ void deserialize_int_message_header(struct SliceData_t* slice, uint8_t flags, Si
 
     // Amount
     uint8_t amount_length = SliceData_get_next_int(slice, 4);
-    uint8_t amount[amount_length];
-    deserialize_value(slice, amount, amount_length);
-    set_amount(amount, amount_length, flags, ctx->decimals, ctx->ticker);
+    VALIDATE(amount_length <= AMOUNT_LENGHT, ERR_INVALID_DATA);
+
+    uint8_t amount[AMOUNT_LENGHT];
+    deserialize_value(slice, amount, sizeof(amount));
+    set_amount(amount, sizeof(amount), flags, ctx->decimals, ctx->ticker);
 
     uint8_t other = SliceData_get_next_bit(slice);
     UNUSED(other);
@@ -251,16 +259,15 @@ int deserialize_multisig_params(struct SliceData_t* slice, uint32_t function_id,
             set_dst_address(dst_wc, dst_address);
 
             // Amount
-            uint8_t amount_length = 16;
-            uint8_t amount[amount_length];
-            deserialize_value(slice, amount, amount_length);
+            uint8_t amount[AMOUNT_LENGHT];
+            deserialize_value(slice, amount, sizeof(amount));
 
             uint8_t bounce = SliceData_get_next_bit(slice);
             UNUSED(bounce);
 
             uint8_t flags = SliceData_get_next_byte(slice);
 
-            set_amount(amount, amount_length, flags, ctx->decimals, ctx->ticker);
+            set_amount(amount, sizeof(amount), flags, ctx->decimals, ctx->ticker);
 
             // Set ux sign flow
             sign_transaction_flow = SIGN_TRANSACTION_FLOW_TRANSFER;
@@ -277,9 +284,8 @@ int deserialize_multisig_params(struct SliceData_t* slice, uint32_t function_id,
             set_dst_address(dst_wc, dst_address);
 
             // Amount
-            uint8_t amount_length = 16;
-            uint8_t amount[amount_length];
-            deserialize_value(slice, amount, amount_length);
+            uint8_t amount[AMOUNT_LENGHT];
+            deserialize_value(slice, amount, sizeof(amount));
 
             uint8_t bounce = SliceData_get_next_bit(slice);
             UNUSED(bounce);
@@ -293,7 +299,7 @@ int deserialize_multisig_params(struct SliceData_t* slice, uint32_t function_id,
                 flags = ALL_BALANCE_FLAG;
             }
 
-            set_amount(amount, amount_length, flags, ctx->decimals, ctx->ticker);
+            set_amount(amount, sizeof(amount), flags, ctx->decimals, ctx->ticker);
 
             // Set ux sign flow
             sign_transaction_flow = SIGN_TRANSACTION_FLOW_TRANSFER;
@@ -400,7 +406,7 @@ void prepend_address_to_cell(uint8_t* cell_buffer, uint16_t cell_buffer_size, st
     uint8_t refs_count = 0;
     uint8_t* refs = Cell_get_refs(cell, &refs_count);
 
-    VALIDATE(refs_count >= 0 && refs_count <= MAX_REFERENCES_COUNT, ERR_INVALID_DATA);
+    VALIDATE(refs_count <= MAX_REFERENCES_COUNT, ERR_INVALID_DATA);
     for (uint8_t child = 0; child < refs_count; ++child) {
         uint8_t cell_data_size = (d2 >> 1) + (((d2 & 1) != 0) ? 1 : 0);
         cell_buffer[CELL_DATA_OFFSET + cell_data_size + child] = refs[child];

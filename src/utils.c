@@ -15,6 +15,7 @@ void get_public_key(uint32_t account_number, uint8_t* publicKeyArray) {
             cx_ecfp_generate_pair(CX_CURVE_Ed25519, &publicKey, &privateKey, 1);
         }
         CATCH_OTHER(e) {
+            explicit_bzero(&privateKey, sizeof(privateKey));
             THROW(e);
         }
         FINALLY {
@@ -59,6 +60,7 @@ void get_private_key(uint32_t account_number, cx_ecfp_private_key_t *privateKey)
                                      privateKey);
         }
         CATCH_OTHER(e) {
+            explicit_bzero(&privateKey, sizeof(privateKey));
             THROW(e);
         }
         FINALLY {
@@ -192,9 +194,9 @@ uint8_t convert_hex_amount_to_displayable(const uint8_t* amount, uint8_t decimal
     workOffset = offset;
     for (i = 0; i < LOOP2; i++) {
         unsigned char allZero = 1;
-        unsigned char j;
-        for (j = i; j < LOOP2; j++) {
-            if (scratch[workOffset + j] != 0) {
+        unsigned char k;
+        for (k = i; k < LOOP2; k++) {
+            if (scratch[workOffset + k] != 0) {
                 allZero = 0;
                 break;
             }

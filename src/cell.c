@@ -42,7 +42,7 @@ uint16_t Cell_bit_len(struct Cell_t* self) {
     }
 
     uint8_t* data = Cell_get_data(self);
-    for (uint8_t i = data_size - 1; i >= 0; --i) {
+    for (int8_t i = data_size - 1; i >= 0; --i) {
         if (data[i] == 0) {
             bit_len -= 8;
         } else {
@@ -118,7 +118,7 @@ void calc_cell_hash(Cell_t* cell, const uint8_t cell_index) {
 
     uint8_t refs_count = 0;
     uint8_t* refs = Cell_get_refs(cell, &refs_count);
-    VALIDATE(refs_count >= 0 && refs_count <= MAX_REFERENCES_COUNT, ERR_INVALID_DATA);
+    VALIDATE(refs_count <= MAX_REFERENCES_COUNT, ERR_INVALID_DATA);
     for (uint8_t child = 0; child < refs_count; ++child) {
         uint8_t* depth = &bc->cell_depth[cell_index];
         uint8_t child_depth = bc->cell_depth[refs[child]];

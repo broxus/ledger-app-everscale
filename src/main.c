@@ -29,36 +29,60 @@ void reset_app_context() {
     memset(&data_context, 0, sizeof(data_context));
 }
 
-void handleApdu(volatile unsigned int *flags, volatile unsigned int *tx) {
+void handleApdu(volatile unsigned int *flags, volatile unsigned int *tx, int rx) {
     unsigned short sw = 0;
 
     BEGIN_TRY {
         TRY {
             if (G_io_apdu_buffer[OFFSET_CLA] != CLA) {
-            THROW(0x6E00);
+                THROW(0x6E00);
             }
 
+            PRINTF("command: %d\n", G_io_apdu_buffer[OFFSET_INS]);
             switch (G_io_apdu_buffer[OFFSET_INS]) {
-
                 case INS_GET_APP_CONFIGURATION:
                     handleGetAppConfiguration(G_io_apdu_buffer[OFFSET_P1], G_io_apdu_buffer[OFFSET_P2], G_io_apdu_buffer + OFFSET_CDATA, G_io_apdu_buffer[OFFSET_LC], flags, tx);
                     break;
 
-                case INS_GET_PUBLIC_KEY:
+                case INS_GET_PUBLIC_KEY: {
+                    if (G_io_apdu_buffer[OFFSET_LC] != rx - 5) {
+                        // the length of the APDU should match what's in the 5-byte header.
+                        // If not fail.  Don't want to buffer overrun or anything.
+                        THROW(0x6985);
+                    }
+
                     handleGetPublicKey(G_io_apdu_buffer[OFFSET_P1], G_io_apdu_buffer[OFFSET_P2], G_io_apdu_buffer + OFFSET_CDATA, G_io_apdu_buffer[OFFSET_LC], flags, tx);
-                    break;
+                } break;
 
-                case INS_SIGN:
+                case INS_SIGN: {
+                    if (G_io_apdu_buffer[OFFSET_LC] != rx - 5) {
+                        // the length of the APDU should match what's in the 5-byte header.
+                        // If not fail.  Don't want to buffer overrun or anything.
+                        THROW(0x6985);
+                    }
+
                     handleSign(G_io_apdu_buffer[OFFSET_P1], G_io_apdu_buffer[OFFSET_P2], G_io_apdu_buffer + OFFSET_CDATA, G_io_apdu_buffer[OFFSET_LC], flags, tx);
-                    break;
+                } break;
 
-                case INS_GET_ADDRESS:
+                case INS_GET_ADDRESS: {
+                    if (G_io_apdu_buffer[OFFSET_LC] != rx - 5) {
+                        // the length of the APDU should match what's in the 5-byte header.
+                        // If not fail.  Don't want to buffer overrun or anything.
+                        THROW(0x6985);
+                    }
+
                     handleGetAddress(G_io_apdu_buffer[OFFSET_P1], G_io_apdu_buffer[OFFSET_P2], G_io_apdu_buffer + OFFSET_CDATA, G_io_apdu_buffer[OFFSET_LC], flags, tx);
-                    break;
+                } break;
 
-                case INS_SIGN_TRANSACTION:
+                case INS_SIGN_TRANSACTION: {
+                    if (G_io_apdu_buffer[OFFSET_LC] != rx - 5) {
+                        // the length of the APDU should match what's in the 5-byte header.
+                        // If not fail.  Don't want to buffer overrun or anything.
+                        THROW(0x6985);
+                    }
+
                     handleSignTransaction(G_io_apdu_buffer[OFFSET_P1], G_io_apdu_buffer[OFFSET_P2], G_io_apdu_buffer + OFFSET_CDATA, G_io_apdu_buffer[OFFSET_LC], flags, tx);
-                    break;
+                } break;
 
                 default:
                     THROW(0x6D00);
@@ -99,6 +123,8 @@ void app_main(void) {
     volatile unsigned int rx = 0;
     volatile unsigned int tx = 0;
     volatile unsigned int flags = 0;
+
+
     reset_app_context();
 
     // DESIGN NOTE: the bootloader ignores the way APDU are fetched. The only
@@ -124,8 +150,9 @@ void app_main(void) {
                     THROW(0x6982);
                 }
 
-                // PRINTF("New APDU received:\n%.*h\n", rx, G_io_apdu_buffer);
-                handleApdu(&flags, &tx);
+                PRINTF("New APDU received:\n%.*H\n", rx, G_io_apdu_buffer);
+
+                handleApdu(&flags, &tx, rx);
             }
             CATCH(EXCEPTION_IO_RESET) {
               THROW(EXCEPTION_IO_RESET);
@@ -190,6 +217,7 @@ unsigned char io_event(unsigned char channel) {
                 THROW(EXCEPTION_IO_RESET);
             }
             // no break is intentional
+            __attribute__((fallthrough));
         default:
             UX_DEFAULT_EVENT();
             break;

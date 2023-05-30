@@ -344,8 +344,8 @@ void compute_multisig_address(uint32_t account_number, const uint8_t* wallet, ui
     SliceData_append(&slice, public_key, PUBLIC_KEY_LENGTH * 8, true);
 
     for (int16_t i = bc->public_key_cell_index; i >= 0; --i) {
-        Cell_t* cell = &bc->cells[i];
-        calc_cell_hash(cell, i);
+        Cell_t* it_cell = &bc->cells[i];
+        calc_cell_hash(it_cell, i);
     }
 
     memcpy(address, bc->hashes, HASH_SIZE);

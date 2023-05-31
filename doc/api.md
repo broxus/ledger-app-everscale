@@ -47,9 +47,9 @@ _This command returns a public key for the given account number_
 
 ##### Command
 
-| _CLA_ | _INS_ | _P1_ | _P2_ |   _Lc_   |     _Le_ |
-| ----- |:-----:|-----:|------| :------: | -------: |
-| E0    |  02   |   00 | 00   | variable | variable |
+| _CLA_ | _INS_ | _P1_                                                                             | _P2_ |   _Lc_   |     _Le_ |
+| ----- |:-----:|:---------------------------------------------------------------------------------|------| :------: | -------: |
+| E0    |  02   | 00 : return public key<br/>01 : display public key and confirm before returning  | 00   | variable | variable |
 
 ##### Input data
 
@@ -79,12 +79,12 @@ _This command signs a message_
 
 ##### Input data
 
-| _Description_                              | _Length_ |
-|--------------------------------------------|:--------:|
-| An account number to retrieve              |    4     |
-| Metadata                                   |    1     |
-| Chain ID (Optional: metadata b'00000100)   |    4     |
-| A bytes to sign                            |    32    |
+| _Description_                            | _Length_ |
+|------------------------------------------|:--------:|
+| An account number to retrieve            |    4     |
+| Metadata                                 |    1     |
+| Chain ID (Optional: metadata b'00001000) |    4     |
+| A bytes to sign                          |    32    |
 
 ##### Output data
 
@@ -101,9 +101,9 @@ _This command returns an address for the given account number_
 
 ##### Command
 
-| _CLA_ | _INS_ | _P1_ | _P2_ |   _Lc_   |     _Le_ |
-| ----- |:-----:|-----:|------| :------: | -------: |
-| E0    |  04   |   00 | 00   | variable | variable |
+| _CLA_ | _INS_ | _P1_                                                                      | _P2_ |   _Lc_   |     _Le_ |
+| ----- |:-----:|:--------------------------------------------------------------------------|------| :------: | -------: |
+| E0    |  04   | 00 : return address<br/>01 : display address and confirm before returning | 00   | variable | variable |
 
 ##### Input data
 

@@ -146,9 +146,10 @@ void deserialize_cells_tree(struct ByteStream_t* src) {
     VALIDATE(offset_size != 0 && offset_size <= 8, ERR_INVALID_DATA);
 
     uint8_t cells_count = ByteStream_read_uint(src, ref_size);
+    boc_context.cells_count = cells_count;
+
     uint8_t roots_count = ByteStream_read_uint(src, ref_size);
     VALIDATE(roots_count == MAX_ROOTS_COUNT, ERR_INVALID_DATA);
-    boc_context.cells_count = cells_count;
 
     {
         uint8_t absent_count = ByteStream_read_uint(src, ref_size);
@@ -161,6 +162,12 @@ void deserialize_cells_tree(struct ByteStream_t* src) {
 
     Cell_t cell;
     for (uint8_t i = 0; i < cells_count; ++i) {
+        // We can have a large wallet contract to compute address that contains
+        // more than MAX_CONTRACT_CELLS_COUNT number of cells but we take only
+        // first part of contract enough to calculate contract hash and just break
+        // iteration when reach data end.
+        VALIDATE(i < MAX_CONTRACT_CELLS_COUNT, ERR_INVALID_DATA);
+
         uint8_t* cell_begin = ByteStream_get_cursor(src);
         Cell_init(&cell, cell_begin);
         uint16_t offset = deserialize_cell(&cell, i, cells_count);

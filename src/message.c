@@ -78,7 +78,7 @@ void set_amount(const uint8_t* amount, uint8_t amount_length, uint8_t flags, uin
         case NORMAL_FLAG: {
             const char* space = " ";
             uint8_t text_size = convert_hex_amount_to_displayable(amount, decimals, amount_length, amount_str);
-            //VALIDATE(amount_str_size >= text_size + strlen(space) + strlen(ticker), ERR_INVALID_DATA);
+            VALIDATE(amount_str_size >= text_size + strlen(space) + strlen(ticker), ERR_INVALID_DATA);
 
             strncpy(amount_str + text_size, space, strlen(space));
             strncpy(amount_str + text_size + strlen(space), ticker, strlen(ticker));
@@ -86,14 +86,14 @@ void set_amount(const uint8_t* amount, uint8_t amount_length, uint8_t flags, uin
         }
         case ALL_BALANCE_FLAG: {
             const char* text = "All balance";
-            //VALIDATE(amount_str_size >= strlen(text), ERR_INVALID_DATA);
+            VALIDATE(amount_str_size >= strlen(text), ERR_INVALID_DATA);
 
             strncpy(amount_str, text, strlen(text));
             break;
         }
         case ALL_BALANCE_AND_DELETE_FLAG: {
             const char* text = "All balance and delete account";
-            //VALIDATE(amount_str_size >= strlen(text), ERR_INVALID_DATA);
+            VALIDATE(amount_str_size >= strlen(text), ERR_INVALID_DATA);
 
             strncpy(amount_str, text, strlen(text));
             break;

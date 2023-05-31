@@ -1,6 +1,10 @@
 #include "cell.h"
 #include "utils.h"
 
+// If cell exist so cell previously created properly and all cell
+// methods are valid and no need to double-check out of bound when reading
+// even if static analyzer gives warnings.
+
 void Cell_init(struct Cell_t* self, uint8_t* cell_begin) {
     VALIDATE(self && cell_begin, ERR_CELL_IS_EMPTY);
     self->cell_begin = cell_begin;

@@ -36,7 +36,7 @@ uint8_t* Cell_get_refs(const struct Cell_t* self, uint8_t* refs_count) {
     uint8_t data_size = Cell_get_data_size(self);
 
     uint16_t offset = CELL_DATA_OFFSET + data_size;
-    //VALIDATE(self && self->cell_length > offset + *refs_count || !*refs_count, ERR_INVALID_DATA);
+    VALIDATE(self && self->cell_length > offset + *refs_count || !*refs_count, ERR_INVALID_DATA);
 
     return self->cell_begin + offset;
 }

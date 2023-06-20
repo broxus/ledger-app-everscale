@@ -14,6 +14,7 @@ uint8_t* ByteStream_read_data(struct ByteStream_t* self, uint32_t data_size);
 uint8_t ByteStream_read_byte(struct ByteStream_t* self);
 uint32_t ByteStream_read_u32(struct ByteStream_t* self);
 uint8_t* ByteStream_get_cursor(struct ByteStream_t* self);
+uint16_t ByteStream_get_length(struct ByteStream_t* self);
 uint64_t ByteStream_read_uint(struct ByteStream_t* self, uint16_t bytes);
 
 #endif

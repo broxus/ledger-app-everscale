@@ -139,9 +139,9 @@ void deserialize_int_message_header(struct SliceData_t* slice, uint8_t flags, Si
     uint8_t amount_length = SliceData_get_next_int(slice, 4);
     VALIDATE(amount_length <= AMOUNT_LENGHT, ERR_INVALID_DATA);
 
-    uint8_t amount[amount_length];
-    deserialize_value(slice, amount, sizeof(amount));
-    set_amount(amount, sizeof(amount), flags, ctx->decimals, ctx->ticker);
+    uint8_t amount[AMOUNT_LENGHT];
+    deserialize_value(slice, amount, amount_length);
+    set_amount(amount, amount_length, flags, ctx->decimals, ctx->ticker);
 
     uint8_t other = SliceData_get_next_bit(slice);
     UNUSED(other);

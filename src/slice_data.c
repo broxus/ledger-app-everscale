@@ -15,7 +15,7 @@ void SliceData_from_cell(struct SliceData_t* self, struct Cell_t* cell) {
     uint8_t* cell_data = Cell_get_data(cell);
     uint8_t cell_data_size = Cell_get_data_size(cell);
 
-    VALIDATE(cell->cell_length - CELL_DATA_OFFSET > cell_data_size, ERR_INVALID_DATA);
+    //VALIDATE(cell->cell_length - CELL_DATA_OFFSET > cell_data_size, ERR_INVALID_DATA);
     SliceData_init(self, cell_data, cell_data_size);
 }
 

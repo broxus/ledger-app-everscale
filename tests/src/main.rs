@@ -79,55 +79,55 @@ fn test_ledger_address() -> anyhow::Result<()> {
 
     let wallet_v3 = ledger.get_address(0, WalletType::WalletV3, false)?;
     assert_eq!(
-        hex::encode(&wallet_v3),
+        hex::encode(wallet_v3),
         "ed7439e12d67d23fcaf701ff3bd4e30d390c1e8e14f6f40d52089590e28d9c70"
     );
 
     let ever_wallet = ledger.get_address(0, WalletType::EverWallet, false)?;
     assert_eq!(
-        hex::encode(&ever_wallet),
+        hex::encode(ever_wallet),
         "3b94dd326f32f5ab14caef0a61d23e716271b20d7e273fc315ea3cfd0023c431"
     );
 
     let safe_multisig = ledger.get_address(0, WalletType::SafeMultisig, false)?;
     assert_eq!(
-        hex::encode(&safe_multisig),
+        hex::encode(safe_multisig),
         "aafa193fdf6c11cd20a0831ae2a33f7ff4a5add95db7b7b30e7ceef6538e2621"
     );
 
     let safe_multisig_24 = ledger.get_address(0, WalletType::SafeMultisig24h, false)?;
     assert_eq!(
-        hex::encode(&safe_multisig_24),
+        hex::encode(safe_multisig_24),
         "b4f9941d96904c22613581a4d905051f37ef41c5c0b995a60d5ebfc254e57a1a"
     );
 
     let setcode_multisig = ledger.get_address(0, WalletType::SetcodeMultisig, false)?;
     assert_eq!(
-        hex::encode(&setcode_multisig),
+        hex::encode(setcode_multisig),
         "7c75e3bff88ec399edc5ee3a31189ccff6fd564ad2708f3e7208d5c899077f9a"
     );
 
     let bridge_multisig = ledger.get_address(0, WalletType::BridgeMultisig, false)?;
     assert_eq!(
-        hex::encode(&bridge_multisig),
+        hex::encode(bridge_multisig),
         "95daf2ffc6c780ca4d4ef63495cf86f8a5f011d3e9fa10edb462ecdc64275136"
     );
 
     let surf = ledger.get_address(0, WalletType::Surf, false)?;
     assert_eq!(
-        hex::encode(&surf),
+        hex::encode(surf),
         "a1297485df8e1608109ef009b02fab5668d16b6eec7f8c763bd4ec6474be40c5"
     );
 
     let multisig2 = ledger.get_address(0, WalletType::Multisig2, false)?;
     assert_eq!(
-        hex::encode(&multisig2),
+        hex::encode(multisig2),
         "2bb06296f9c0be8d4290517d33018ea903b5de40504192953bf631f2e8b56b0b"
     );
 
     let multisig2_1 = ledger.get_address(0, WalletType::Multisig2_1, false)?;
     assert_eq!(
-        hex::encode(&multisig2_1),
+        hex::encode(multisig2_1),
         "bcac3b0b6d2b65b29b18c48b72f76eed1d8dfc86b462086e2731948f1a2550b8"
     );
 
@@ -165,7 +165,9 @@ fn test_ledger_sign_message() -> anyhow::Result<()> {
     let (hash, _) =
         init_data.make_transfer_payload(vec![gift], expiration.timestamp(&SimpleClock))?;
 
-    let signature = ledger.sign_message_hash(account, hash.as_slice())?;
+    println!("HASH: {}", hash.to_hex_string());
+
+    let signature = ledger.sign_message_hash(account, hash.as_slice(), None)?;
     assert!(public_key.verify(hash.as_slice(), &signature).is_ok());
 
     Ok(())
@@ -225,6 +227,7 @@ fn test_ledger_sign_transaction() -> anyhow::Result<()> {
         input,
     )?;
     let message_hash = unsigned_message.hash();
+    println!("Message hash to sign: {}", hex::encode(message_hash));
 
     // Fake sign
     let signature: Signature = [0_u8; 64];
@@ -245,9 +248,11 @@ fn test_ledger_sign_transaction() -> anyhow::Result<()> {
     let signature = ledger.sign_transaction(
         account,
         wallet_type,
-        wallet_type,
         EVER_DECIMALS,
         EVER_TICKER,
+        None,
+        None,
+        None,
         &boc,
     )?;
     assert!(public_key.verify(message_hash, &signature).is_ok());

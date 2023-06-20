@@ -94,10 +94,6 @@ enum SubCommand {
         #[arg(long)]
         /// Destination address
         address: String,
-
-        #[arg(long)]
-        /// Chain ID
-        chain_id: u32,
     },
 
     /// Get balance
@@ -476,7 +472,7 @@ fn prepare_token_body(
             .arg(payload) // payload
             .build();
 
-    Ok(function_token.encode_internal_input(&input_token)?.into())
+    SliceData::load_builder(function_token.encode_internal_input(&input_token)?)
 }
 
 #[tokio::main]
@@ -526,7 +522,7 @@ async fn main() -> anyhow::Result<()> {
             match contract {
                 Some(contract) => {
                     let mut balance =
-                        Decimal::from_u128(contract.account.storage.balance.grams.0).trust_me();
+                        Decimal::from_u128(contract.account.storage.balance.grams.as_u128()).trust_me();
                     balance.set_scale(EVER_DECIMALS as u32)?;
                     println!("Balance: {} EVER", balance);
                 }
@@ -540,7 +536,6 @@ async fn main() -> anyhow::Result<()> {
             wallet,
             amount,
             address,
-            chain_id,
         } => {
             let amount = (Decimal::from_str(&amount)? * Decimal::from(1_000_000_000))
                 .to_u64()
@@ -585,7 +580,7 @@ async fn main() -> anyhow::Result<()> {
                             EVER_TICKER,
                             None,
                             None,
-                            Some(chain_id),
+                            None,
                             &boc,
                         )?;
 
@@ -625,7 +620,7 @@ async fn main() -> anyhow::Result<()> {
                             EVER_TICKER,
                             None,
                             None,
-                            Some(chain_id),
+                            None,
                             &boc,
                         )?;
 
@@ -675,7 +670,7 @@ async fn main() -> anyhow::Result<()> {
                             EVER_TICKER,
                             None,
                             None,
-                            Some(chain_id),
+                            None,
                             &boc,
                         )?;
 

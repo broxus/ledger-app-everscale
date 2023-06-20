@@ -10,7 +10,7 @@ void ByteStream_init(struct ByteStream_t* self, uint8_t* data, uint16_t data_siz
 }
 
 void ByteStream_move_by(struct ByteStream_t* self, uint16_t data_size) {
-    //VALIDATE(data_size < self->data_size - self->offset, ERR_END_OF_STREAM);
+    VALIDATE(data_size < self->data_size - self->offset, ERR_END_OF_STREAM);
     self->offset += data_size;
 }
 

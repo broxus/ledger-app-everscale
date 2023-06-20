@@ -146,7 +146,6 @@ void deserialize_cells_tree(struct ByteStream_t* src) {
     VALIDATE(offset_size != 0 && offset_size <= 8, ERR_INVALID_DATA);
 
     uint8_t cells_count = ByteStream_read_uint(src, ref_size);
-    VALIDATE(cells_count <= MAX_CONTRACT_CELLS_COUNT, ERR_INVALID_DATA);
 
     uint8_t roots_count = ByteStream_read_uint(src, ref_size);
     VALIDATE(roots_count == MAX_ROOTS_COUNT, ERR_INVALID_DATA);

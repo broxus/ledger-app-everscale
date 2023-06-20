@@ -159,7 +159,7 @@ uint8_t convert_hex_amount_to_displayable(const uint8_t* amount, uint8_t decimal
     for (i = 0; i < SCRATCH_SIZE; i++) {
         scratch[i] = 0;
     }
-    for (i = 0; i < 8; i++) {
+    for (i = 0; i < amount_length; i++) {
         for (j = 0; j < 8; j++) {
             uint8_t k;
             uint16_t shifted_in = (((amount[i] & 0xff) & ((1 << (7 - j)))) != 0) ? 1 : 0;

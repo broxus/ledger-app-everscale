@@ -426,6 +426,8 @@ int prepare_to_sign(struct ByteStream_t* src, uint8_t wc, uint8_t* address, uint
     // Parse transaction boc
     deserialize_cells_tree(src);
 
+    // Root
+    VALIDATE(bc->cells_count > ROOT_CELL_INDEX, ERR_INVALID_DATA);
     Cell_t* root_cell = &bc->cells[ROOT_CELL_INDEX];
 
     SliceData_t root_slice;

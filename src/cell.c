@@ -26,7 +26,7 @@ uint8_t Cell_get_data_size(const struct Cell_t* self) {
 
 uint8_t* Cell_get_data(const struct Cell_t* self) {
     VALIDATE(self && self->cell_begin, ERR_CELL_IS_EMPTY);
-    VALIDATE(self->cell_length > CELL_DATA_OFFSET, ERR_INVALID_DATA);
+    //VALIDATE(self->cell_length > CELL_DATA_OFFSET, ERR_INVALID_DATA);
     return self->cell_begin + CELL_DATA_OFFSET;
 }
 
@@ -36,7 +36,7 @@ uint8_t* Cell_get_refs(const struct Cell_t* self, uint8_t* refs_count) {
     uint8_t data_size = Cell_get_data_size(self);
 
     uint16_t offset = CELL_DATA_OFFSET + data_size;
-    VALIDATE(self && self->cell_length > offset + *refs_count || !*refs_count, ERR_INVALID_DATA);
+    //VALIDATE(self && self->cell_length > offset + *refs_count || !*refs_count, ERR_INVALID_DATA);
 
     return self->cell_begin + offset;
 }

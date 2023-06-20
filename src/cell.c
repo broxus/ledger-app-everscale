@@ -1,22 +1,21 @@
 #include "cell.h"
 #include "utils.h"
 
-// If cell exist so cell previously created properly and all cell
-// methods are valid and no need to double-check out of bound when reading
-// even if static analyzer gives warnings.
-
-void Cell_init(struct Cell_t* self, uint8_t* cell_begin) {
+void Cell_init(struct Cell_t* self, uint8_t* cell_begin, uint16_t cell_length) {
     VALIDATE(self && cell_begin, ERR_CELL_IS_EMPTY);
     self->cell_begin = cell_begin;
+    self->cell_length = cell_length;
 }
 
 uint8_t Cell_get_d1(const struct Cell_t* self) {
     VALIDATE(self && self->cell_begin, ERR_CELL_IS_EMPTY);
+    VALIDATE(self->cell_length > 0, ERR_INVALID_DATA);
     return self->cell_begin[0];
 }
 
 uint8_t Cell_get_d2(const struct Cell_t* self) {
     VALIDATE(self && self->cell_begin, ERR_CELL_IS_EMPTY);
+    VALIDATE(self->cell_length > 1, ERR_INVALID_DATA);
     return self->cell_begin[1];
 }
 
@@ -27,6 +26,7 @@ uint8_t Cell_get_data_size(const struct Cell_t* self) {
 
 uint8_t* Cell_get_data(const struct Cell_t* self) {
     VALIDATE(self && self->cell_begin, ERR_CELL_IS_EMPTY);
+    VALIDATE(self->cell_length > CELL_DATA_OFFSET, ERR_INVALID_DATA);
     return self->cell_begin + CELL_DATA_OFFSET;
 }
 
@@ -34,7 +34,11 @@ uint8_t* Cell_get_refs(const struct Cell_t* self, uint8_t* refs_count) {
     uint8_t d1 = Cell_get_d1(self);
     *refs_count = d1 & 7;
     uint8_t data_size = Cell_get_data_size(self);
-    return self->cell_begin + CELL_DATA_OFFSET + data_size;
+
+    uint16_t offset = CELL_DATA_OFFSET + data_size;
+    VALIDATE(self && self->cell_length > offset + *refs_count || !*refs_count, ERR_INVALID_DATA);
+
+    return self->cell_begin + offset;
 }
 
 uint16_t Cell_bit_len(struct Cell_t* self) {
@@ -125,6 +129,7 @@ void calc_cell_hash(Cell_t* cell, const uint8_t cell_index) {
     VALIDATE(refs_count <= MAX_REFERENCES_COUNT, ERR_INVALID_DATA);
     for (uint8_t child = 0; child < refs_count; ++child) {
         uint8_t* depth = &bc->cell_depth[cell_index];
+        VALIDATE(refs[child] < MAX_CONTRACT_CELLS_COUNT, ERR_INVALID_DATA);
         uint8_t child_depth = bc->cell_depth[refs[child]];
         *depth = (*depth > child_depth + 1) ? *depth : (child_depth + 1);
         uint8_t buf[2];

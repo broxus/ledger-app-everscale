@@ -36,6 +36,10 @@ uint8_t* ByteStream_get_cursor(struct ByteStream_t* self) {
     return self->data + self->offset;
 }
 
+uint16_t ByteStream_get_length(struct ByteStream_t* self) {
+    return self->data_size - self->offset;
+}
+
 uint64_t ByteStream_read_uint(struct ByteStream_t* self, uint16_t bytes) {
     VALIDATE(bytes > 0 && bytes <= 8, ERR_INVALID_DATA);
 

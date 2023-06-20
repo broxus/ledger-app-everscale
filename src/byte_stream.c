@@ -10,13 +10,18 @@ void ByteStream_init(struct ByteStream_t* self, uint8_t* data, uint16_t data_siz
 }
 
 void ByteStream_move_by(struct ByteStream_t* self, uint16_t data_size) {
+    VALIDATE(data_size < self->data_size - self->offset, ERR_END_OF_STREAM);
+    self->offset += data_size;
+}
+
+void ByteStream_move_by_unsafe(struct ByteStream_t* self, uint16_t data_size) {
     VALIDATE(data_size <= self->data_size - self->offset, ERR_END_OF_STREAM);
     self->offset += data_size;
 }
 
 uint8_t* ByteStream_read_data(struct ByteStream_t* self, uint32_t data_size) {
     uint8_t* data = self->data + self->offset;
-    ByteStream_move_by(self, data_size);
+    ByteStream_move_by_unsafe(self, data_size);
     return data;
 }
 

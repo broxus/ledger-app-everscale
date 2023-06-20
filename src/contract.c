@@ -146,7 +146,7 @@ void deserialize_cells_tree(struct ByteStream_t* src) {
     VALIDATE(offset_size != 0 && offset_size <= 8, ERR_INVALID_DATA);
 
     uint8_t cells_count = ByteStream_read_uint(src, ref_size);
-    boc_context.cells_count = cells_count;
+    VALIDATE(cells_count <= MAX_CONTRACT_CELLS_COUNT, ERR_INVALID_DATA);
 
     uint8_t roots_count = ByteStream_read_uint(src, ref_size);
     VALIDATE(roots_count == MAX_ROOTS_COUNT, ERR_INVALID_DATA);
@@ -160,6 +160,9 @@ void deserialize_cells_tree(struct ByteStream_t* src) {
         UNUSED(buf);
     }
 
+    // Reset cells count
+    boc_context.cells_count = 0;
+
     Cell_t cell;
     for (uint8_t i = 0; i < cells_count; ++i) {
         uint8_t* cell_begin = ByteStream_get_cursor(src);
@@ -168,6 +171,9 @@ void deserialize_cells_tree(struct ByteStream_t* src) {
         uint16_t offset = deserialize_cell(&cell, i, cells_count);
         boc_context.cells[i] = cell;
         ByteStream_read_data(src, offset);
+
+        // Count only initialized cells
+        boc_context.cells_count++;
 
         if (src->offset >= src->data_size) {
             break;

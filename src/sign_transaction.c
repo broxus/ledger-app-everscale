@@ -105,7 +105,7 @@ UX_STEP_CB(
       "Reject",
     });
 UX_STEP_NOCB(
-    ux_sign_message_hash,
+    ux_sign_transaction_message_hash,
     bnnn_paging,
     {
       .title = "Message hash",
@@ -117,7 +117,8 @@ UX_FLOW(ux_sign_transaction_burn_flow,
     &ux_sign_transaction_burn,
     &ux_sign_transaction_amount,
     &ux_sign_transaction_accept,
-    &ux_sign_transaction_reject
+    &ux_sign_transaction_reject,
+    &ux_sign_transaction_message_hash
 );
 
 UX_FLOW(ux_sign_transaction_deploy_flow,
@@ -125,7 +126,8 @@ UX_FLOW(ux_sign_transaction_deploy_flow,
     &ux_sign_transaction_deploy,
     &ux_sign_transaction_address,
     &ux_sign_transaction_accept,
-    &ux_sign_transaction_reject
+    &ux_sign_transaction_reject,
+    &ux_sign_transaction_message_hash
 );
 
 UX_FLOW(ux_sign_transaction_confirm_flow,
@@ -133,7 +135,8 @@ UX_FLOW(ux_sign_transaction_confirm_flow,
     &ux_sign_transaction_confirm,
     &ux_sign_transaction_transaction_id,
     &ux_sign_transaction_accept,
-    &ux_sign_transaction_reject
+    &ux_sign_transaction_reject,
+    &ux_sign_transaction_message_hash
 );
 
 UX_FLOW(ux_sign_transaction_transfer_flow,
@@ -143,7 +146,7 @@ UX_FLOW(ux_sign_transaction_transfer_flow,
     &ux_sign_transaction_address,
     &ux_sign_transaction_accept,
     &ux_sign_transaction_reject,
-    &ux_sign_message_hash
+    &ux_sign_transaction_message_hash
 );
 
 void handleSignTransaction(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t dataLength, volatile unsigned int *flags, volatile unsigned int *tx) {
@@ -227,8 +230,6 @@ void handleSignTransaction(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t
     ByteStream_init(&src, msg_begin, msg_length);
 
     int flow = prepare_to_sign(&src, wc, address, prepend_address);
-
-    snprintf(context->to_sign_str, sizeof(context->to_sign_str), "%.*H", TO_SIGN_LENGTH, context->to_sign);
 
     switch (flow) {
         case SIGN_TRANSACTION_FLOW_TRANSFER:

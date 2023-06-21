@@ -169,7 +169,7 @@ uint8_t convert_hex_amount_to_displayable(const uint8_t* amount, uint8_t decimal
                 scratch[k] += ((scratch[k] >= 5) ? 3 : 0);
             }
             if (scratch[smin] >= 8) {
-                VALIDATE(smin > 1, ERR_INVALID_DATA);
+                VALIDATE(smin > 1, ERR_INVALID_SRC_ADDRESS);
                 smin -= 1;
             }
             for (k = smin; k < nscratch - 1; k++) {

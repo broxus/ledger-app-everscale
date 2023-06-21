@@ -18,7 +18,7 @@ void deserialize_array(uint8_t* in, uint8_t in_size, uint16_t offset, uint8_t* o
         out[j] = cur;
 
         if (j == out_size - 1) {
-            VALIDATE(i + 1 < in_size, ERR_INVALID_DATA);
+            VALIDATE(i + 1 < in_size, ERR_INVALID_KEY);
             out[j] |= in[i + 1] >> (8 - shift);
         }
 
@@ -428,7 +428,7 @@ int prepare_to_sign(struct ByteStream_t* src, uint8_t wc, uint8_t* address, uint
     deserialize_cells_tree(src);
 
     // Root
-    VALIDATE(bc->cells_count > ROOT_CELL_INDEX, ERR_INVALID_DATA);
+    VALIDATE(bc->cells_count > ROOT_CELL_INDEX, ERR_SLICE_IS_EMPTY);
     Cell_t* root_cell = &bc->cells[ROOT_CELL_INDEX];
 
     SliceData_t root_slice;

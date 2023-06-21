@@ -35,7 +35,7 @@ uint8_t* Cell_get_refs(const struct Cell_t* self, uint8_t* refs_count) {
     uint8_t data_size = Cell_get_data_size(self);
 
     uint16_t offset = CELL_DATA_OFFSET + data_size;
-    VALIDATE(self && self->cell_length > offset + *refs_count || !*refs_count, ERR_INVALID_DATA);
+    VALIDATE(self && self->cell_length > offset + *refs_count || !*refs_count, ERR_CELL_UNDERFLOW);
 
     return self->cell_begin + offset;
 }
@@ -128,7 +128,7 @@ void calc_cell_hash(Cell_t* cell, const uint8_t cell_index) {
     VALIDATE(refs_count <= MAX_REFERENCES_COUNT, ERR_INVALID_DATA);
     for (uint8_t child = 0; child < refs_count; ++child) {
         uint8_t* depth = &bc->cell_depth[cell_index];
-        VALIDATE(refs[child] < MAX_CONTRACT_CELLS_COUNT, ERR_INVALID_DATA);
+        VALIDATE(refs[child] < MAX_CONTRACT_CELLS_COUNT, ERR_INVALID_REQUEST);
         uint8_t child_depth = bc->cell_depth[refs[child]];
         *depth = (*depth > child_depth + 1) ? *depth : (child_depth + 1);
         uint8_t buf[2];

@@ -33,11 +33,7 @@ uint8_t* Cell_get_refs(const struct Cell_t* self, uint8_t* refs_count) {
     uint8_t d1 = Cell_get_d1(self);
     *refs_count = d1 & 7;
     uint8_t data_size = Cell_get_data_size(self);
-
-    uint16_t offset = CELL_DATA_OFFSET + data_size;
-    VALIDATE(self && self->cell_length > offset + *refs_count || !*refs_count, ERR_CELL_UNDERFLOW);
-
-    return self->cell_begin + offset;
+    return self->cell_begin + CELL_DATA_OFFSET + data_size;
 }
 
 uint16_t Cell_bit_len(struct Cell_t* self) {
@@ -71,21 +67,25 @@ uint16_t deserialize_cell(struct Cell_t* cell, const uint8_t cell_index, const u
     uint8_t level = d1 >> 5; // level
     uint8_t hashes = (d1 & 16) == 16; // with hashes
     uint8_t exotic = (d1 & 8) == 8; // exotic
-    uint8_t refs_count = d1 & 7;	// refs count
-    uint8_t absent = refs_count == 7 && hashes;
+    uint8_t rc = d1 & 7;	// refs count
+    uint8_t absent = rc == 7 && hashes;
     uint8_t pruned = d1 == PRUNED_BRANCH_D1;
     UNUSED(level);
 
     VALIDATE(!hashes, ERR_INVALID_DATA);
     VALIDATE(!exotic || pruned, ERR_INVALID_DATA); // only ordinary or pruned cells are valid
-    VALIDATE(refs_count <= MAX_REFERENCES_COUNT, ERR_INVALID_DATA);
+    VALIDATE(rc <= MAX_REFERENCES_COUNT, ERR_INVALID_DATA);
     VALIDATE(!absent, ERR_INVALID_DATA);
 
     uint8_t data_size = Cell_get_data_size(cell);
     VALIDATE(!pruned || pruned && (data_size == PRUNED_BRANCH_DATA_SIZE), ERR_INVALID_DATA);
 
+    uint8_t refs_count = 0;
     uint8_t* refs = Cell_get_refs(cell, &refs_count);
     for (uint8_t i = 0; i < refs_count; ++i) {
+        uint8_t data_size = Cell_get_data_size(cell);
+        VALIDATE(cell && cell->cell_length > CELL_DATA_OFFSET + data_size + i, ERR_INVALID_DATA);
+
         uint8_t ref = refs[i];
         VALIDATE(ref <= cells_count && ref > cell_index, ERR_INVALID_DATA);
     }

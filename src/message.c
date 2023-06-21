@@ -18,6 +18,7 @@ void deserialize_array(uint8_t* in, uint8_t in_size, uint16_t offset, uint8_t* o
         out[j] = cur;
 
         if (j == out_size - 1) {
+            VALIDATE(i + 1 < in_size, ERR_INVALID_DATA);
             out[j] |= in[i + 1] >> (8 - shift);
         }
 

@@ -26,7 +26,6 @@ uint8_t Cell_get_data_size(const struct Cell_t* self) {
 
 uint8_t* Cell_get_data(const struct Cell_t* self) {
     VALIDATE(self && self->cell_begin, ERR_CELL_IS_EMPTY);
-    //VALIDATE(self->cell_length > CELL_DATA_OFFSET, ERR_INVALID_DATA);
     return self->cell_begin + CELL_DATA_OFFSET;
 }
 

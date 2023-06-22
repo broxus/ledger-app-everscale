@@ -83,7 +83,6 @@ uint16_t deserialize_cell(struct Cell_t* cell, const uint8_t cell_index, const u
     uint8_t refs_count = 0;
     uint8_t* refs = Cell_get_refs(cell, &refs_count);
     for (uint8_t i = 0; i < refs_count; ++i) {
-        uint8_t data_size = Cell_get_data_size(cell);
         VALIDATE(cell && cell->cell_length > CELL_DATA_OFFSET + data_size + i, ERR_INVALID_DATA);
 
         uint8_t ref = refs[i];

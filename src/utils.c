@@ -159,21 +159,25 @@ uint8_t convert_hex_amount_to_displayable(const uint8_t* amount, uint8_t decimal
     for (i = 0; i < SCRATCH_SIZE; i++) {
         scratch[i] = 0;
     }
-    for (i = 0; i < 8; i++) {
+    for (i = 0; i < amount_length; i++) {
         for (j = 0; j < 8; j++) {
             uint8_t k;
-            uint16_t shifted_in = (((amount[i] & 0xff) & ((1 << (7 - j)))) != 0) ? 1 : 0;
+            uint16_t shifted_in =
+                    (((amount[i] & 0xff) & ((1 << (7 - j)))) != 0) ? (short)1
+                                                                   : (short)0;
             for (k = smin; k < nscratch; k++) {
                 scratch[k] += ((scratch[k] >= 5) ? 3 : 0);
             }
             if (scratch[smin] >= 8) {
+                VALIDATE(smin > 1, ERR_INVALID_SRC_ADDRESS);
                 smin -= 1;
             }
             for (k = smin; k < nscratch - 1; k++) {
-                scratch[k] = ((scratch[k] << 1) & 0xF) | ((scratch[k + 1] >= 8) ? 1 : 0);
-                scratch[k] = ((scratch[k] << 1) & 0xF) | ((scratch[k + 1] >= 8) ? 1 : 0);
+                scratch[k] =
+                        ((scratch[k] << 1) & 0xF) | ((scratch[k + 1] >= 8) ? 1 : 0);
             }
-            scratch[nscratch - 1] = ((scratch[nscratch - 1] << 1) & 0x0F) | (shifted_in == 1 ? 1 : 0);
+            scratch[nscratch - 1] = ((scratch[nscratch - 1] << 1) & 0x0F) |
+                                    (shifted_in == 1 ? 1 : 0);
         }
     }
 

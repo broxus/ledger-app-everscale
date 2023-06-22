@@ -20,6 +20,9 @@ use ton_types::{AccountId, UInt256};
 const EVER_DECIMALS: u8 = 9;
 const EVER_TICKER: &str = "EVER";
 
+const USDT_DECIMALS: u8 = 9;
+const USDT_TICKER: &str = "USDT";
+
 const WALLET_ID: u32 = 0x4BA92D8A;
 
 const DEFAULT_EXPIRATION_TIMEOUT: u32 = 60; // sec
@@ -165,8 +168,6 @@ fn test_ledger_sign_message() -> anyhow::Result<()> {
     let (hash, _) =
         init_data.make_transfer_payload(vec![gift], expiration.timestamp(&SimpleClock))?;
 
-    println!("HASH: {}", hash.to_hex_string());
-
     let signature = ledger.sign_message_hash(account, hash.as_slice(), None)?;
     assert!(public_key.verify(hash.as_slice(), &signature).is_ok());
 
@@ -174,7 +175,7 @@ fn test_ledger_sign_message() -> anyhow::Result<()> {
 }
 
 // This test requires interactive approval of message signing on the ledger.
-fn test_ledger_sign_transaction() -> anyhow::Result<()> {
+fn test_ledger_sign_send_transaction() -> anyhow::Result<()> {
     let (ledger, _) = get_ledger();
 
     let account = 0;
@@ -204,7 +205,7 @@ fn test_ledger_sign_transaction() -> anyhow::Result<()> {
     let destination = MsgAddressInt::from_str(
         "0:df112b59eb82792623575194c60d2f547c68d54366644a3a5e02b8132f3c4c56",
     )?;
-    let body: ton_types::Cell = ton_types::deserialize_tree_of_cells(&mut base64::decode("te6ccgECBwEAAUwAAYtz4iFDAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAQFDgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAIBi3PiIUMAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABADAUOAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIBAGLc+IhQwAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAUBQ4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgGAAA=")?.as_slice())?;
+    let body: ton_types::Cell = ton_types::deserialize_tree_of_cells(&mut base64::decode("te6ccgEBAwEAYAABa0ap1+wAAAAAAAAAAAAAAABJUE+AgBXkJWs9cE8kxGrqMpjBpeqPjRqobMyJR0vAVwJl54mK0AEBQ4AX5CVrPXBPJMRq6jKYwaXqj40aqGzMiUdLwFcCZeeJisgCAAA=")?.as_slice())?;
 
     let expiration = Expiration::Timeout(DEFAULT_EXPIRATION_TIMEOUT);
 
@@ -227,7 +228,6 @@ fn test_ledger_sign_transaction() -> anyhow::Result<()> {
         input,
     )?;
     let message_hash = unsigned_message.hash();
-    println!("Message hash to sign: {}", hex::encode(message_hash));
 
     // Fake sign
     let signature: Signature = [0_u8; 64];
@@ -260,6 +260,101 @@ fn test_ledger_sign_transaction() -> anyhow::Result<()> {
     Ok(())
 }
 
+// This test requires interactive approval of message signing on the ledger.
+fn test_ledger_sign_confirm_transaction() -> anyhow::Result<()> {
+    // BAD
+    let boc = base64::decode("te6ccgEBAQEAOwAAcfDmnGpQVUZxL24fHgfUfLGp2/wzR+YWmZukQraxETyqAAAAxHF5r4KyShssDVOgdrJKGvzpVh6gwA==")?;
+
+    // GOOD
+    //let boc = base64::decode("te6ccgEBAQEAOwAAcbO621NdG4jQ5NYNMWVnsUSFaO+v3yGEbs0LoC462r+XAAAAxHGVwt0ySiJcDVOgdrJKDeYh5nYAwA==")?;
+    let cell = ton_types::deserialize_tree_of_cells(&mut boc.as_slice())?;
+
+    let message_hash = cell.repr_hash();
+
+    let (ledger, _) = get_ledger();
+
+    let account = 0;
+    let wallet_type = WalletType::SafeMultisig;
+
+    // Get public key
+    let public_key = ledger.get_pubkey(account, false)?;
+
+    let signature = ledger.sign_transaction(
+        account,
+        wallet_type,
+        EVER_DECIMALS,
+        EVER_TICKER,
+        None,
+        None,
+        None,
+        &boc,
+    )?;
+    assert!(public_key.verify(message_hash.as_slice(), &signature).is_ok());
+
+    Ok(())
+}
+
+// This test requires interactive approval of message signing on the ledger.
+fn test_ledger_sign_submit_transaction() -> anyhow::Result<()> {
+    let boc = base64::decode("te6ccgEBBQEAyQABYbO621NdG4jQ5NYNMWVnsUSFaO+v3yGEbs0LoC462r+XAAAAxHGlca+ySiZfiY7BZsABAWOAG+Ilaz1wTyTEauoymMGl6o+NGqhszIlHS8BXAmXniYrAAAAAAAAAAAA202lAb5VWNAIBa0ap1+wAAAAAAAAAAAAAAABJUE+AgBXkJWs9cE8kxGrqMpjBpeqPjRqobMyJR0vAVwJl54mK0AMBQ4AX5CVrPXBPJMRq6jKYwaXqj40aqGzMiUdLwFcCZeeJisgEAAA=")?;
+    let cell = ton_types::deserialize_tree_of_cells(&mut boc.as_slice())?;
+
+    let message_hash = cell.repr_hash();
+
+    let (ledger, _) = get_ledger();
+
+    let account = 0;
+    let wallet_type = WalletType::SafeMultisig;
+
+    // Get public key
+    let public_key = ledger.get_pubkey(account, false)?;
+
+    let signature = ledger.sign_transaction(
+        account,
+        wallet_type,
+        USDT_DECIMALS,
+        USDT_TICKER,
+        None,
+        None,
+        None,
+        &boc,
+    )?;
+    assert!(public_key.verify(message_hash.as_slice(), &signature).is_ok());
+
+    Ok(())
+}
+
+// This test requires interactive approval of message signing on the ledger.
+fn test_ledger_sign_burn_transaction() -> anyhow::Result<()> {
+    let boc = base64::decode("te6ccgEBBQEAyQABYbO621NdG4jQ5NYNMWVnsUSFaO+v3yGEbs0LoC462r+XAAAAxHGxjJEySil5CY7BZsABAWOAG+Ilaz1wTyTEauoymMGl6o+NGqhszIlHS8BXAmXniYrAAAAAAAAAAAA202lAb5VWNAIBa1YlSK0AAAAAAAAAAAAAAABJUE+AgBXkJWs9cE8kxGrqMpjBpeqPjRqobMyJR0vAVwJl54mK0AMBQ4AX5CVrPXBPJMRq6jKYwaXqj40aqGzMiUdLwFcCZeeJitAEAAA=")?;
+
+    let cell = ton_types::deserialize_tree_of_cells(&mut boc.as_slice())?;
+
+    let message_hash = cell.repr_hash();
+
+    let (ledger, _) = get_ledger();
+
+    let account = 0;
+    let wallet_type = WalletType::SafeMultisig;
+
+    // Get public key
+    let public_key = ledger.get_pubkey(account, false)?;
+
+    let signature = ledger.sign_transaction(
+        account,
+        wallet_type,
+        USDT_DECIMALS,
+        USDT_TICKER,
+        None,
+        None,
+        None,
+        &boc,
+    )?;
+    assert!(public_key.verify(message_hash.as_slice(), &signature).is_ok());
+
+    Ok(())
+}
+
 fn main() {
     if let Err(e) = do_run_tests() {
         Err(e).unwrap()
@@ -274,10 +369,13 @@ macro_rules! run {
 }
 
 fn do_run_tests() -> anyhow::Result<()> {
-    run!(test_ledger_pubkey);
-    run!(test_ledger_address);
-    run!(test_ledger_sign_message);
-    run!(test_ledger_sign_transaction);
+    // run!(test_ledger_pubkey);
+    // run!(test_ledger_address);
+    // run!(test_ledger_sign_message);
+    // run!(test_ledger_sign_send_transaction);
+    run!(test_ledger_sign_confirm_transaction);
+    // run!(test_ledger_sign_submit_transaction);
+    // run!(test_ledger_sign_burn_transaction);
 
     Ok(())
 }

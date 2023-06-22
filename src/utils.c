@@ -5,6 +5,8 @@
 
 #include <stdlib.h>
 
+#ifndef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+
 void get_public_key(uint32_t account_number, uint8_t* publicKeyArray) {
     cx_ecfp_private_key_t privateKey;
     cx_ecfp_public_key_t publicKey;
@@ -95,6 +97,8 @@ unsigned int ui_prepro(const bagl_element_t *element) {
     }
     return display;
 }
+
+#endif
 
 void writeUint32BE(uint32_t val, uint8_t *bytes) {
     bytes[0] = (val >> 24) & 0xFF;

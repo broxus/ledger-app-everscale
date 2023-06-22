@@ -369,13 +369,13 @@ macro_rules! run {
 }
 
 fn do_run_tests() -> anyhow::Result<()> {
-    // run!(test_ledger_pubkey);
-    // run!(test_ledger_address);
-    // run!(test_ledger_sign_message);
-    // run!(test_ledger_sign_send_transaction);
+    run!(test_ledger_pubkey);
+    run!(test_ledger_address);
+    run!(test_ledger_sign_message);
+    run!(test_ledger_sign_send_transaction);
     run!(test_ledger_sign_confirm_transaction);
-    // run!(test_ledger_sign_submit_transaction);
-    // run!(test_ledger_sign_burn_transaction);
+    run!(test_ledger_sign_submit_transaction);
+    run!(test_ledger_sign_burn_transaction);
 
     Ok(())
 }

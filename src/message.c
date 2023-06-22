@@ -17,10 +17,9 @@ void deserialize_array(uint8_t* in, uint8_t in_size, uint16_t offset, uint8_t* o
         uint8_t cur = in[i] << shift;
         out[j] = cur;
 
-        /*if (j == out_size - 1) {
-            VALIDATE(i + 1 < in_size, ERR_INVALID_KEY);
+        if (j == out_size - 1 && i + 1 < in_size) {
             out[j] |= in[i + 1] >> (8 - shift);
-        }*/
+        }
 
         if (i != first_data_byte) {
             out[j - 1] |= in[i] >> (8 - shift);

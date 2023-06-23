@@ -97,11 +97,11 @@ void handleSign(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, __attribute__((unus
 
     if (!context->sign_with_chain_id) {
         memcpy(context->to_sign, dataBuffer + offset, TO_SIGN_LENGTH);
-        snprintf(context->to_sign_str, sizeof(context->to_sign_str), "%.*H", TO_SIGN_LENGTH, context->to_sign);
+        format_hex(context->to_sign, TO_SIGN_LENGTH, context->to_sign_str, sizeof(context->to_sign_str));
     } else {
         memcpy(context->to_sign, context->chain_id, CHAIN_ID_LENGTH);
         memcpy(context->to_sign + CHAIN_ID_LENGTH, dataBuffer + offset, TO_SIGN_LENGTH);
-        snprintf(context->to_sign_str, sizeof(context->to_sign_str), "%.*H", CHAIN_ID_LENGTH + TO_SIGN_LENGTH, context->to_sign);
+        format_hex(context->to_sign, CHAIN_ID_LENGTH + TO_SIGN_LENGTH, context->to_sign_str, sizeof(context->to_sign_str));
     }
 
     ux_flow_init(0, ux_sign_flow, NULL);

@@ -65,7 +65,7 @@ void set_dst_address(uint8_t wc, const uint8_t* address) {
     memcpy(address_str, wc_temp, wc_len);
     address_str += wc_len;
 
-    snprintf(address_str, sizeof(data_context.sign_tr_context.address_str) - wc_len, "%.*H", ADDRESS_LENGTH, address);
+    format_hex(address, ADDRESS_LENGTH, address_str, sizeof(data_context.sign_tr_context.address_str));
 }
 
 void set_amount(const uint8_t* amount, uint8_t amount_length, uint8_t flags, uint8_t decimals, const char* ticker) {
@@ -106,8 +106,7 @@ void set_amount(const uint8_t* amount, uint8_t amount_length, uint8_t flags, uin
 void set_transaction_id(const uint8_t* transaction_id) {
     char* transaction_id_str = data_context.sign_tr_context.transaction_id_str;
     memset(transaction_id_str, 0, sizeof(data_context.sign_tr_context.transaction_id_str));
-
-    snprintf(transaction_id_str, sizeof(data_context.sign_tr_context.transaction_id_str), "%.*H", TRANSACTION_ID_LENGTH, transaction_id);
+    format_hex(transaction_id, TRANSACTION_ID_LENGTH, transaction_id_str, sizeof(data_context.sign_tr_context.transaction_id_str));
 }
 
 void deserialize_int_message_header(struct SliceData_t* slice, uint8_t flags, SignTransactionContext_t* ctx) {

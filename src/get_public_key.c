@@ -59,7 +59,7 @@ void handleGetPublicKey(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t da
     } 
 
     if (p1 == P1_CONFIRM) {
-        snprintf(context->public_key_str, sizeof(context->public_key_str), "%.*H", sizeof(context->public_key), context->public_key);
+        format_hex(context->public_key, sizeof(context->public_key), context->public_key_str, sizeof(context->public_key_str));
 #ifndef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
         ux_flow_init(0, ux_display_public_flow, NULL);
 #endif

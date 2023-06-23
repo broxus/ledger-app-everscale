@@ -204,6 +204,8 @@ void find_public_key_cell() {
     put_to_node(refs[0], bit_len, &key);
 }
 
+#ifndef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+
 void compute_wallet_v3_address(uint32_t account_number, uint8_t* address) {
     uint8_t data_hash[HASH_SIZE];
 
@@ -437,3 +439,9 @@ void get_address(const uint32_t account_number, uint8_t wallet_type, uint8_t* ad
             THROW(ERR_INVALID_WALLET_TYPE);
     }
 }
+
+#else
+
+void get_address(const uint32_t account_number, uint8_t wallet_type, uint8_t* address) {}
+
+#endif

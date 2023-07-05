@@ -18,7 +18,7 @@ static uint8_t set_result_sign_transaction() {
                 cx_eddsa_sign(&privateKey, CX_LAST, CX_SHA512, context->to_sign, CHAIN_ID_LENGTH + TO_SIGN_LENGTH, NULL, 0, context->signature, SIGNATURE_LENGTH, NULL);
             }
         } FINALLY {
-            memset(&privateKey, 0, sizeof(privateKey));
+            explicit_bzero(&privateKey, sizeof(privateKey));
         }
     }
     END_TRY;

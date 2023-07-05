@@ -45,7 +45,7 @@ void handleApdu(volatile unsigned int *flags, volatile unsigned int *tx, int rx)
                     break;
 
                 case INS_GET_PUBLIC_KEY: {
-                    if (G_io_apdu_buffer[OFFSET_LC] != rx - 5) {
+                    if (G_io_apdu_buffer[OFFSET_LC] != rx - OFFSET_CDATA) {
                         // the length of the APDU should match what's in the 5-byte header.
                         // If not fail.  Don't want to buffer overrun or anything.
                         THROW(0x6985);
@@ -55,7 +55,7 @@ void handleApdu(volatile unsigned int *flags, volatile unsigned int *tx, int rx)
                 } break;
 
                 case INS_SIGN: {
-                    if (G_io_apdu_buffer[OFFSET_LC] != rx - 5) {
+                    if (G_io_apdu_buffer[OFFSET_LC] != rx - OFFSET_CDATA) {
                         // the length of the APDU should match what's in the 5-byte header.
                         // If not fail.  Don't want to buffer overrun or anything.
                         THROW(0x6985);
@@ -65,7 +65,7 @@ void handleApdu(volatile unsigned int *flags, volatile unsigned int *tx, int rx)
                 } break;
 
                 case INS_GET_ADDRESS: {
-                    if (G_io_apdu_buffer[OFFSET_LC] != rx - 5) {
+                    if (G_io_apdu_buffer[OFFSET_LC] != rx - OFFSET_CDATA) {
                         // the length of the APDU should match what's in the 5-byte header.
                         // If not fail.  Don't want to buffer overrun or anything.
                         THROW(0x6985);
@@ -75,7 +75,7 @@ void handleApdu(volatile unsigned int *flags, volatile unsigned int *tx, int rx)
                 } break;
 
                 case INS_SIGN_TRANSACTION: {
-                    if (G_io_apdu_buffer[OFFSET_LC] != rx - 5) {
+                    if (G_io_apdu_buffer[OFFSET_LC] != rx - OFFSET_CDATA) {
                         // the length of the APDU should match what's in the 5-byte header.
                         // If not fail.  Don't want to buffer overrun or anything.
                         THROW(0x6985);

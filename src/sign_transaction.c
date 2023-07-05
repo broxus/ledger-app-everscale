@@ -213,7 +213,8 @@ void handleSignTransaction(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t
     uint8_t* msg_begin = dataBuffer + offset;
 
     // Since we check LC dataLength can not be manipulated
-    uint8_t msg_length = dataLength - offset;
+    VALIDATE(dataLength >= offset, ERR_INVALID_REQUEST);
+    uint16_t msg_length = dataLength - offset;
 
     ByteStream_t src;
     ByteStream_init(&src, msg_begin, msg_length);

@@ -13,6 +13,19 @@ The application covers the following functionalities :
 
 The application interface can be accessed over HID or BLE
 
+## Command APDU
+
+| Field name | Length (bytes) | Description                                                           |
+| ---------- |----------------| --------------------------------------------------------------------- |
+| CLA        | 1              | Instruction class - indicates the type of command                     |
+| INS        | 1              | Instruction code - indicates the specific command                     |
+| P1         | 1              | Instruction parameter 1 for the command                               |
+| P2         | 1              | Instruction parameter 2 for the command                               |
+| Lc         | 1              | The number of bytes of command data to follow (a value from 0 to 255) |
+| CData      | variable       | Command data with `Lc` bytes                                          |
+
+    No `Le` field in APDU command
+
 ## General purpose APDUs
 
 ### GET APP CONFIGURATION
@@ -23,9 +36,9 @@ _This command returns specific application configuration_
 
 ##### Command
 
-| _CLA_ | _INS_ | _P1_ | _P2_ | _Lc_ | _Le_ |
-| ----- |:-----:| ---: | ---- |:----:|-----:|
-| E0    |  01   |   00 | 00   |  00  |   04 |
+| _CLA_ | _INS_ | _P1_ | _P2_ | _Lc_ |  _CData_ |
+| ----- |:-----:| ---: | ---- |:----:|---------:|
+| E0    |  01   |   00 | 00   |  00  | variable |
 
 ##### Input data
 
@@ -47,9 +60,9 @@ _This command returns a public key for the given account number_
 
 ##### Command
 
-| _CLA_ | _INS_ | _P1_                                                                             | _P2_ |   _Lc_   |     _Le_ |
-| ----- |:-----:|:---------------------------------------------------------------------------------|------| :------: | -------: |
-| E0    |  02   | 00 : return public key<br/>01 : display public key and confirm before returning  | 00   | variable | variable |
+| _CLA_ | _INS_ | _P1_                                                                             | _P2_ |   _Lc_   |   _CData_ |
+| ----- |:-----:|:---------------------------------------------------------------------------------|------| :------: |----------:|
+| E0    |  02   | 00 : return public key<br/>01 : display public key and confirm before returning  | 00   | variable |  variable |
 
 ##### Input data
 
@@ -73,8 +86,8 @@ _This command signs a message_
 
 ##### Command
 
-| _CLA_ | _INS_ | _P1_ | _P2_ |   _Lc_   |     _Le_ |
-| ----- |:-----:| ---: | ---- | :------: | -------: |
+| _CLA_ | _INS_ | _P1_ | _P2_ |   _Lc_   |  _CData_ |
+| ----- |:-----:| ---: | ---- | :------: |---------:|
 | E0    |  03   |   01 | 00   | variable | variable |
 
 ##### Input data
@@ -101,8 +114,8 @@ _This command returns an address for the given account number_
 
 ##### Command
 
-| _CLA_ | _INS_ | _P1_                                                                      | _P2_ |   _Lc_   |     _Le_ |
-| ----- |:-----:|:--------------------------------------------------------------------------|------| :------: | -------: |
+| _CLA_ | _INS_ | _P1_                                                                      | _P2_ |   _Lc_   |  _CData_ |
+| ----- |:-----:|:--------------------------------------------------------------------------|------| :------: |---------:|
 | E0    |  04   | 00 : return address<br/>01 : display address and confirm before returning | 00   | variable | variable |
 
 ##### Input data
@@ -127,9 +140,9 @@ _This command signs a transaction message_
 
 ##### Command
 
-| _CLA_ | _INS_ | _P1_ | _P2_ |   _Lc_   |     _Le_ |
-| ----- |:-----:| ---: | ---- | :------: | -------: |
-| E0    |  05   |   01 | 00   | variable | variable |
+| _CLA_ | _INS_ | _P1_ | _P2_ |   _Lc_   |        _CData_ |
+| ----- |:-----:| ---: | ---- | :------: |---------------:|
+| E0    |  05   |   01 | 00   | variable |       variable |
 
 ##### Input data
 

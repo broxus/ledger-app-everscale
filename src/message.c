@@ -484,6 +484,7 @@ int prepare_to_sign(struct ByteStream_t* src, uint8_t wc, uint8_t* address, uint
             bool in_same_cell = function_id == MULTISIG_CONFIRM_TRANSACTION;
 
             // Gift
+            VALIDATE(in_same_cell || bc->cells_count > GIFT_CELL_INDEX, ERR_INVALID_CELL_INDEX);
             Cell_t* gift_cell = in_same_cell ? root_cell : &bc->cells[GIFT_CELL_INDEX];
 
             SliceData_t gift_slice;

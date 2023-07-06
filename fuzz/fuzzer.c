@@ -31,7 +31,7 @@ void hex_to_bytes(const char* hex, uint8_t* bytes)
 }
 
 extern int LLVMFuzzerTestOneInput(const uint8_t *buf, size_t len) {
-    // if (len < 40) return -1;
+    if (len < 1) return -1;
 
     /*auto boc = "0101040104a0a0a01a4ba92d8ae00301e02800004000";
     auto buffer_len = strlen(boc) / 2;
@@ -39,11 +39,12 @@ extern int LLVMFuzzerTestOneInput(const uint8_t *buf, size_t len) {
     uint8_t buffer[buffer_len];
     hex_to_bytes(boc, buffer);*/
 
+    data_context.sign_tr_context.current_wallet_type = buf[0] % 9;
 
     BEGIN_TRY {
         TRY {
             ByteStream_t src;
-            ByteStream_init(&src, buf, len);
+            ByteStream_init(&src, buf+1, len-1);
 
             uint8_t wc = DEFAULT_WORKCHAIN_ID;
 

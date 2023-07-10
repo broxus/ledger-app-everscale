@@ -170,6 +170,7 @@ _This command signs a transaction message_
 ## Transport protocol
 
 ### General transport description
+:warning: Unimplemented
 
 _Ledger APDUs requests and responses are encapsulated using a flexible protocol allowing to fragment large payloads over different underlying transport mechanisms._
 

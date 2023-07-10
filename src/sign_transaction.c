@@ -163,7 +163,7 @@ void handleSignTransaction(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t
     context->decimals = dataBuffer[offset];
     offset += sizeof(context->decimals);
 
-    VALIDATE(dataLength >= offset + sizeof(ticker_len), ERR_INVALID_REQUEST);
+    VALIDATE(dataLength >= offset + sizeof(uint8_t), ERR_INVALID_REQUEST);
     uint8_t ticker_len = dataBuffer[offset];
     offset += sizeof(ticker_len);
 
@@ -173,7 +173,7 @@ void handleSignTransaction(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t
     memcpy(context->ticker, dataBuffer + offset, ticker_len);
     offset += ticker_len;
 
-    VALIDATE(dataLength >= offset + sizeof(metadata), ERR_INVALID_REQUEST);
+    VALIDATE(dataLength >= offset + sizeof(uint8_t), ERR_INVALID_REQUEST);
     uint8_t metadata = dataBuffer[offset];
     offset += sizeof(metadata);
 

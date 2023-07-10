@@ -85,7 +85,7 @@ void handleSign(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, __attribute__((unus
     context->account_number = readUint32BE(dataBuffer + offset);
     offset += sizeof(context->account_number);
 
-    VALIDATE(dataLength >= offset + sizeof(metadata), ERR_INVALID_REQUEST);
+    VALIDATE(dataLength >= offset + sizeof(uint8_t), ERR_INVALID_REQUEST);
     uint8_t metadata = dataBuffer[offset];
     offset += sizeof(metadata);
 

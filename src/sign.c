@@ -81,9 +81,11 @@ void handleSign(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, __attribute__((unus
 
     size_t offset = 0;
 
+    VALIDATE(dataLength >= offset + sizeof(context->account_number), ERR_INVALID_REQUEST);
     context->account_number = readUint32BE(dataBuffer + offset);
     offset += sizeof(context->account_number);
 
+    VALIDATE(dataLength >= offset + sizeof(metadata), ERR_INVALID_REQUEST);
     uint8_t metadata = dataBuffer[offset];
     offset += sizeof(metadata);
 
@@ -91,10 +93,12 @@ void handleSign(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, __attribute__((unus
     if (metadata & FLAG_WITH_CHAIN_ID) {
         context->sign_with_chain_id = true;
 
+        VALIDATE(dataLength >= offset + sizeof(context->chain_id), ERR_INVALID_REQUEST);
         memcpy(context->chain_id, dataBuffer + offset, CHAIN_ID_LENGTH);
         offset += sizeof(context->chain_id);
     }
 
+    VALIDATE(dataLength >= offset + TO_SIGN_LENGTH, ERR_INVALID_REQUEST);
     if (!context->sign_with_chain_id) {
         memcpy(context->to_sign, dataBuffer + offset, TO_SIGN_LENGTH);
         format_hex(context->to_sign, TO_SIGN_LENGTH, context->to_sign_str, sizeof(context->to_sign_str));

@@ -151,28 +151,35 @@ void handleSignTransaction(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t
 
     size_t offset = 0;
 
+    VALIDATE(dataLength >= offset + sizeof(context->account_number), ERR_INVALID_REQUEST);
     context->account_number = readUint32BE(dataBuffer + offset);
     offset += sizeof(context->account_number);
 
+    VALIDATE(dataLength >= offset + sizeof(context->origin_wallet_type), ERR_INVALID_REQUEST);
     context->origin_wallet_type = dataBuffer[offset];
     offset += sizeof(context->origin_wallet_type);
 
+    VALIDATE(dataLength >= offset + sizeof(context->decimals), ERR_INVALID_REQUEST);
     context->decimals = dataBuffer[offset];
     offset += sizeof(context->decimals);
 
+    VALIDATE(dataLength >= offset + sizeof(ticker_len), ERR_INVALID_REQUEST);
     uint8_t ticker_len = dataBuffer[offset];
     offset += sizeof(ticker_len);
 
     VALIDATE(ticker_len != 0 && ticker_len <= MAX_TICKER_LEN, ERR_TICKER_LENGTH);
 
+    VALIDATE(dataLength >= offset + ticker_len, ERR_INVALID_REQUEST);
     memcpy(context->ticker, dataBuffer + offset, ticker_len);
     offset += ticker_len;
 
+    VALIDATE(dataLength >= offset + sizeof(metadata), ERR_INVALID_REQUEST);
     uint8_t metadata = dataBuffer[offset];
     offset += sizeof(metadata);
 
     // Read wallet type if present
     if (metadata & FLAG_WITH_WALLET_ID) {
+        VALIDATE(dataLength >= offset + sizeof(context->current_wallet_type), ERR_INVALID_REQUEST);
         context->current_wallet_type = dataBuffer[offset];
         offset += sizeof(context->current_wallet_type);
     } else {
@@ -187,6 +194,7 @@ void handleSignTransaction(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t
     // Read wc if present
     uint8_t wc = DEFAULT_WORKCHAIN_ID;
     if (metadata & FLAG_WITH_WORKCHAIN_ID) {
+        VALIDATE(dataLength >= offset + sizeof(wc), ERR_INVALID_REQUEST);
         wc = dataBuffer[offset];
         offset += sizeof(wc);
     }
@@ -194,6 +202,7 @@ void handleSignTransaction(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t
     // Read initial address if present
     uint8_t prepend_address[ADDRESS_LENGTH];
     if (metadata & FLAG_WITH_ADDRESS) {
+        VALIDATE(dataLength >= offset + sizeof(address), ERR_INVALID_REQUEST);
         memcpy(prepend_address, dataBuffer + offset, ADDRESS_LENGTH);
         offset += sizeof(address);
     } else {
@@ -204,6 +213,7 @@ void handleSignTransaction(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t
     if (metadata & FLAG_WITH_CHAIN_ID) {
         context->sign_with_chain_id = true;
 
+        VALIDATE(dataLength >= offset + sizeof(context->chain_id), ERR_INVALID_REQUEST);
         memcpy(context->chain_id, dataBuffer + offset, CHAIN_ID_LENGTH);
         offset += sizeof(context->chain_id);
     } else {
@@ -213,7 +223,6 @@ void handleSignTransaction(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t
     uint8_t* msg_begin = dataBuffer + offset;
 
     // Since we check LC dataLength can not be manipulated
-    VALIDATE(dataLength >= offset, ERR_INVALID_REQUEST);
     uint16_t msg_length = dataLength - offset;
 
     ByteStream_t src;

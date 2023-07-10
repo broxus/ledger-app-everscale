@@ -61,7 +61,7 @@ void handleGetAddress(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t data
     uint32_t account_number = readUint32BE(dataBuffer + offset);
     offset += sizeof(account_number);
 
-    uint8_t wallet_type = dataBuffer[offset];;
+    uint8_t wallet_type = dataBuffer[offset];
 
     get_address(account_number, wallet_type, data_context.addr_context.address);
 

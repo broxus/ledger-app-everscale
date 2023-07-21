@@ -2,6 +2,8 @@
 #include "utils.h"
 #include "errors.h"
 
+static const char SIGN_MAGIC[] = {0xFF, 0xFF, 0xFF, 0xFF };
+
 static uint8_t set_result_sign() {
     cx_ecfp_private_key_t privateKey;
     SignContext_t* context = &data_context.sign_context;
@@ -39,7 +41,7 @@ UX_STEP_NOCB(
     ux_sign_flow_2_step,
     bnnn_paging,
     {
-      .title = "Message hash",
+      .title = "Message",
       .text = data_context.sign_context.to_sign_str,
     });
 UX_STEP_CB(
@@ -85,28 +87,10 @@ void handleSign(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, __attribute__((unus
     context->account_number = readUint32BE(dataBuffer + offset);
     offset += sizeof(context->account_number);
 
-    VALIDATE(dataLength >= offset + sizeof(uint8_t), ERR_INVALID_REQUEST);
-    uint8_t metadata = dataBuffer[offset];
-    offset += sizeof(metadata);
-
-    // Read chain id if present
-    if (metadata & FLAG_WITH_CHAIN_ID) {
-        context->sign_with_chain_id = true;
-
-        VALIDATE(dataLength >= offset + sizeof(context->chain_id), ERR_INVALID_REQUEST);
-        memcpy(context->chain_id, dataBuffer + offset, CHAIN_ID_LENGTH);
-        offset += sizeof(context->chain_id);
-    }
-
     VALIDATE(dataLength >= offset + TO_SIGN_LENGTH, ERR_INVALID_REQUEST);
-    if (!context->sign_with_chain_id) {
-        memcpy(context->to_sign, dataBuffer + offset, TO_SIGN_LENGTH);
-        format_hex(context->to_sign, TO_SIGN_LENGTH, context->to_sign_str, sizeof(context->to_sign_str));
-    } else {
-        memcpy(context->to_sign, context->chain_id, CHAIN_ID_LENGTH);
-        memcpy(context->to_sign + CHAIN_ID_LENGTH, dataBuffer + offset, TO_SIGN_LENGTH);
-        format_hex(context->to_sign, CHAIN_ID_LENGTH + TO_SIGN_LENGTH, context->to_sign_str, sizeof(context->to_sign_str));
-    }
+    memcpy(context->to_sign, SIGN_MAGIC, SIGN_MAGIC_LENGTH);
+    memcpy(context->to_sign + SIGN_MAGIC_LENGTH, dataBuffer + offset, TO_SIGN_LENGTH);
+    format_hex(context->to_sign, TO_SIGN_LENGTH, context->to_sign_str, sizeof(context->to_sign_str));
 
     ux_flow_init(0, ux_sign_flow, NULL);
     *flags |= IO_ASYNCH_REPLY;

@@ -17,6 +17,7 @@
 #define BIP32_PATH 5
 #define AMOUNT_LENGHT 16
 #define TO_SIGN_LENGTH 32
+#define SIGN_MAGIC_LENGTH 4
 #define CHAIN_ID_LENGTH 4
 #define SIGNATURE_LENGTH 64
 #define HASH_SIZE 32
@@ -63,7 +64,7 @@ typedef struct PublicKeyContext_t {
 typedef struct SignContext_t {
     bool sign_with_chain_id;
     uint8_t chain_id[CHAIN_ID_LENGTH];
-    uint8_t to_sign[CHAIN_ID_LENGTH + TO_SIGN_LENGTH];
+    uint8_t to_sign[SIGN_MAGIC_LENGTH + TO_SIGN_LENGTH];
     uint8_t signature[SIGNATURE_LENGTH];
     uint32_t account_number;
     char to_sign_str[73];

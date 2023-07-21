@@ -4,7 +4,7 @@ use std::sync::Arc;
 
 use ed25519_dalek::{PublicKey, Verifier, SIGNATURE_LENGTH};
 
-use everscale_ledger_wallet::ledger::{LedgerWallet, WalletType};
+use everscale_ledger_wallet::ledger::{LedgerWallet, SIGN_MAGIC, SignTransactionMeta, WalletType};
 use everscale_ledger_wallet::locator::Manufacturer;
 use everscale_ledger_wallet::remote_wallet::{initialize_wallet_manager, RemoteWallet};
 use nekoton::core::models::Expiration;
@@ -168,8 +168,13 @@ fn test_ledger_sign_message() -> anyhow::Result<()> {
     let (hash, _) =
         init_data.make_transfer_payload(vec![gift], expiration.timestamp(&SimpleClock))?;
 
-    let signature = ledger.sign_message_hash(account, hash.as_slice(), None)?;
-    assert!(public_key.verify(hash.as_slice(), &signature).is_ok());
+    let signature = ledger.sign_message(account, hash.as_slice())?;
+
+    let mut message = Vec::with_capacity(SIGN_MAGIC.len() + hash.as_slice().len());
+    message.extend(SIGN_MAGIC.to_vec());
+    message.extend(hash.into_vec());
+
+    assert!(public_key.verify(message.as_slice(), &signature).is_ok());
 
     Ok(())
 }
@@ -242,6 +247,8 @@ fn test_ledger_sign_send_transaction() -> anyhow::Result<()> {
     // Strip empty signature
     data.move_by(SIGNATURE_LENGTH * 8)?;
 
+    let meta = SignTransactionMeta::default();
+
     let cell = data.into_cell();
     let boc = ton_types::serialize_toc(&cell)?;
 
@@ -250,9 +257,7 @@ fn test_ledger_sign_send_transaction() -> anyhow::Result<()> {
         wallet_type,
         EVER_DECIMALS,
         EVER_TICKER,
-        None,
-        None,
-        None,
+        meta,
         &boc,
     )?;
     assert!(public_key.verify(message_hash, &signature).is_ok());
@@ -279,14 +284,14 @@ fn test_ledger_sign_confirm_transaction() -> anyhow::Result<()> {
     // Get public key
     let public_key = ledger.get_pubkey(account, false)?;
 
+    let meta = SignTransactionMeta::default();
+
     let signature = ledger.sign_transaction(
         account,
         wallet_type,
         EVER_DECIMALS,
         EVER_TICKER,
-        None,
-        None,
-        None,
+        meta,
         &boc,
     )?;
     assert!(public_key.verify(message_hash.as_slice(), &signature).is_ok());
@@ -309,14 +314,14 @@ fn test_ledger_sign_submit_transaction() -> anyhow::Result<()> {
     // Get public key
     let public_key = ledger.get_pubkey(account, false)?;
 
+    let meta = SignTransactionMeta::default();
+
     let signature = ledger.sign_transaction(
         account,
         wallet_type,
         USDT_DECIMALS,
         USDT_TICKER,
-        None,
-        None,
-        None,
+        meta,
         &boc,
     )?;
     assert!(public_key.verify(message_hash.as_slice(), &signature).is_ok());
@@ -340,14 +345,14 @@ fn test_ledger_sign_burn_transaction() -> anyhow::Result<()> {
     // Get public key
     let public_key = ledger.get_pubkey(account, false)?;
 
+    let meta = SignTransactionMeta::default();
+
     let signature = ledger.sign_transaction(
         account,
         wallet_type,
         USDT_DECIMALS,
         USDT_TICKER,
-        None,
-        None,
-        None,
+        meta,
         &boc,
     )?;
     assert!(public_key.verify(message_hash.as_slice(), &signature).is_ok());

@@ -5,7 +5,7 @@ use std::sync::Arc;
 use bigdecimal::num_bigint::ToBigInt;
 use clap::Parser;
 use ed25519_dalek::{PublicKey, SIGNATURE_LENGTH};
-use everscale_ledger_wallet::ledger::{LedgerWallet, WalletType};
+use everscale_ledger_wallet::ledger::{LedgerWallet, SignTransactionMeta, WalletType};
 use everscale_ledger_wallet::locator::Manufacturer;
 use everscale_ledger_wallet::remote_wallet::{initialize_wallet_manager, RemoteWallet};
 use nekoton::core::models::{Expiration, TokenWalletVersion};
@@ -571,6 +571,8 @@ async fn main() -> anyhow::Result<()> {
                             None,
                         )?;
 
+                        let meta = SignTransactionMeta::default();
+
                         let boc = ton_types::serialize_toc(&payload)?;
 
                         let signature = ledger.sign_transaction(
@@ -578,9 +580,7 @@ async fn main() -> anyhow::Result<()> {
                             wallet_type,
                             EVER_DECIMALS,
                             EVER_TICKER,
-                            None,
-                            None,
-                            None,
+                            meta,
                             &boc,
                         )?;
 
@@ -613,14 +613,14 @@ async fn main() -> anyhow::Result<()> {
 
                         let boc = ton_types::serialize_toc(&payload)?;
 
+                        let meta = SignTransactionMeta::default();
+
                         let signature = ledger.sign_transaction(
                             account,
                             wallet_type,
                             EVER_DECIMALS,
                             EVER_TICKER,
-                            None,
-                            None,
-                            None,
+                            meta,
                             &boc,
                         )?;
 
@@ -661,6 +661,8 @@ async fn main() -> anyhow::Result<()> {
                             None,
                         )?;
 
+                        let meta = SignTransactionMeta::default();
+
                         let boc = ton_types::serialize_toc(&payload)?;
 
                         let signature = ledger.sign_transaction(
@@ -668,9 +670,7 @@ async fn main() -> anyhow::Result<()> {
                             wallet_type,
                             EVER_DECIMALS,
                             EVER_TICKER,
-                            None,
-                            None,
-                            None,
+                            meta,
                             &boc,
                         )?;
 
@@ -825,6 +825,8 @@ async fn main() -> anyhow::Result<()> {
                                 Some(token_body),
                             )?;
 
+                            let meta = SignTransactionMeta::default();
+
                             let boc = ton_types::serialize_toc(&payload)?;
 
                             let signature = ledger.sign_transaction(
@@ -832,9 +834,7 @@ async fn main() -> anyhow::Result<()> {
                                 wallet_type,
                                 token_details.decimals,
                                 token_details.ticker,
-                                None,
-                                None,
-                                None,
+                                meta,
                                 &boc,
                             )?;
 
@@ -865,6 +865,8 @@ async fn main() -> anyhow::Result<()> {
                                 Some(token_body),
                             )?;
 
+                            let meta = SignTransactionMeta::default();
+
                             let boc = ton_types::serialize_toc(&payload)?;
 
                             let signature = ledger.sign_transaction(
@@ -872,9 +874,7 @@ async fn main() -> anyhow::Result<()> {
                                 wallet_type,
                                 token_details.decimals,
                                 token_details.ticker,
-                                None,
-                                None,
-                                None,
+                                meta,
                                 &boc,
                             )?;
 
@@ -917,6 +917,8 @@ async fn main() -> anyhow::Result<()> {
                                 Some(token_body),
                             )?;
 
+                            let meta = SignTransactionMeta::default();
+
                             let boc = ton_types::serialize_toc(&payload)?;
 
                             let signature = ledger.sign_transaction(
@@ -924,9 +926,7 @@ async fn main() -> anyhow::Result<()> {
                                 wallet_type,
                                 token_details.decimals,
                                 token_details.ticker,
-                                None,
-                                None,
-                                None,
+                                meta,
                                 &boc,
                             )?;
 
@@ -1004,6 +1004,8 @@ async fn main() -> anyhow::Result<()> {
                         let (payload, unsigned_message) =
                             prepare_multisig_wallet_deploy(pubkey, wallet_type)?;
 
+                        let meta = SignTransactionMeta::default();
+
                         let boc = ton_types::serialize_toc(&payload)?;
 
                         let signature = ledger.sign_transaction(
@@ -1011,9 +1013,7 @@ async fn main() -> anyhow::Result<()> {
                             wallet_type,
                             EVER_DECIMALS,
                             EVER_TICKER,
-                            None,
-                            None,
-                            None,
+                            meta,
                             &boc,
                         )?;
 

@@ -11,11 +11,7 @@ static uint8_t set_result_sign() {
     BEGIN_TRY {
         TRY {
             get_private_key(context->account_number, &privateKey);
-            if (!context->sign_with_chain_id) {
-                cx_eddsa_sign(&privateKey, CX_LAST, CX_SHA512, context->to_sign, TO_SIGN_LENGTH, NULL, 0, context->signature, SIGNATURE_LENGTH, NULL);
-            } else {
-                cx_eddsa_sign(&privateKey, CX_LAST, CX_SHA512, context->to_sign, CHAIN_ID_LENGTH + TO_SIGN_LENGTH, NULL, 0, context->signature, SIGNATURE_LENGTH, NULL);
-            }
+            cx_eddsa_sign(&privateKey, CX_LAST, CX_SHA512, context->to_sign, SIGN_MAGIC_LENGTH + TO_SIGN_LENGTH, NULL, 0, context->signature, SIGNATURE_LENGTH, NULL);
         } FINALLY {
             explicit_bzero(&privateKey, sizeof(privateKey));
         }
@@ -90,7 +86,7 @@ void handleSign(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, __attribute__((unus
     VALIDATE(dataLength >= offset + TO_SIGN_LENGTH, ERR_INVALID_REQUEST);
     memcpy(context->to_sign, SIGN_MAGIC, SIGN_MAGIC_LENGTH);
     memcpy(context->to_sign + SIGN_MAGIC_LENGTH, dataBuffer + offset, TO_SIGN_LENGTH);
-    format_hex(context->to_sign, TO_SIGN_LENGTH, context->to_sign_str, sizeof(context->to_sign_str));
+    format_hex(context->to_sign, SIGN_MAGIC_LENGTH + TO_SIGN_LENGTH, context->to_sign_str, sizeof(context->to_sign_str));
 
     ux_flow_init(0, ux_sign_flow, NULL);
     *flags |= IO_ASYNCH_REPLY;

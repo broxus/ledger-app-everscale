@@ -84,6 +84,8 @@ _This command returns a public key for the given account number_
 
 _This command signs a message_
 
+To avoid blindly signing message hash the application adds a 4-byte prefix [0xFF, 0xFF, 0xFF, 0xFF] to the message before signing.
+
 ##### Command
 
 | _CLA_ | _INS_ | _P1_ | _P2_ |   _Lc_   |  _CData_ |
@@ -95,8 +97,6 @@ _This command signs a message_
 | _Description_                            | _Length_ |
 |------------------------------------------|:--------:|
 | An account number to retrieve            |    4     |
-| Metadata                                 |    1     |
-| Chain ID (Optional: metadata b'00001000) |    4     |
 | A bytes to sign                          |    32    |
 
 ##### Output data

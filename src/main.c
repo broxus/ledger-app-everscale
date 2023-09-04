@@ -32,17 +32,32 @@ void reset_app_context() {
 void handleApdu(volatile unsigned int *flags, volatile unsigned int *tx, int rx) {
     unsigned short sw = 0;
 
+    if (!flags || !tx) {
+            THROW(0x6802);
+        }
+    if (rx < 0) {
+            THROW(0x6813);
+    }
     BEGIN_TRY {
         TRY {
             if (G_io_apdu_buffer[OFFSET_CLA] != CLA) {
                 THROW(0x6E00);
             }
-
+            // must at least hold the class and instruction
+            if (rx <= OFFSET_INS) {
+                THROW(0x6b00);
+            }
             PRINTF("command: %d\n", G_io_apdu_buffer[OFFSET_INS]);
             switch (G_io_apdu_buffer[OFFSET_INS]) {
-                case INS_GET_APP_CONFIGURATION:
-                    handleGetAppConfiguration(G_io_apdu_buffer[OFFSET_P1], G_io_apdu_buffer[OFFSET_P2], G_io_apdu_buffer + OFFSET_CDATA, G_io_apdu_buffer[OFFSET_LC], flags, tx);
-                    break;
+                case INS_GET_APP_CONFIGURATION: {
+                    if (G_io_apdu_buffer[OFFSET_P1] != 0 || G_io_apdu_buffer[OFFSET_P2] != 0) {
+                        // invalid parameter?
+                        THROW(0x6802);
+                    }
+
+                    handleGetAppConfiguration(G_io_apdu_buffer[OFFSET_P1], G_io_apdu_buffer[OFFSET_P2],
+                                              G_io_apdu_buffer + OFFSET_CDATA, G_io_apdu_buffer[OFFSET_LC], flags, tx);
+                } break;
 
                 case INS_GET_PUBLIC_KEY: {
                     if (G_io_apdu_buffer[OFFSET_LC] != rx - OFFSET_CDATA) {
@@ -81,7 +96,31 @@ void handleApdu(volatile unsigned int *flags, volatile unsigned int *tx, int rx)
                         THROW(0x6985);
                     }
 
-                    handleSignTransaction(G_io_apdu_buffer[OFFSET_P1], G_io_apdu_buffer[OFFSET_P2], G_io_apdu_buffer + OFFSET_CDATA, G_io_apdu_buffer[OFFSET_LC], flags, tx);
+                    uint8_t p1 = G_io_apdu_buffer[OFFSET_P1];
+                    if (p1 == P1_NON_CONFIRM) {
+                        // Don't allow blind signing.
+                        THROW(0x6808);
+                    }
+
+                    uint8_t p2 = G_io_apdu_buffer[OFFSET_P2];
+                    bool more = (bool) (p2 & P2_MORE);
+
+                    //P2_MORE is a signal for more apdu to receive in current chunk. P2_EXTEND is a signal for extended buffer and can't be in first chunk
+                    // P2_EXTEND && !P2_MORE = last APDU message;
+                    // P2_EXTEND && P2_MORE = !first !last APDU message
+                    // P2_MORE && !P2_EXTEND = first chunk.
+
+                    // P2_EXTEND is set to signal that this APDU buffer extends, rather
+                    // than replaces, the current message buffer
+                    bool first_data_chunk = !(p2 & P2_EXTEND);
+
+                    const int result = handleSignTransaction(G_io_apdu_buffer + OFFSET_CDATA, G_io_apdu_buffer[OFFSET_LC], flags, first_data_chunk, more);
+                    if (result != 0){
+                        reset_app_context();
+                        THROW(result);
+                    } else {
+                        THROW(0x9000);
+                    }
                 } break;
 
                 default:

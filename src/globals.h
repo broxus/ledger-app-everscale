@@ -11,6 +11,9 @@
 #define P1_CONFIRM 0x01
 #define P1_NON_CONFIRM 0x00
 
+#define P2_EXTEND 0x01
+#define P2_MORE 0x02
+
 #define PUBLIC_KEY_LENGTH 32
 #define ADDRESS_LENGTH 32
 #define TRANSACTION_ID_LENGTH 8
@@ -27,6 +30,7 @@
 #define PRUNED_BRANCH_DATA_SIZE 36
 
 #define MAX_TICKER_LEN 10
+#define MAX_DATA_LEN 1024
 
 #define WALLET_ID 0x4BA92D8A
 
@@ -81,6 +85,12 @@ typedef struct SignTransactionContext_t {
     uint8_t origin_wallet_type;
     uint8_t current_wallet_type;
     uint8_t decimals;
+    uint8_t address[ADDRESS_LENGTH];
+    uint8_t prepend_address[ADDRESS_LENGTH];
+    uint8_t wc;
+    //uint8_t* data;
+    uint8_t data[MAX_DATA_LEN];
+    int data_length;
     char ticker[MAX_TICKER_LEN];
 } SignTransactionContext_t;
 

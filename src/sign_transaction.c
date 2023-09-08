@@ -138,23 +138,16 @@ UX_FLOW(ux_sign_transaction_transfer_flow,
     &ux_sign_transaction_reject
 );
 
-int handleSignTransaction(uint8_t p1, uint8_t *dataBuffer, uint16_t dataLength, volatile unsigned int *flags, bool is_first_chunk, bool more) {
-    if (p1 == P1_NON_CONFIRM) {
-        // Don't allow blind signing.
-        THROW(0x6808);
-    } //////????
-
+int handleSignTransaction(uint8_t *dataBuffer, uint16_t dataLength, volatile unsigned int *flags, bool is_first_chunk, bool more) {
     if (is_first_chunk) {
         reset_app_context();
     }
 
-        SignTransactionContext_t *context = &data_context.sign_tr_context;
+    SignTransactionContext_t *context = &data_context.sign_tr_context;
 
-        size_t offset = 0;
-
+    size_t offset = 0;
 
     if (is_first_chunk) {
-
         VALIDATE(dataLength >= offset + sizeof(context->account_number), ERR_INVALID_REQUEST);
         context->account_number = readUint32BE(dataBuffer + offset);
         offset += sizeof(context->account_number);
@@ -191,7 +184,6 @@ int handleSignTransaction(uint8_t p1, uint8_t *dataBuffer, uint16_t dataLength, 
         }
 
         // Get address
-        //uint8_t address[ADDRESS_LENGTH];
         get_address(context->account_number, context->origin_wallet_type, context->address);
         memset(&boc_context, 0, sizeof(boc_context));
 
@@ -204,7 +196,6 @@ int handleSignTransaction(uint8_t p1, uint8_t *dataBuffer, uint16_t dataLength, 
         }
 
         // Read initial address if present
-        //uint8_t prepend_address[ADDRESS_LENGTH];
         if (metadata & FLAG_WITH_ADDRESS) {
             VALIDATE(dataLength >= offset + sizeof(context->address), ERR_INVALID_REQUEST);
             memcpy(context->prepend_address, dataBuffer + offset, ADDRESS_LENGTH);
@@ -236,8 +227,7 @@ int handleSignTransaction(uint8_t p1, uint8_t *dataBuffer, uint16_t dataLength, 
     }
 
     if (more) {
-        // set flag?
-        return 0;
+        THROW(SUCCESS);
     }
 
     // Handle transaction
@@ -264,6 +254,4 @@ int handleSignTransaction(uint8_t p1, uint8_t *dataBuffer, uint16_t dataLength, 
     }
 
     *flags |= IO_ASYNCH_REPLY;
-
-    return 0;
 }

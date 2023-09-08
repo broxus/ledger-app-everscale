@@ -138,8 +138,8 @@ UX_FLOW(ux_sign_transaction_transfer_flow,
     &ux_sign_transaction_reject
 );
 
-int handleSignTransaction(uint8_t *dataBuffer, uint16_t dataLength, volatile unsigned int *flags, bool is_first_chunk, bool more) {
-    if (dataBuffer[OFFSET_P1] == P1_NON_CONFIRM) {
+int handleSignTransaction(uint8_t p1, uint8_t *dataBuffer, uint16_t dataLength, volatile unsigned int *flags, bool is_first_chunk, bool more) {
+    if (p1 == P1_NON_CONFIRM) {
         // Don't allow blind signing.
         THROW(0x6808);
     } //////????

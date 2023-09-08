@@ -96,11 +96,11 @@ void handleApdu(volatile unsigned int *flags, volatile unsigned int *tx, int rx)
                         THROW(0x6985);
                     }
 
-                    uint8_t p1 = G_io_apdu_buffer[OFFSET_P1];
+                    /*uint8_t p1 = G_io_apdu_buffer[OFFSET_P1];
                     if (p1 == P1_NON_CONFIRM) {
                         // Don't allow blind signing.
                         THROW(0x6808);
-                    }
+                    } */
 
                     uint8_t p2 = G_io_apdu_buffer[OFFSET_P2];
                     bool more = (bool) (p2 & P2_MORE);
@@ -114,7 +114,7 @@ void handleApdu(volatile unsigned int *flags, volatile unsigned int *tx, int rx)
                     // than replaces, the current message buffer
                     bool first_data_chunk = !(p2 & P2_EXTEND);
 
-                    const int result = handleSignTransaction(G_io_apdu_buffer + OFFSET_CDATA, G_io_apdu_buffer[OFFSET_LC], flags, first_data_chunk, more);
+                    const int result = handleSignTransaction(G_io_apdu_buffer[OFFSET_P1], G_io_apdu_buffer + OFFSET_CDATA, G_io_apdu_buffer[OFFSET_LC], flags, first_data_chunk, more);
                     if (result != 0){
                         reset_app_context();
                         THROW(result);

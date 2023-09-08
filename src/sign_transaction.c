@@ -221,9 +221,10 @@ int handleSignTransaction(uint8_t *dataBuffer, uint16_t dataLength, volatile uns
     // Since we check LC dataLength can not be manipulated
     uint16_t msg_length = dataLength - offset;
 
-    if (msg_begin && msg_length > 0) { //if data exists
+    // TODO: check offset < MAX_DATA_LEN
+    if (msg_begin && msg_length > 0) { // if data exists
         memcpy(context->data + context->data_length, msg_begin, msg_length);
-        context->data_length += msg_length; //add length of the new message to our context offset
+        context->data_length += msg_length; // add length of the new message to our context offset
     }
 
     if (more) {

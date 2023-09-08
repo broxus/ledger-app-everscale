@@ -1,6 +1,6 @@
 use std::borrow::Cow;
+use std::rc::Rc;
 use std::str::FromStr;
-use std::sync::Arc;
 
 use ed25519_dalek::{PublicKey, Verifier, SIGNATURE_LENGTH};
 
@@ -27,7 +27,7 @@ const WALLET_ID: u32 = 0x4BA92D8A;
 
 const DEFAULT_EXPIRATION_TIMEOUT: u32 = 60; // sec
 
-fn get_ledger() -> (Arc<LedgerWallet>, PublicKey) {
+fn get_ledger() -> (Rc<LedgerWallet>, PublicKey) {
     let wallet_manager = initialize_wallet_manager().expect("Couldn't start wallet manager");
 
     // Update device list
@@ -362,7 +362,7 @@ fn test_ledger_sign_burn_transaction() -> anyhow::Result<()> {
 
 fn main() {
     if let Err(e) = do_run_tests() {
-        Err(e).unwrap()
+        panic!("{:?}", e)
     }
 }
 

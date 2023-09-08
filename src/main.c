@@ -85,7 +85,7 @@ void handleApdu(volatile unsigned int *flags, volatile unsigned int *tx, int rx)
                 } break;
 
                 case INS_SIGN: {
-                    if (G_io_apdu_buffer[OFFSET_P1] != 0 || G_io_apdu_buffer[OFFSET_P2] != 0) {
+                    if (G_io_apdu_buffer[OFFSET_P1] != P1_CONFIRM || G_io_apdu_buffer[OFFSET_P2] != 0) {
                         THROW(0x6802);
                     }
 
@@ -139,7 +139,6 @@ void handleApdu(volatile unsigned int *flags, volatile unsigned int *tx, int rx)
         switch (e & 0xF000) {
             case 0x6000:
                 sw = e;
-                reset_app_context();
                 break;
             case 0x9000:
                 // All is well
@@ -148,7 +147,6 @@ void handleApdu(volatile unsigned int *flags, volatile unsigned int *tx, int rx)
             default:
                 // Internal error
                 sw = 0x6800 | (e & 0x7FF);
-                reset_app_context();
                 break;
             }
             // Unexpected exception => report

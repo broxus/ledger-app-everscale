@@ -66,15 +66,7 @@ UX_FLOW(ux_sign_flow,
     &ux_sign_flow_4_step
 );
 
-void handleSign(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, __attribute__((unused)) uint16_t dataLength, volatile unsigned int *flags, volatile unsigned int *tx) {
-    UNUSED(p2);
-    UNUSED(tx);
-
-    if (p1 == P1_NON_CONFIRM) {
-        // Don't allow blind signing.
-        THROW(0x6808);
-    }
-
+void handleSign(uint8_t *dataBuffer, __attribute__((unused)) uint16_t dataLength, volatile unsigned int *flags) {
     SignContext_t* context = &data_context.sign_context;
 
     size_t offset = 0;

@@ -216,13 +216,14 @@ int handleSignTransaction(uint8_t *dataBuffer, uint16_t dataLength, volatile uns
         }
     }
     // offset is a pointer to dataBuffer, or the number of bytes we moved. here + offset means start of the message
-    //we need to save data to a context buffer and add msg_length to offset of this buffer
+    // we need to save data to a context buffer and add msg_length to offset of this buffer
     uint8_t* msg_begin = dataBuffer + offset;
+
     // Since we check LC dataLength can not be manipulated
     uint16_t msg_length = dataLength - offset;
 
-    // TODO: check offset < MAX_DATA_LEN
     if (msg_begin && msg_length > 0) { // if data exists
+        VALIDATE(context->data_length + msg_length < sizeof(context->data) , ERR_INVALID_DATA);
         memcpy(context->data + context->data_length, msg_begin, msg_length);
         context->data_length += msg_length; // add length of the new message to our context offset
     }

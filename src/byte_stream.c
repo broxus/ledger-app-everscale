@@ -3,7 +3,7 @@
 #include "utils.h"
 
 void ByteStream_init(struct ByteStream_t* self, uint8_t* data, uint16_t data_size) {
-    VALIDATE(self && data && data_size, ERR_INVALID_DATA);
+    VALIDATE(self && data && data_size, ERR_END_OF_STREAM);
     self->data_size = data_size;
     self->offset = 0;
     self->data = data;
@@ -46,7 +46,7 @@ uint16_t ByteStream_get_length(struct ByteStream_t* self) {
 }
 
 uint64_t ByteStream_read_uint(struct ByteStream_t* self, uint16_t bytes) {
-    VALIDATE(bytes > 0 && bytes <= 8, ERR_INVALID_DATA);
+    VALIDATE(bytes > 0 && bytes <= 8, ERR_END_OF_STREAM);
 
     uint64_t val;
 

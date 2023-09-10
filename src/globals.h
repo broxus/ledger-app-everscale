@@ -89,7 +89,7 @@ typedef struct SignTransactionContext_t {
     uint8_t prepend_address[ADDRESS_LENGTH];
     uint8_t wc;
     uint8_t data[MAX_DATA_LEN];
-    int data_length;
+    uint16_t data_offset;
     char ticker[MAX_TICKER_LEN];
 } SignTransactionContext_t;
 

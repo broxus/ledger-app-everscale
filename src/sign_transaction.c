@@ -223,9 +223,9 @@ int handleSignTransaction(uint8_t *dataBuffer, uint16_t dataLength, volatile uns
     uint16_t msg_length = dataLength - offset;
 
     if (msg_begin && msg_length > 0) { // if data exists
-        VALIDATE(context->data_length + msg_length < sizeof(context->data) , ERR_INVALID_DATA);
-        memcpy(context->data + context->data_length, msg_begin, msg_length);
-        context->data_length += msg_length; // add length of the new message to our context offset
+        VALIDATE(context->data_offset + msg_length < sizeof(context->data) , ERR_INVALID_DATA);
+        memcpy(context->data + context->data_offset, msg_begin, msg_length);
+        context->data_offset += msg_length; // add length of the new message to our context offset
     }
 
     if (more) {

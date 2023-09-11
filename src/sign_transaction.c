@@ -234,7 +234,7 @@ int handleSignTransaction(uint8_t *dataBuffer, uint16_t dataLength, volatile uns
 
     // Handle transaction
     ByteStream_t src;
-    ByteStream_init(&src, msg_begin, msg_length);
+    ByteStream_init(&src, context->data, context->data_offset);
 
     int flow = prepare_to_sign(&src, context->wc, context->address, context->prepend_address);
 

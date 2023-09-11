@@ -167,7 +167,7 @@ void deserialize_cells_tree(struct ByteStream_t* src) {
         VALIDATE(i < MAX_CONTRACT_CELLS_COUNT, ERR_INVALID_CONTRACT);
 
         uint8_t* cell_begin = ByteStream_get_cursor(src);
-        uint8_t cell_length = ByteStream_get_length(src);
+        uint16_t cell_length = ByteStream_get_length(src);
         Cell_init(&cell, cell_begin, cell_length);
         uint16_t offset = deserialize_cell(&cell, i, cells_count);
         boc_context.cells[i] = cell;

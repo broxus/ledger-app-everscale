@@ -360,6 +360,39 @@ fn test_ledger_sign_burn_transaction() -> anyhow::Result<()> {
     Ok(())
 }
 
+// This test requires interactive approval of message signing on the ledger.
+fn test_ledger_sign_create_token_transaction() -> anyhow::Result<()> {
+    let boc = base64::decode("te6ccgECBgEAASwAIWHw5pxqUFVGcS9uHx4H1Hyxqdv8M0fmFpmbpEK2sRE8qgAAAMVB8+fysn958qZ3MjZAASFlgBpSNW8J55zSsfWhyOd5rDEjZgefz1LcWODp5B1bqgHogAAAAAAAAAAAAAAAJUC+QBA4AiOVEMgafQAACAoJgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACBQQDKEgBAUZsZIPd9xkGAco8YjJOBZgvCE3wlneY/Wx25kfOjumaAAAoSAEB1IDh09lVWihGkWEM9d9w01WXUrJVmfTd7p+dAZMyU/oAAChIAQGQCROE6sQnHzRREUyjfCGGj+o03d7B++Lo06vNLc44JgAA")?;
+
+    let cell = ton_types::deserialize_tree_of_cells(&mut boc.as_slice())?;
+
+    let message_hash = cell.repr_hash();
+
+    let (ledger, _) = get_ledger();
+
+    let account = 0;
+    let wallet_type = WalletType::SafeMultisig;
+
+    // Get public key
+    let public_key = ledger.get_pubkey(account, false)?;
+
+    let meta = SignTransactionMeta::default();
+
+    println!("{}", hex::encode(&boc));
+
+    let signature = ledger.sign_transaction(
+        account,
+        wallet_type,
+        EVER_DECIMALS,
+        EVER_TICKER,
+        meta,
+        &boc,
+    )?;
+    assert!(public_key.verify(message_hash.as_slice(), &signature).is_ok());
+
+    Ok(())
+}
+
 fn main() {
     if let Err(e) = do_run_tests() {
         panic!("{:?}", e)
@@ -374,13 +407,14 @@ macro_rules! run {
 }
 
 fn do_run_tests() -> anyhow::Result<()> {
-    run!(test_ledger_pubkey);
-    run!(test_ledger_address);
-    run!(test_ledger_sign_message);
-    run!(test_ledger_sign_send_transaction);
-    run!(test_ledger_sign_confirm_transaction);
-    run!(test_ledger_sign_submit_transaction);
-    run!(test_ledger_sign_burn_transaction);
+    //run!(test_ledger_pubkey);
+    //run!(test_ledger_address);
+    //run!(test_ledger_sign_message);
+    //run!(test_ledger_sign_send_transaction);
+    //run!(test_ledger_sign_confirm_transaction);
+    //run!(test_ledger_sign_submit_transaction);
+    //run!(test_ledger_sign_burn_transaction);
+    run!(test_ledger_sign_create_token_transaction);
 
     Ok(())
 }

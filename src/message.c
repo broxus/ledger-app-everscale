@@ -336,6 +336,8 @@ void prepare_payload_hash(BocContext_t* bc) {
         memcpy(data_context.sign_tr_context.to_sign, data_context.sign_tr_context.chain_id, CHAIN_ID_LENGTH);
         memcpy(data_context.sign_tr_context.to_sign + CHAIN_ID_LENGTH, &bc->hashes[ROOT_CELL_INDEX * HASH_SIZE], TO_SIGN_LENGTH);
     }
+
+    format_hex(data_context.sign_tr_context.to_sign, TO_SIGN_LENGTH, data_context.sign_tr_context.to_sign_str, sizeof(data_context.sign_tr_context.to_sign_str));
 }
 
 uint32_t deserialize_wallet_v3(struct SliceData_t* slice) {

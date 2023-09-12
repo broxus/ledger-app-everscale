@@ -267,6 +267,92 @@ fn test_ledger_sign_send_transaction() -> anyhow::Result<()> {
 }
 
 // This test requires interactive approval of message signing on the ledger.
+fn test_ledger_sign_send_msig_transaction() -> anyhow::Result<()> {
+    let (ledger, _) = get_ledger();
+
+    let account = 0;
+    let wallet_type = WalletType::SafeMultisig;
+
+    // Get public key
+    let public_key = ledger.get_pubkey(account, false)?;
+
+    // Get address
+    let address_bytes = ledger.get_address(account, wallet_type, false)?;
+    let address = MsgAddressInt::with_standart(
+        None,
+        ton_block::BASE_WORKCHAIN_ID as i8,
+        AccountId::from(UInt256::from_be_bytes(&address_bytes)),
+    )?;
+
+    // Prepare message
+    let message = ton_block::Message::with_ext_in_header(ton_block::ExternalInboundMessageHeader {
+        dst: address,
+        ..Default::default()
+    });
+
+    // Transfer parameters
+    let flags: u8 = 3;
+    let bounce = true;
+    let amount: u64 = 123_456_785_012_345_678;
+    let destination = MsgAddressInt::from_str(
+        "0:df112b59eb82792623575194c60d2f547c68d54366644a3a5e02b8132f3c4c56",
+    )?;
+    let body: ton_types::Cell = ton_types::deserialize_tree_of_cells(&mut base64::decode("te6ccgEBAwEAYAABa0ap1+wAAAAAAAAAAAAAAABJUE+AgBXkJWs9cE8kxGrqMpjBpeqPjRqobMyJR0vAVwJl54mK0AEBQ4AX5CVrPXBPJMRq6jKYwaXqj40aqGzMiUdLwFcCZeeJisgCAAA=")?.as_slice())?;
+
+    let expiration = Expiration::Timeout(DEFAULT_EXPIRATION_TIMEOUT);
+
+    let (function, input) =
+        MessageBuilder::new(nekoton_contracts::wallets::multisig::send_transaction())
+            .arg(destination)
+            .arg(BigUint128(amount.into()))
+            .arg(bounce)
+            .arg(flags)
+            .arg(body)
+            .build();
+
+    // Create unsigned message
+    let unsigned_message = make_labs_unsigned_message(
+        &SimpleClock,
+        message,
+        expiration,
+        &public_key,
+        Cow::Borrowed(function),
+        input,
+    )?;
+    let message_hash = unsigned_message.hash();
+
+    // Fake sign
+    let signature: Signature = [0_u8; 64];
+    let signed = unsigned_message.sign_with_pruned_payload(&signature, 2)?;
+
+    // Extract message body
+    let mut data = signed.message.body().trust_me();
+
+    let bit = data.get_next_bit()?;
+    assert!(bit);
+
+    // Strip empty signature
+    data.move_by(SIGNATURE_LENGTH * 8)?;
+
+    let meta = SignTransactionMeta::default();
+
+    let cell = data.into_cell();
+    let boc = ton_types::serialize_toc(&cell)?;
+
+    let signature = ledger.sign_transaction(
+        account,
+        wallet_type,
+        EVER_DECIMALS,
+        EVER_TICKER,
+        meta,
+        &boc,
+    )?;
+    assert!(public_key.verify(message_hash, &signature).is_ok());
+
+    Ok(())
+}
+
+// This test requires interactive approval of message signing on the ledger.
 fn test_ledger_sign_confirm_transaction() -> anyhow::Result<()> {
     // BAD
     let boc = base64::decode("te6ccgEBAQEAOwAAcfDmnGpQVUZxL24fHgfUfLGp2/wzR+YWmZukQraxETyqAAAAxHF5r4KyShssDVOgdrJKGvzpVh6gwA==")?;
@@ -368,7 +454,7 @@ fn test_ledger_sign_create_token_transaction() -> anyhow::Result<()> {
 
     let cell = ton_types::deserialize_tree_of_cells(&mut boc.as_slice())?;
 
-    let message_hash = cell.repr_hash();
+    let message_hash = cell.hash(0); // pruned hash
 
     let (ledger, _) = get_ledger();
 
@@ -411,6 +497,7 @@ fn do_run_tests() -> anyhow::Result<()> {
     run!(test_ledger_address);
     run!(test_ledger_sign_message);
     run!(test_ledger_sign_send_transaction);
+    run!(test_ledger_sign_send_msig_transaction);
     run!(test_ledger_sign_confirm_transaction);
     run!(test_ledger_sign_submit_transaction);
     run!(test_ledger_sign_burn_transaction);

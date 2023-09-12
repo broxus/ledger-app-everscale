@@ -45,6 +45,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2c99f64d1e06488f620f932677e24bc6e2897582980441ae90a671415bd7ec2f"
 dependencies = [
  "cfg-if",
+ "getrandom",
  "once_cell",
  "version_check",
 ]
@@ -147,6 +148,23 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d468802bab17cbc0cc575e9b053f41e72aa36bfa6b7f55e3529ffa43161b97fa"
 
 [[package]]
+name = "axum-core"
+version = "0.3.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "759fa577a247914fd3f7f76d62972792636412fbfd634cd452f6a385a74d2d2c"
+dependencies = [
+ "async-trait",
+ "bytes",
+ "futures-util",
+ "http",
+ "http-body",
+ "mime",
+ "rustversion",
+ "tower-layer",
+ "tower-service",
+]
+
+[[package]]
 name = "backtrace"
 version = "0.3.68"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -187,10 +205,12 @@ checksum = "8a32fd6af2b5827bce66c29053ba0e7c42b9dcab01835835058558c10851a46b"
 
 [[package]]
 name = "bigdecimal"
-version = "0.3.1"
+version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a6773ddc0eafc0e509fb60e48dff7f450f8e674a0686ae8605e8d9901bd5eefa"
+checksum = "454bca3db10617b88b566f205ed190aedb0e0e6dd4cad61d3988a72e8c5594cb"
 dependencies = [
+ "autocfg",
+ "libm",
  "num-bigint",
  "num-integer",
  "num-traits",
@@ -410,8 +430,8 @@ dependencies = [
  "bigdecimal",
  "clap",
  "ed25519-dalek",
- "everscale-jrpc-client",
  "everscale-ledger-wallet",
+ "everscale-rpc-client",
  "hex",
  "nekoton",
  "nekoton-abi",
@@ -659,45 +679,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "everscale-jrpc-client"
-version = "0.5.0"
-source = "git+https://github.com/broxus/everscale-jrpc.git#ddbee5bea63dc5d7013a82f998042e99b2bfd1d1"
-dependencies = [
- "anyhow",
- "base64 0.13.1",
- "everscale-jrpc-models",
- "futures",
- "hex",
- "itertools",
- "nekoton",
- "nekoton-abi",
- "nekoton-utils",
- "parking_lot",
- "rand",
- "reqwest",
- "serde",
- "serde_json",
- "thiserror",
- "tokio",
- "ton_abi",
- "ton_block",
- "ton_executor",
- "ton_types",
- "tracing",
-]
-
-[[package]]
-name = "everscale-jrpc-models"
-version = "0.1.0"
-source = "git+https://github.com/broxus/everscale-jrpc.git#ddbee5bea63dc5d7013a82f998042e99b2bfd1d1"
-dependencies = [
- "nekoton-abi",
- "nekoton-utils",
- "serde",
- "ton_block",
-]
-
-[[package]]
 name = "everscale-ledger-wallet"
 version = "0.1.0"
 source = "git+https://github.com/broxus/everscale-ledger-wallet.git#a481b2fa884e5015e0823c92f7d30489e26b8430"
@@ -716,6 +697,55 @@ dependencies = [
  "semver",
  "thiserror",
  "uriparse",
+]
+
+[[package]]
+name = "everscale-rpc-client"
+version = "0.6.0"
+source = "git+https://github.com/broxus/everscale-jrpc.git#f2c2c14a68436d803a967ed0bd1a9f0d3a2f921a"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "axum-core",
+ "base64 0.13.1",
+ "everscale-rpc-models",
+ "futures",
+ "hex",
+ "itertools 0.11.0",
+ "nekoton",
+ "nekoton-abi",
+ "nekoton-proto",
+ "nekoton-utils",
+ "parking_lot",
+ "rand",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tokio",
+ "ton_abi",
+ "ton_block",
+ "ton_executor",
+ "ton_types",
+ "tracing",
+]
+
+[[package]]
+name = "everscale-rpc-models"
+version = "0.1.0"
+source = "git+https://github.com/broxus/everscale-jrpc.git#f2c2c14a68436d803a967ed0bd1a9f0d3a2f921a"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "axum-core",
+ "http",
+ "http-body",
+ "nekoton-abi",
+ "nekoton-proto",
+ "nekoton-utils",
+ "serde",
+ "ton_block",
+ "tracing",
 ]
 
 [[package]]
@@ -1117,6 +1147,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "itertools"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b1c173a5686ce8bfa551b3563d0c2170bf24ca44da99c7ca4bfdab5418c3fe57"
+dependencies = [
+ "either",
+]
+
+[[package]]
 name = "itoa"
 version = "1.0.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1142,6 +1181,12 @@ name = "libc"
 version = "0.2.147"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b4668fb0ea861c1df094127ac5f1da3409a82116a4ba74fca2e58ef927159bb3"
+
+[[package]]
+name = "libm"
+version = "0.2.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f7012b1bbb0719e1097c47611d3898568c546d597c2e74d66f6087edd5233ff4"
 
 [[package]]
 name = "libsecp256k1"
@@ -1277,7 +1322,7 @@ dependencies = [
 [[package]]
 name = "nekoton"
 version = "0.13.1"
-source = "git+https://github.com/broxus/nekoton.git#548f255a33c8275ad23c3685beba80e9a8253e48"
+source = "git+https://github.com/broxus/nekoton.git#d70dd09d4d482987541f1816fd3bce970710178c"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1300,6 +1345,7 @@ dependencies = [
  "once_cell",
  "parking_lot",
  "pbkdf2",
+ "quick_cache",
  "rand",
  "secstr",
  "serde",
@@ -1319,7 +1365,7 @@ dependencies = [
 [[package]]
 name = "nekoton-abi"
 version = "0.13.0"
-source = "git+https://github.com/broxus/nekoton.git#548f255a33c8275ad23c3685beba80e9a8253e48"
+source = "git+https://github.com/broxus/nekoton.git#d70dd09d4d482987541f1816fd3bce970710178c"
 dependencies = [
  "anyhow",
  "base64 0.13.1",
@@ -1346,7 +1392,7 @@ dependencies = [
 [[package]]
 name = "nekoton-contracts"
 version = "0.13.0"
-source = "git+https://github.com/broxus/nekoton.git#548f255a33c8275ad23c3685beba80e9a8253e48"
+source = "git+https://github.com/broxus/nekoton.git#d70dd09d4d482987541f1816fd3bce970710178c"
 dependencies = [
  "anyhow",
  "nekoton-abi",
@@ -1360,7 +1406,7 @@ dependencies = [
 [[package]]
 name = "nekoton-derive"
 version = "0.13.0"
-source = "git+https://github.com/broxus/nekoton.git#548f255a33c8275ad23c3685beba80e9a8253e48"
+source = "git+https://github.com/broxus/nekoton.git#d70dd09d4d482987541f1816fd3bce970710178c"
 dependencies = [
  "either",
  "proc-macro2",
@@ -1369,9 +1415,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "nekoton-proto"
+version = "0.1.0"
+source = "git+https://github.com/broxus/nekoton.git#d70dd09d4d482987541f1816fd3bce970710178c"
+dependencies = [
+ "anyhow",
+ "nekoton-abi",
+ "prost",
+ "ton_block",
+ "ton_types",
+]
+
+[[package]]
 name = "nekoton-utils"
 version = "0.13.0"
-source = "git+https://github.com/broxus/nekoton.git#548f255a33c8275ad23c3685beba80e9a8253e48"
+source = "git+https://github.com/broxus/nekoton.git#d70dd09d4d482987541f1816fd3bce970710178c"
 dependencies = [
  "anyhow",
  "base64 0.13.1",
@@ -1660,6 +1718,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "prost"
+version = "0.11.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0b82eaa1d779e9a4bc1c3217db8ffbeabaae1dca241bf70183242128d48681cd"
+dependencies = [
+ "bytes",
+ "prost-derive",
+]
+
+[[package]]
+name = "prost-derive"
+version = "0.11.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e5d2d8d10f3c6ded6da8b05b5fb3b8a5082514344d56c9f871412d29b4e075b4"
+dependencies = [
+ "anyhow",
+ "itertools 0.10.5",
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
 name = "ptr_meta"
 version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1686,6 +1767,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d464fae65fff2680baf48019211ce37aaec0c78e9264c84a3e484717f965104e"
 dependencies = [
  "percent-encoding",
+]
+
+[[package]]
+name = "quick_cache"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5253a3a0d56548d5b0be25414171dc780cc6870727746d05bd2bde352eee96c5"
+dependencies = [
+ "ahash 0.8.3",
+ "hashbrown 0.13.2",
+ "parking_lot",
 ]
 
 [[package]]
@@ -1860,6 +1952,12 @@ dependencies = [
  "linux-raw-sys",
  "windows-sys 0.48.0",
 ]
+
+[[package]]
+name = "rustversion"
+version = "1.0.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7ffc183a10b4478d04cbbbfc96d0873219d962dd5accaff2ffbd4ceb7df837f4"
 
 [[package]]
 name = "ryu"
@@ -2269,7 +2367,7 @@ dependencies = [
 [[package]]
 name = "ton_executor"
 version = "1.15.54"
-source = "git+https://github.com/broxus/ton-labs-executor.git#01f7a017c25fed1413863c2dac570553fa000bdd"
+source = "git+https://github.com/broxus/ton-labs-executor.git#2a38890d53f9c3dad84b3fb9a58e3bb62ba20f44"
 dependencies = [
  "anyhow",
  "log",
@@ -2321,6 +2419,12 @@ dependencies = [
  "ton_block",
  "ton_types",
 ]
+
+[[package]]
+name = "tower-layer"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c20c8dbed6283a09604c3e69b4b7eeb54e298b8a600d4d5ecb5ad39de609f1d0"
 
 [[package]]
 name = "tower-service"

@@ -1,6 +1,7 @@
 use std::borrow::Cow;
 use std::rc::Rc;
 use std::str::FromStr;
+use base64::Engine;
 
 use ed25519_dalek::{PublicKey, Verifier, SIGNATURE_LENGTH};
 
@@ -211,7 +212,8 @@ fn test_ledger_sign_send_transaction() -> anyhow::Result<()> {
     let destination = MsgAddressInt::from_str(
         "0:df112b59eb82792623575194c60d2f547c68d54366644a3a5e02b8132f3c4c56",
     )?;
-    let body: ton_types::Cell = ton_types::deserialize_tree_of_cells(&mut base64::decode("te6ccgEBAwEAYAABa0ap1+wAAAAAAAAAAAAAAABJUE+AgBXkJWs9cE8kxGrqMpjBpeqPjRqobMyJR0vAVwJl54mK0AEBQ4AX5CVrPXBPJMRq6jKYwaXqj40aqGzMiUdLwFcCZeeJisgCAAA=")?.as_slice())?;
+    let body: ton_types::Cell = ton_types::deserialize_tree_of_cells(&mut base64::engine::general_purpose::STANDARD
+        .decode("te6ccgEBAwEAYAABa0ap1+wAAAAAAAAAAAAAAABJUE+AgBXkJWs9cE8kxGrqMpjBpeqPjRqobMyJR0vAVwJl54mK0AEBQ4AX5CVrPXBPJMRq6jKYwaXqj40aqGzMiUdLwFcCZeeJisgCAAA=")?.as_slice())?;
 
     let expiration = Expiration::Timeout(DEFAULT_EXPIRATION_TIMEOUT);
 
@@ -297,7 +299,8 @@ fn test_ledger_sign_send_msig_transaction() -> anyhow::Result<()> {
     let destination = MsgAddressInt::from_str(
         "0:df112b59eb82792623575194c60d2f547c68d54366644a3a5e02b8132f3c4c56",
     )?;
-    let body: ton_types::Cell = ton_types::deserialize_tree_of_cells(&mut base64::decode("te6ccgEBAwEAYAABa0ap1+wAAAAAAAAAAAAAAABJUE+AgBXkJWs9cE8kxGrqMpjBpeqPjRqobMyJR0vAVwJl54mK0AEBQ4AX5CVrPXBPJMRq6jKYwaXqj40aqGzMiUdLwFcCZeeJisgCAAA=")?.as_slice())?;
+    let body: ton_types::Cell = ton_types::deserialize_tree_of_cells(&mut base64::engine::general_purpose::STANDARD
+        .decode("te6ccgEBAwEAYAABa0ap1+wAAAAAAAAAAAAAAABJUE+AgBXkJWs9cE8kxGrqMpjBpeqPjRqobMyJR0vAVwJl54mK0AEBQ4AX5CVrPXBPJMRq6jKYwaXqj40aqGzMiUdLwFcCZeeJisgCAAA=")?.as_slice())?;
 
     let expiration = Expiration::Timeout(DEFAULT_EXPIRATION_TIMEOUT);
 
@@ -354,11 +357,11 @@ fn test_ledger_sign_send_msig_transaction() -> anyhow::Result<()> {
 
 // This test requires interactive approval of message signing on the ledger.
 fn test_ledger_sign_confirm_transaction() -> anyhow::Result<()> {
-    // BAD
-    let boc = base64::decode("te6ccgEBAQEAOwAAcfDmnGpQVUZxL24fHgfUfLGp2/wzR+YWmZukQraxETyqAAAAxHF5r4KyShssDVOgdrJKGvzpVh6gwA==")?;
+    // let boc = base64::decode("te6ccgEBAQEAOwAAcbO621NdG4jQ5NYNMWVnsUSFaO+v3yGEbs0LoC462r+XAAAAxHGVwt0ySiJcDVOgdrJKDeYh5nYAwA==")?;
 
-    // GOOD
-    //let boc = base64::decode("te6ccgEBAQEAOwAAcbO621NdG4jQ5NYNMWVnsUSFaO+v3yGEbs0LoC462r+XAAAAxHGVwt0ySiJcDVOgdrJKDeYh5nYAwA==")?;
+    let boc = base64::engine::general_purpose::STANDARD
+        .decode("te6ccgEBAQEAOwAAcfDmnGpQVUZxL24fHgfUfLGp2/wzR+YWmZukQraxETyqAAAAxHF5r4KyShssDVOgdrJKGvzpVh6gwA==")?;
+
     let cell = ton_types::deserialize_tree_of_cells(&mut boc.as_slice())?;
 
     let message_hash = cell.repr_hash();
@@ -388,7 +391,8 @@ fn test_ledger_sign_confirm_transaction() -> anyhow::Result<()> {
 
 // This test requires interactive approval of message signing on the ledger.
 fn test_ledger_sign_submit_transaction() -> anyhow::Result<()> {
-    let boc = base64::decode("te6ccgEBBQEAyQABYbO621NdG4jQ5NYNMWVnsUSFaO+v3yGEbs0LoC462r+XAAAAxHGlca+ySiZfiY7BZsABAWOAG+Ilaz1wTyTEauoymMGl6o+NGqhszIlHS8BXAmXniYrAAAAAAAAAAAA202lAb5VWNAIBa0ap1+wAAAAAAAAAAAAAAABJUE+AgBXkJWs9cE8kxGrqMpjBpeqPjRqobMyJR0vAVwJl54mK0AMBQ4AX5CVrPXBPJMRq6jKYwaXqj40aqGzMiUdLwFcCZeeJisgEAAA=")?;
+    let boc = base64::engine::general_purpose::STANDARD
+        .decode("te6ccgEBBQEAyQABYbO621NdG4jQ5NYNMWVnsUSFaO+v3yGEbs0LoC462r+XAAAAxHGlca+ySiZfiY7BZsABAWOAG+Ilaz1wTyTEauoymMGl6o+NGqhszIlHS8BXAmXniYrAAAAAAAAAAAA202lAb5VWNAIBa0ap1+wAAAAAAAAAAAAAAABJUE+AgBXkJWs9cE8kxGrqMpjBpeqPjRqobMyJR0vAVwJl54mK0AMBQ4AX5CVrPXBPJMRq6jKYwaXqj40aqGzMiUdLwFcCZeeJisgEAAA=")?;
     let cell = ton_types::deserialize_tree_of_cells(&mut boc.as_slice())?;
 
     let message_hash = cell.repr_hash();
@@ -418,7 +422,8 @@ fn test_ledger_sign_submit_transaction() -> anyhow::Result<()> {
 
 // This test requires interactive approval of message signing on the ledger.
 fn test_ledger_sign_burn_transaction() -> anyhow::Result<()> {
-    let boc = base64::decode("te6ccgEBBQEAyQABYbO621NdG4jQ5NYNMWVnsUSFaO+v3yGEbs0LoC462r+XAAAAxHGxjJEySil5CY7BZsABAWOAG+Ilaz1wTyTEauoymMGl6o+NGqhszIlHS8BXAmXniYrAAAAAAAAAAAA202lAb5VWNAIBa1YlSK0AAAAAAAAAAAAAAABJUE+AgBXkJWs9cE8kxGrqMpjBpeqPjRqobMyJR0vAVwJl54mK0AMBQ4AX5CVrPXBPJMRq6jKYwaXqj40aqGzMiUdLwFcCZeeJitAEAAA=")?;
+    let boc = base64::engine::general_purpose::STANDARD
+        .decode("te6ccgEBBQEAyQABYbO621NdG4jQ5NYNMWVnsUSFaO+v3yGEbs0LoC462r+XAAAAxHGxjJEySil5CY7BZsABAWOAG+Ilaz1wTyTEauoymMGl6o+NGqhszIlHS8BXAmXniYrAAAAAAAAAAAA202lAb5VWNAIBa1YlSK0AAAAAAAAAAAAAAABJUE+AgBXkJWs9cE8kxGrqMpjBpeqPjRqobMyJR0vAVwJl54mK0AMBQ4AX5CVrPXBPJMRq6jKYwaXqj40aqGzMiUdLwFcCZeeJitAEAAA=")?;
 
     let cell = ton_types::deserialize_tree_of_cells(&mut boc.as_slice())?;
 
@@ -450,7 +455,8 @@ fn test_ledger_sign_burn_transaction() -> anyhow::Result<()> {
 // This test requires interactive approval of message signing on the ledger.
 // Chunks test
 fn test_ledger_sign_create_token_transaction() -> anyhow::Result<()> {
-    let boc = base64::decode("te6ccgECBgEAASwAIWHw5pxqUFVGcS9uHx4H1Hyxqdv8M0fmFpmbpEK2sRE8qgAAAMVB8+fysn958qZ3MjZAASFlgBpSNW8J55zSsfWhyOd5rDEjZgefz1LcWODp5B1bqgHogAAAAAAAAAAAAAAAJUC+QBA4AiOVEMgafQAACAoJgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACBQQDKEgBAUZsZIPd9xkGAco8YjJOBZgvCE3wlneY/Wx25kfOjumaAAAoSAEB1IDh09lVWihGkWEM9d9w01WXUrJVmfTd7p+dAZMyU/oAAChIAQGQCROE6sQnHzRREUyjfCGGj+o03d7B++Lo06vNLc44JgAA")?;
+    let boc = base64::engine::general_purpose::STANDARD
+        .decode("te6ccgECBgEAASwAIWHw5pxqUFVGcS9uHx4H1Hyxqdv8M0fmFpmbpEK2sRE8qgAAAMVB8+fysn958qZ3MjZAASFlgBpSNW8J55zSsfWhyOd5rDEjZgefz1LcWODp5B1bqgHogAAAAAAAAAAAAAAAJUC+QBA4AiOVEMgafQAACAoJgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACBQQDKEgBAUZsZIPd9xkGAco8YjJOBZgvCE3wlneY/Wx25kfOjumaAAAoSAEB1IDh09lVWihGkWEM9d9w01WXUrJVmfTd7p+dAZMyU/oAAChIAQGQCROE6sQnHzRREUyjfCGGj+o03d7B++Lo06vNLc44JgAA")?;
 
     let cell = ton_types::deserialize_tree_of_cells(&mut boc.as_slice())?;
 

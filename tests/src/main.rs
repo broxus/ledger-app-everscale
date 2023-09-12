@@ -4,9 +4,6 @@ use std::str::FromStr;
 
 use ed25519_dalek::{PublicKey, Verifier, SIGNATURE_LENGTH};
 
-use everscale_ledger_wallet::ledger::{LedgerWallet, SIGN_MAGIC, SignTransactionMeta, WalletType};
-use everscale_ledger_wallet::locator::Manufacturer;
-use everscale_ledger_wallet::remote_wallet::{initialize_wallet_manager, RemoteWallet};
 use nekoton::core::models::Expiration;
 use nekoton::core::ton_wallet::wallet_v3::InitData;
 use nekoton::core::ton_wallet::Gift;
@@ -16,6 +13,10 @@ use nekoton_abi::{BigUint128, MessageBuilder};
 use nekoton_utils::{SimpleClock, TrustMe};
 use ton_block::MsgAddressInt;
 use ton_types::{AccountId, UInt256};
+
+use everscale_ledger_wallet::ledger::{LedgerWallet, SIGN_MAGIC, SignTransactionMeta, WalletType};
+use everscale_ledger_wallet::locator::Manufacturer;
+use everscale_ledger_wallet::remote_wallet::{initialize_wallet_manager, RemoteWallet};
 
 const EVER_DECIMALS: u8 = 9;
 const EVER_TICKER: &str = "EVER";
@@ -361,6 +362,7 @@ fn test_ledger_sign_burn_transaction() -> anyhow::Result<()> {
 }
 
 // This test requires interactive approval of message signing on the ledger.
+// Chunks test
 fn test_ledger_sign_create_token_transaction() -> anyhow::Result<()> {
     let boc = base64::decode("te6ccgECBgEAASwAIWHw5pxqUFVGcS9uHx4H1Hyxqdv8M0fmFpmbpEK2sRE8qgAAAMVB8+fysn958qZ3MjZAASFlgBpSNW8J55zSsfWhyOd5rDEjZgefz1LcWODp5B1bqgHogAAAAAAAAAAAAAAAJUC+QBA4AiOVEMgafQAACAoJgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACBQQDKEgBAUZsZIPd9xkGAco8YjJOBZgvCE3wlneY/Wx25kfOjumaAAAoSAEB1IDh09lVWihGkWEM9d9w01WXUrJVmfTd7p+dAZMyU/oAAChIAQGQCROE6sQnHzRREUyjfCGGj+o03d7B++Lo06vNLc44JgAA")?;
 
@@ -377,8 +379,6 @@ fn test_ledger_sign_create_token_transaction() -> anyhow::Result<()> {
     let public_key = ledger.get_pubkey(account, false)?;
 
     let meta = SignTransactionMeta::default();
-
-    println!("{}", hex::encode(&boc));
 
     let signature = ledger.sign_transaction(
         account,
@@ -407,13 +407,13 @@ macro_rules! run {
 }
 
 fn do_run_tests() -> anyhow::Result<()> {
-    //run!(test_ledger_pubkey);
-    //run!(test_ledger_address);
-    //run!(test_ledger_sign_message);
-    //run!(test_ledger_sign_send_transaction);
-    //run!(test_ledger_sign_confirm_transaction);
-    //run!(test_ledger_sign_submit_transaction);
-    //run!(test_ledger_sign_burn_transaction);
+    run!(test_ledger_pubkey);
+    run!(test_ledger_address);
+    run!(test_ledger_sign_message);
+    run!(test_ledger_sign_send_transaction);
+    run!(test_ledger_sign_confirm_transaction);
+    run!(test_ledger_sign_submit_transaction);
+    run!(test_ledger_sign_burn_transaction);
     run!(test_ledger_sign_create_token_transaction);
 
     Ok(())

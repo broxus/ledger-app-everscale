@@ -105,6 +105,14 @@ UX_STEP_CB(
       "Reject",
     });
 
+UX_STEP_NOCB(
+    ux_sign_transaction_hash,
+    bnnn_paging,
+    {
+      .title = "Hash",
+      .text = data_context.sign_tr_context.to_sign_str,
+    });
+
 UX_FLOW(ux_sign_transaction_burn_flow,
     &ux_sign_transaction_intro,
     &ux_sign_transaction_burn,
@@ -134,6 +142,7 @@ UX_FLOW(ux_sign_transaction_transfer_flow,
     &ux_sign_transaction_transfer,
     &ux_sign_transaction_amount,
     &ux_sign_transaction_address,
+    &ux_sign_transaction_hash,
     &ux_sign_transaction_accept,
     &ux_sign_transaction_reject
 );

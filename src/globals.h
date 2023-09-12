@@ -91,7 +91,6 @@ typedef struct SignTransactionContext_t {
     uint8_t data[MAX_DATA_LEN];
     uint16_t data_offset;
     char ticker[MAX_TICKER_LEN];
-    char to_sign_str[73];
 } SignTransactionContext_t;
 
 typedef union {

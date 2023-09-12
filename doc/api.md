@@ -169,26 +169,6 @@ _This command signs a transaction message_
 
 ## Transport protocol
 
-### General transport description
-:warning: Unimplemented
-
-_Ledger APDUs requests and responses are encapsulated using a flexible protocol allowing to fragment large payloads over different underlying transport mechanisms._
-
-The common transport header is defined as follows:
-
-| _Description_                         | _Length_ |
-| ------------------------------------- | :------: |
-| Communication channel ID (big endian) |    2     |
-| Command tag                           |    1     |
-| Packet sequence index (big endian)    |    2     |
-| Payload                               |   var    |
-
-The Communication channel ID allows commands multiplexing over the same physical link. It is not used for the time being, and should be set to 0101 to avoid compatibility issues with implementations ignoring a leading 00 byte.
-
-The Command tag describes the message content. Use TAG_APDU (0x05) for standard APDU payloads, or TAG_PING (0x02) for a simple link test.
-
-The Packet sequence index describes the current sequence for fragmented payloads. The first fragment index is 0x00.
-
 ### APDU Command payload encoding
 
 APDU Command payloads are encoded as follows :

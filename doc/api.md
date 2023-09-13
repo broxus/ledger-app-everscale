@@ -142,7 +142,7 @@ _This command signs a transaction message_
 
 | _CLA_ | _INS_ | _P1_ | _P2_ |   _Lc_   |        _CData_ |
 | ----- |:-----:| ---: | ---- | :------: |---------------:|
-| E0    |  05   |   01 | 0x01 (last chunk) <br> 0x02 (first chunk) <br> 0x03 (not first and not last chunk) | variable |       variable |
+| E0    |  05   |   01 | 0x01 (last chunk) <br> 0x02 (first chunk) <br> 0x03 (single chunk) <br> 0x00 (intermediate chunk) | variable |       variable |
 
 ##### Input data
 

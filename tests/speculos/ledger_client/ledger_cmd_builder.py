@@ -3,9 +3,9 @@ import logging
 import struct
 from typing import List, Tuple, Union, Iterator, cast
 
-from ethereum_client.transaction import EIP712, PersonalTransaction, Transaction
-from ethereum_client.plugin import ERC20Information, Plugin
-from ethereum_client.utils import packed_bip32_path_from_string
+from ledger_client.transaction import EIP712, PersonalTransaction, Transaction
+#from ethereum_client.plugin import ERC20Information, Plugin
+from ledger_client.utils import packed_bip32_path_from_string
 
 MAX_APDU_LEN: int = 255
 
@@ -33,20 +33,10 @@ def chunkify(data: bytes, chunk_len: int) -> Iterator[Tuple[bool, bytes]]:
 
 class InsType(enum.IntEnum):
     INS_GET_PUBLIC_KEY          = 0x02
-    INS_SIGN_TX                 = 0x04
-    INS_GET_CONFIGURATION       = 0x06
-    INS_SIGN_PERSONAL_TX        = 0x08
-    INS_PROVIDE_ERC20           = 0x0A
-    INS_SIGN_EIP712             = 0x0c
-    INS_ETH2_GET_PUBLIC_KEY     = 0x0E
-    INS_SET_ETH2_WITHDRAWAL     = 0x10
-    INS_SET_EXTERNAL_PLUGIN     = 0x12
-    INS_PROVIDE_NFT_INFORMATION = 0x14
-    INS_SET_PLUGIN              = 0x16
-    INS_PERFORM_PRIVACY_OPERATION = 0x18
+    INS_GET_CONFIGURATION       = 0x01
+    #INS_ETH2_GET_PUBLIC_KEY     = 0x0E
 
-
-class EthereumCommandBuilder:
+class LedgerCommandBuilder:
     """APDU command builder for the Boilerplate application.
 
     Parameters
@@ -123,21 +113,6 @@ class EthereumCommandBuilder:
                               p2=0x00,
                               cdata=b"")
 
-    def _same_header_builder(self, data: Union[Plugin, ERC20Information], ins: int) -> bytes:
-        return self.serialize(cla=self.CLA,
-                              ins=ins,
-                              p1=0x00,
-                              p2=0x00,
-                              cdata=data.serialize())
-
-    def set_plugin(self, plugin: Plugin) -> bytes:
-        return self._same_header_builder(plugin, InsType.INS_SET_PLUGIN)
-
-    def provide_nft_information(self, plugin: Plugin) -> bytes:
-        return self._same_header_builder(plugin, InsType.INS_PROVIDE_NFT_INFORMATION)
-
-    def provide_erc20_token_information(self, info: ERC20Information):
-        return self._same_header_builder(info, InsType.INS_PROVIDE_ERC20)
 
     def get_public_key(self, bip32_path: str, display: bool = False) -> bytes:
         """Command builder for GET_PUBLIC_KEY.
@@ -156,138 +131,10 @@ class EthereumCommandBuilder:
 
         """
         cdata = packed_bip32_path_from_string(bip32_path)
-          
+        print("cdata= ", cdata);
         return self.serialize(cla=self.CLA,
                               ins=InsType.INS_GET_PUBLIC_KEY,
                               p1=0x01 if display else 0x00,
-                              p2=0x01,
-                              cdata=cdata)
-
-    def perform_privacy_operation(self, bip32_path: str, display: bool, shared_secret: bool) -> bytes:
-        """Command builder for INS_PERFORM_PRIVACY_OPERATION.
-
-        Parameters
-        ----------
-        bip32_path : str
-            String representation of BIP32 path.
-        Third party public key on Curve25519 : 32 bytes
-            Optionnal if returning the shared secret
-        
-        """
-        cdata = packed_bip32_path_from_string(bip32_path)
-        
-        return self.serialize(cla=self.CLA,
-                              ins=InsType.INS_PERFORM_PRIVACY_OPERATION,
-                              p1=0x01 if display else 0x00,
-                              p2=0x01 if shared_secret else 0x00,
-                              cdata=cdata)
-
-
-    def simple_sign_tx(self, bip32_path: str, transaction: Transaction) -> bytes:
-        """Command builder for INS_SIGN_TX.
-
-        Parameters
-        ----------
-        bip32_path : str
-            String representation of BIP32 path.
-        transaction : Transaction
-            Representation of the transaction to be signed.
-
-        Yields
-        -------
-        bytes
-            APDU command chunk for INS_SIGN_TX.
-
-        """
-        cdata = packed_bip32_path_from_string(bip32_path)
-        
-        tx: bytes = transaction.serialize()
-
-        cdata = cdata + tx
-
-        return self.serialize(cla=self.CLA,
-                              ins=InsType.INS_SIGN_TX,
-                              p1=0x00,
                               p2=0x00,
                               cdata=cdata)
 
-    def sign_eip712(self, bip32_path: str, transaction: EIP712) -> bytes:
-        """Command builder for INS_SIGN_EIP712.
-
-        Parameters
-        ----------
-        bip32_path : str
-            String representation of BIP32 path.
-        transaction : EIP712
-            Domain hash  -> 32 bytes
-            Message hash -> 32 bytes
-
-        Yields
-        -------
-        bytes
-            APDU command chunk for INS_SIGN_EIP712.
-
-        """
-        cdata = packed_bip32_path_from_string(bip32_path)
-
-        
-        tx: bytes = transaction.serialize()
-
-        cdata = cdata + tx
-
-        return self.serialize(cla=self.CLA,
-                              ins=InsType.INS_SIGN_EIP712,
-                              p1=0x00,
-                              p2=0x00,
-                              cdata=cdata)
-
-    def personal_sign_tx(self, bip32_path: str, transaction: PersonalTransaction) -> Tuple[bool,bytes]:
-        """Command builder for INS_SIGN_PERSONAL_TX.
-
-        Parameters
-        ----------
-        bip32_path : str
-            String representation of BIP32 path.
-        transaction : Transaction
-            Representation of the transaction to be signed.
-
-        Yields
-        -------
-        bytes
-            APDU command chunk for INS_SIGN_PERSONAL_TX.
-
-        """
-
-        cdata = packed_bip32_path_from_string(bip32_path)
-        
-        tx: bytes = transaction.serialize()
-
-        cdata = cdata + tx
-        last_chunk = len(cdata) // MAX_APDU_LEN
-        
-        # The generator allows to send apdu frames because we can't send an apdu > 255
-        for i, (chunk) in enumerate(chunked(MAX_APDU_LEN, cdata)):
-            if i == 0 and i == last_chunk:
-                yield True, self.serialize(cla=self.CLA,
-                         ins=InsType.INS_SIGN_PERSONAL_TX,
-                         p1=0x00,
-                         p2=0x00,
-                         cdata=chunk)
-            elif i == 0:
-                yield False, self.serialize(cla=self.CLA,
-                         ins=InsType.INS_SIGN_PERSONAL_TX,
-                         p1=0x00,
-                         p2=0x00,
-                         cdata=chunk)
-            elif i == last_chunk:
-                yield True, self.serialize(cla=self.CLA,
-                         ins=InsType.INS_SIGN_PERSONAL_TX,
-                         p1=0x80,
-                         p2=0x00,
-                         cdata=chunk)
-            else:
-                yield False, self.serialize(cla=self.CLA,
-                         ins=InsType.INS_SIGN_PERSONAL_TX,
-                         p1=0x80,
-                         p2=0x00,
-                         cdata=chunk)

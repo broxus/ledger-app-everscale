@@ -34,7 +34,21 @@ def chunkify(data: bytes, chunk_len: int) -> Iterator[Tuple[bool, bytes]]:
 class InsType(enum.IntEnum):
     INS_GET_PUBLIC_KEY          = 0x02
     INS_GET_CONFIGURATION       = 0x01
-    #INS_ETH2_GET_PUBLIC_KEY     = 0x0E
+    INS_SIGN                    = 0x03
+    INS_GET_ADDRESS             = 0x04
+
+
+class WalletType(enum.IntEnum):
+    WalletV3 = 0,
+    EverWallet = 1,
+    SafeMultisig = 2,
+    SafeMultisig24h = 3,
+    SetcodeMultisig = 4,
+    BridgeMultisig = 5,
+    Surf = 6,
+    Multisig2 = 7,
+    Multisig2_1 = 8,
+
 
 class LedgerCommandBuilder:
     """APDU command builder for the Boilerplate application.
@@ -95,7 +109,10 @@ class LedgerCommandBuilder:
         if self.debug:
             logging.info("header: %s", header.hex())
             logging.info("cdata:  %s", cdata.hex())
-
+        print("HEADER =", header)
+        print("INS=", ins)
+        print("CLA", cla)
+        print("DATA", cdata)
         return header + cdata
 
     def get_configuration(self) -> bytes:
@@ -114,7 +131,7 @@ class LedgerCommandBuilder:
                               cdata=b"")
 
 
-    def get_public_key(self, bip32_path: str, display: bool = False) -> bytes:
+    def get_public_key(self, account: int, display: bool = False) -> bytes:
         """Command builder for GET_PUBLIC_KEY.
 
         Parameters
@@ -130,11 +147,68 @@ class LedgerCommandBuilder:
             APDU command for GET_PUBLIC_KEY.
 
         """
-        cdata = packed_bip32_path_from_string(bip32_path)
-        print("cdata= ", cdata);
+        cdata = account.to_bytes(4, byteorder='big')
+        print("cdata= ", cdata)
         return self.serialize(cla=self.CLA,
                               ins=InsType.INS_GET_PUBLIC_KEY,
                               p1=0x01 if display else 0x00,
                               p2=0x00,
                               cdata=cdata)
 
+    def get_address(self, account: int, wallet_type: int, display: bool) -> bytes:
+        """Command builder for GET_ADDRESS.
+
+        Parameters
+        ----------
+        account: int
+            Account identifier.
+        wallet_type: int
+            Wallet type.
+        display : bool
+            Whether you want to display the address on the device.
+
+        Returns
+        -------
+        bytes
+            APDU command for GET_ADDRESS.
+
+        """
+
+        #account_num = account.to_bytes(4, byteorder='big')
+
+        #wallet = wallet_type.to_bytes(1, byteorder='big')
+
+        cdata = (account.to_bytes(4, byteorder='big') + wallet_type.to_bytes(1, byteorder='big'))
+        #cdata = (account_num + wallet)
+
+        return self.serialize(cla=self.CLA,
+                          ins=InsType.INS_GET_ADDRESS,
+                          p1=0x01 if display else 0x00,
+                          p2=0x00,
+                          cdata=cdata)
+
+    def sign_message(self, account: int, message: bytes) -> bytes:
+        """Command builder for SIGN_MESSAGE.
+
+        Parameters
+        ----------
+        account: int
+            Account identifier.
+        message: str
+            Message hash.
+        display : bool
+            Whether you want to display the address on the device.
+
+        Returns
+        -------
+        bytes
+            APDU command for SIGN_MESSAGE.
+
+        """
+
+        cdata = (account.to_bytes(4, byteorder='big') + message)
+        return self.serialize(cla=self.CLA,
+                              ins=InsType.INS_SIGN,
+                              p1=0x01,
+                              p2=0x00,
+                              cdata=cdata)

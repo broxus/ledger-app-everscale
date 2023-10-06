@@ -5,6 +5,7 @@ import numpy as np
 
 SIGN_MAGIC: [4] = [0xFF, 0xFF, 0xFF, 0xFF]
 
+SUCCESS = 0x9000
 
 
 def test_sign_message(cmd):
@@ -43,11 +44,16 @@ def test_sign_message(cmd):
         #message = [SIGN_MAGIC, hash_in_bytes]
         #print("END MESSAGE", message)
         verifying_key = ed25519.VerifyingKey(public_key, encoding="hex")
+        result = 0
         try:
             verifying_key.verify(signature, message)
+            result = SUCCESS
             print("The signature is valid.")
         except ed25519.BadSignatureError:
             print("Invalid signature!")
+
+        assert result == SUCCESS
+
 
 
 

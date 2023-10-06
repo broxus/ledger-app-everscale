@@ -34,21 +34,21 @@ def test_sign_message(cmd):
         assert len(hash_in_bytes) == 32
         # an acc num | bytes to sign
         prefix = bytes(SIGN_MAGIC)
+        assert len(prefix) == 4
         message = prefix + hash_in_bytes
 
-        signature = cmd.sign_message(account, message)
+        signature = cmd.sign_message(account, hash_in_bytes)
         assert len(signature) == 64
         #print("END SIGN", signature)
         #message = [SIGN_MAGIC, hash_in_bytes]
         #print("END MESSAGE", message)
         verifying_key = ed25519.VerifyingKey(public_key, encoding="hex")
         try:
-            verifying_key.verify(signature, hash_in_bytes)
+            verifying_key.verify(signature, message)
             print("The signature is valid.")
         except ed25519.BadSignatureError:
             print("Invalid signature!")
 
-        assert len(message) == 128 #  !!!!!!!!!!!!!THIS IS FOR TEST TO FAIL AND SHOW ERROR LOG
 
 
 

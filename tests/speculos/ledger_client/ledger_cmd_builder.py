@@ -109,10 +109,9 @@ class LedgerCommandBuilder:
         if self.debug:
             logging.info("header: %s", header.hex())
             logging.info("cdata:  %s", cdata.hex())
-        print("HEADER =", header)
-        print("INS=", ins)
-        print("CLA", cla)
-        print("DATA", cdata)
+
+        print("serialize INS=", ins)
+        print("serialize DATA=", cdata)
         return header + cdata
 
     def get_configuration(self) -> bytes:
@@ -207,6 +206,7 @@ class LedgerCommandBuilder:
         """
 
         cdata = (account.to_bytes(4, byteorder='big') + message)
+
         return self.serialize(cla=self.CLA,
                               ins=InsType.INS_SIGN,
                               p1=0x01,

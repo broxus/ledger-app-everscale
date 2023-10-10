@@ -3,9 +3,9 @@ name: CI
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
-    branches: [ master, develop ]
+    branches: [ master, develop, spec_tests ]
   pull_request:
-    branches: [ master, develop ]
+    branches: [ master, develop, spec_tests ]
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -51,3 +51,66 @@ jobs:
         with:
           name: scan-build
           path: scan-build
+
+  # =====================================================
+  #            SPECULOS TESTS
+  # =====================================================
+
+
+  building_for_e2e_speculos_tests:
+    name: Building binaries for E2E Speculos tests
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/ledgerhq/ledger-app-builder/ledger-app-builder:latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Build testing binaries
+        run: |
+          mkdir tests/speculos/elfs
+          make clean && make -j DEBUG=1 NFT_STAGING_KEY=1 BOLOS_SDK=$NANOS_SDK && mv bin/app.elf tests/speculos/elfs/nanos.elf
+          
+
+      - name: Upload app binaries
+        uses: actions/upload-artifact@v3
+        with:
+          name: e2e_speculos_elfs
+          path: ./tests/speculos/elfs
+
+
+  jobs-e2e-speculos-tests:
+    name: Speculos tests
+    strategy:
+      fail-fast: false
+      matrix:
+        model: ["nanos"]
+
+    needs: [building_for_e2e_speculos_tests]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clone
+        uses: actions/checkout@v3
+
+      - name: Create tmp folder for artifacts
+        run: mkdir tests/speculos/elfs
+
+      - name: Download app binaries
+        uses: actions/download-artifact@v3
+        with:
+          path: tmp/
+
+      - name: Gather elfs
+        run: cp `find tmp/e2e_speculos_elfs/ -name "*.elf"` tests/speculos/elfs/
+
+      - name: Install dependencies
+        run: |
+          cd tests/speculos
+          sudo apt-get update && sudo apt-get install -y qemu-user-static
+          pip install -r requirements.txt
+
+      - name: Run speculos tests
+        run: |
+          cd tests/speculos
+          pytest --model ${{ matrix.model }} --path ./elfs/${{ matrix.model }}.elf --display headless

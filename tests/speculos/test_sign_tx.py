@@ -153,15 +153,15 @@ def test_sign_tx_reject(cmd):
         res: list = []
         with pytest.raises(ledger_client.exception.errors.DenyError) as error:
             with cmd.sign_tx(res, account, wallet_type, EVER_DECIMALS, EVER_TICKER, 0, boc[4:]) as exchange:
-                save_screenshot(cmd, f"screenshots/sign_tx/sign_reject_tx/{PATH_IMG[cmd.model]}/00000.png")
+                compare_screenshot(cmd, f"screenshots/sign_tx/sign_reject_tx/{PATH_IMG[cmd.model]}/00000.png")
                 cmd.client.press_and_release('right')
-                save_screenshot(cmd, f"screenshots/sign_tx/sign_reject_tx/{PATH_IMG[cmd.model]}/00001.png")
+                compare_screenshot(cmd, f"screenshots/sign_tx/sign_reject_tx/{PATH_IMG[cmd.model]}/00001.png")
                 cmd.client.press_and_release('right')
-                save_screenshot(cmd, f"screenshots/sign_tx/sign_reject_tx/{PATH_IMG[cmd.model]}/00002.png")
+                compare_screenshot(cmd, f"screenshots/sign_tx/sign_reject_tx/{PATH_IMG[cmd.model]}/00002.png")
                 cmd.client.press_and_release('right')
-                save_screenshot(cmd, f"screenshots/sign_tx/sign_reject_tx/{PATH_IMG[cmd.model]}/00003.png")
+                compare_screenshot(cmd, f"screenshots/sign_tx/sign_reject_tx/{PATH_IMG[cmd.model]}/00003.png")
                 cmd.client.press_and_release('right')
-                save_screenshot(cmd, f"screenshots/sign_tx/sign_reject_tx/{PATH_IMG[cmd.model]}/00004.png")
+                compare_screenshot(cmd, f"screenshots/sign_tx/sign_reject_tx/{PATH_IMG[cmd.model]}/00004.png")
                 cmd.client.press_and_release('both')
 
         assert error.value.args[0] == '0x6985'

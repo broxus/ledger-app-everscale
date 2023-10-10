@@ -114,3 +114,25 @@ class LedgerCommand:
         assert len(response) == 1 + signature_len
 
         return signature
+
+    def sign_tx(self, account: int, wallet_type: int, decimals: int, ticker: str, meta: struct, data: bytes) -> bytes:
+        try:
+            response = self.client._apdu_exchange(
+                  self.builder.sign_tx(account=account, wallet_type=wallet_type, decimals=decimals, ticker=ticker, meta=meta, data=data)
+            )  # type: bytes
+        except ApduException as error:
+            raise DeviceException(error_code=error.sw, ins=InsType.INS_SIGN_TX)
+
+        print("RESP ", response)
+        offset: int = 0
+        signature_len: int = response[offset]
+        assert signature_len == 64
+        print("SIGN LEN=", signature_len)
+
+        offset += 1
+        signature = response[offset:]
+        print("SIGN =", signature)
+        #assert len(signature) == 64
+        assert len(response) == 1 + signature_len
+
+        return signature

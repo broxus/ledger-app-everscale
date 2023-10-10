@@ -36,6 +36,7 @@ class InsType(enum.IntEnum):
     INS_GET_CONFIGURATION       = 0x01
     INS_SIGN                    = 0x03
     INS_GET_ADDRESS             = 0x04
+    INS_SIGN_TX                 = 0x05
 
 
 class WalletType(enum.IntEnum):
@@ -111,7 +112,7 @@ class LedgerCommandBuilder:
             logging.info("cdata:  %s", cdata.hex())
 
         print("serialize INS=", ins)
-        print("serialize DATA=", cdata)
+        print("serialize DATA= ", cdata.hex())
         return header + cdata
 
     def get_configuration(self) -> bytes:
@@ -209,6 +210,33 @@ class LedgerCommandBuilder:
 
         return self.serialize(cla=self.CLA,
                               ins=InsType.INS_SIGN,
+                              p1=0x01,
+                              p2=0x00,
+                              cdata=cdata)
+
+    def sign_tx(self, account: int, wallet_type: int, decimals: int, ticker: str, meta: struct, data: bytes) -> bytes:
+        """Command builder for INS_SIGN_TX.
+
+        Parameters
+        ----------
+        bip32_path : str
+            String representation of BIP32 path.
+        transaction : Transaction
+            Representation of the transaction to be signed.
+
+        Yields
+        -------
+        bytes
+            APDU command chunk for INS_SIGN_TX.
+
+        """
+        meta_data = 0
+        cdata = (account.to_bytes(4, byteorder='big') + wallet_type.to_bytes(1, byteorder='big')
+                 + decimals.to_bytes(1, byteorder='big') + len(ticker).to_bytes(1, byteorder='big')
+                 + bytes(ticker, 'UTF-8') + meta_data.to_bytes(1, byteorder='big') + data)
+
+        return self.serialize(cla=self.CLA,
+                              ins=InsType.INS_SIGN_TX,
                               p1=0x01,
                               p2=0x00,
                               cdata=cdata)

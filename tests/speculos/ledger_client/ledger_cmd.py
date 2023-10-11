@@ -58,6 +58,30 @@ class LedgerCommand:
 
         return pubkey
 
+    @contextmanager
+    def get_public_key_with_display(self, account: int, result: List, display: bool = False) -> Tuple[bytes, bytes]:
+
+        try:
+            chunk: bytes = self.builder.get_public_key(account=account, display=display)
+
+            with self.client.apdu_exchange_nowait(cla=chunk[0], ins=chunk[1],
+                                                  p1=chunk[2], p2=chunk[3],
+                                                  data=chunk[5:]) as exchange:
+                yield exchange
+
+                response: bytes = exchange.receive()
+        except ApduException as error:
+            raise DeviceException(error_code=error.sw, ins=InsType.INS_GET_PUBLIC_KEY)
+        offset: int = 0
+
+        pub_key_len: int = response[offset]
+
+        offset += 1
+        pubkey = response[offset:].hex()
+        assert len(response) == 1 + pub_key_len
+        print("PUBKEY", pubkey)
+        result.append(pubkey)
+
     def get_address(self, account: int, wallet_type: int, display: bool = False) -> str:
         try:
             response = self.client._apdu_exchange(

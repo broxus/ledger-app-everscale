@@ -24,11 +24,11 @@ jobs:
       - name: Clone
         uses: actions/checkout@v3
 
-      - name: Build
+      - name: Build Everscale
         run: |
           make -j BOLOS_SDK=${{ matrix.sdk }}
 
-      - name: Build Everscale app
+      - name: Build Venom
         run: |
           make clean
-          make -j BOLOS_SDK=${{ matrix.sdk }} CHAIN=everscale
+          make -j BOLOS_SDK=${{ matrix.sdk }} CHAIN=venom

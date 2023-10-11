@@ -397,8 +397,6 @@ fn test_ledger_sign_submit_transaction() -> anyhow::Result<()> {
 
     let message_hash = cell.repr_hash();
 
-    println!("{}", message_hash.to_hex_string());
-
     let (ledger, _) = get_ledger();
 
     let account = 0;
@@ -502,14 +500,14 @@ macro_rules! run {
 
 fn do_run_tests() -> anyhow::Result<()> {
     run!(test_ledger_pubkey);
-    /*run!(test_ledger_address);
+    run!(test_ledger_address);
     run!(test_ledger_sign_message);
     run!(test_ledger_sign_send_transaction);
     run!(test_ledger_sign_send_msig_transaction);
     run!(test_ledger_sign_confirm_transaction);
     run!(test_ledger_sign_submit_transaction);
     run!(test_ledger_sign_burn_transaction);
-    run!(test_ledger_sign_create_token_transaction);*/
+    run!(test_ledger_sign_create_token_transaction);
 
     Ok(())
 }

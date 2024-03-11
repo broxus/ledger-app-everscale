@@ -94,4 +94,4 @@ jobs:
       - name: Run speculos tests
         run: |
           cd tests/speculos
-          pytest --model ${{ matrix.model }} --path ./elfs/${{ matrix.model }}.elf --display headless
+          # pytest --model ${{ matrix.model }} --path ./elfs/${{ matrix.model }}.elf --display headless

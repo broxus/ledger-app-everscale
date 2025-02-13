@@ -24,3 +24,10 @@ BreakConstructorInitializersBeforeComma: true
 ReflowComments: false
 SpaceBeforeParens: ControlStatements
 AlwaysBreakAfterReturnType: None
+IndentCaseLabels: true
+AllowShortEnumsOnASingleLine: false
+BreakStringLiterals: true
+IndentWrappedFunctionNames: false
+KeepEmptyLinesAtTheStartOfBlocks: false
+AlignTrailingComments: true
+SortUsingDeclarations: false

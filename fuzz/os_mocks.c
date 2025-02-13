@@ -10,7 +10,9 @@ void os_longjmp(unsigned int exception) {
 }
 
 try_context_t *current_context = NULL;
-try_context_t *try_context_get(void) { return current_context; }
+try_context_t *try_context_get(void) {
+    return current_context;
+}
 
 try_context_t *try_context_set(try_context_t *ctx) {
     try_context_t *previous_ctx = current_context;
@@ -47,6 +49,6 @@ size_t cx_hash_sha256(const uint8_t *in, size_t len, uint8_t *out, size_t out_le
         hash_len = ERR_INVALID_DATA;
     else
         memcpy(out, tmpBuf, hash_len);
-    
+
     return hash_len;
 }

@@ -7,17 +7,36 @@
 
 static uint8_t set_result_sign_transaction() {
     cx_ecfp_private_key_t privateKey;
-    SignTransactionContext_t* context = &data_context.sign_tr_context;
+    SignTransactionContext_t *context = &data_context.sign_tr_context;
 
     BEGIN_TRY {
         TRY {
             get_private_key(context->account_number, &privateKey);
             if (!context->sign_with_chain_id) {
-                cx_eddsa_sign(&privateKey, CX_LAST, CX_SHA512, context->to_sign, TO_SIGN_LENGTH, NULL, 0, context->signature, SIGNATURE_LENGTH, NULL);
+                cx_eddsa_sign(&privateKey,
+                              CX_LAST,
+                              CX_SHA512,
+                              context->to_sign,
+                              TO_SIGN_LENGTH,
+                              NULL,
+                              0,
+                              context->signature,
+                              SIGNATURE_LENGTH,
+                              NULL);
             } else {
-                cx_eddsa_sign(&privateKey, CX_LAST, CX_SHA512, context->to_sign, CHAIN_ID_LENGTH + TO_SIGN_LENGTH, NULL, 0, context->signature, SIGNATURE_LENGTH, NULL);
+                cx_eddsa_sign(&privateKey,
+                              CX_LAST,
+                              CX_SHA512,
+                              context->to_sign,
+                              CHAIN_ID_LENGTH + TO_SIGN_LENGTH,
+                              NULL,
+                              0,
+                              context->signature,
+                              SIGNATURE_LENGTH,
+                              NULL);
             }
-        } FINALLY {
+        }
+        FINALLY {
             explicit_bzero(&privateKey, sizeof(privateKey));
         }
     }
@@ -30,115 +49,85 @@ static uint8_t set_result_sign_transaction() {
     return tx;
 }
 
-UX_STEP_NOCB(
-    ux_sign_transaction_intro,
-    pnn,
-    {
-      &C_icon_eye,
-      "Review",
-      "transaction",
-    });
-UX_STEP_NOCB(
-    ux_sign_transaction_burn,
-    bnnn_paging,
-    {
-      .title = "Action",
-      .text = "Burn"
-    });
-UX_STEP_NOCB(
-    ux_sign_transaction_deploy,
-    bnnn_paging,
-    {
-      .title = "Action",
-      .text = "Deploy"
-    });
-UX_STEP_NOCB(
-    ux_sign_transaction_confirm,
-    bnnn_paging,
-    {
-      .title = "Action",
-      .text = "Confirm"
-    });
-UX_STEP_NOCB(
-    ux_sign_transaction_transfer,
-    bnnn_paging,
-    {
-      .title = "Action",
-      .text = "Transfer"
-    });
-UX_STEP_NOCB(
-    ux_sign_transaction_amount,
-    bnnn_paging,
-    {
-      .title = "Amount",
-      .text = data_context.sign_tr_context.amount_str,
-    });
-UX_STEP_NOCB(
-    ux_sign_transaction_address,
-    bnnn_paging,
-    {
-      .title = "Address",
-      .text = data_context.sign_tr_context.address_str,
-    });
-UX_STEP_NOCB(
-    ux_sign_transaction_transaction_id,
-    bnnn_paging,
-    {
-      .title = "Transaction id",
-      .text = data_context.sign_tr_context.transaction_id_str,
-    });
-UX_STEP_CB(
-    ux_sign_transaction_accept,
-    pbb,
-    send_response(set_result_sign_transaction(), true),
-    {
-      &C_icon_validate_14,
-      "Accept",
-      "and send",
-    });
-UX_STEP_CB(
-    ux_sign_transaction_reject,
-    pb,
-    send_response(0, false),
-    {
-      &C_icon_crossmark,
-      "Reject",
-    });
+UX_STEP_NOCB(ux_sign_transaction_intro,
+             pnn,
+             {
+                 &C_icon_eye,
+                 "Review",
+                 "transaction",
+             });
+UX_STEP_NOCB(ux_sign_transaction_burn, bnnn_paging, {.title = "Action", .text = "Burn"});
+UX_STEP_NOCB(ux_sign_transaction_deploy, bnnn_paging, {.title = "Action", .text = "Deploy"});
+UX_STEP_NOCB(ux_sign_transaction_confirm, bnnn_paging, {.title = "Action", .text = "Confirm"});
+UX_STEP_NOCB(ux_sign_transaction_transfer, bnnn_paging, {.title = "Action", .text = "Transfer"});
+UX_STEP_NOCB(ux_sign_transaction_amount,
+             bnnn_paging,
+             {
+                 .title = "Amount",
+                 .text = data_context.sign_tr_context.amount_str,
+             });
+UX_STEP_NOCB(ux_sign_transaction_address,
+             bnnn_paging,
+             {
+                 .title = "Address",
+                 .text = data_context.sign_tr_context.address_str,
+             });
+UX_STEP_NOCB(ux_sign_transaction_transaction_id,
+             bnnn_paging,
+             {
+                 .title = "Transaction id",
+                 .text = data_context.sign_tr_context.transaction_id_str,
+             });
+UX_STEP_CB(ux_sign_transaction_accept,
+           pbb,
+           send_response(set_result_sign_transaction(), true),
+           {
+               &C_icon_validate_14,
+               "Accept",
+               "and send",
+           });
+UX_STEP_CB(ux_sign_transaction_reject,
+           pb,
+           send_response(0, false),
+           {
+               &C_icon_crossmark,
+               "Reject",
+           });
 
 UX_FLOW(ux_sign_transaction_burn_flow,
-    &ux_sign_transaction_intro,
-    &ux_sign_transaction_burn,
-    &ux_sign_transaction_amount,
-    &ux_sign_transaction_accept,
-    &ux_sign_transaction_reject
-);
+        &ux_sign_transaction_intro,
+        &ux_sign_transaction_burn,
+        &ux_sign_transaction_amount,
+        &ux_sign_transaction_accept,
+        &ux_sign_transaction_reject);
 
 UX_FLOW(ux_sign_transaction_deploy_flow,
-    &ux_sign_transaction_intro,
-    &ux_sign_transaction_deploy,
-    &ux_sign_transaction_address,
-    &ux_sign_transaction_accept,
-    &ux_sign_transaction_reject
-);
+        &ux_sign_transaction_intro,
+        &ux_sign_transaction_deploy,
+        &ux_sign_transaction_address,
+        &ux_sign_transaction_accept,
+        &ux_sign_transaction_reject);
 
 UX_FLOW(ux_sign_transaction_confirm_flow,
-    &ux_sign_transaction_intro,
-    &ux_sign_transaction_confirm,
-    &ux_sign_transaction_transaction_id,
-    &ux_sign_transaction_accept,
-    &ux_sign_transaction_reject
-);
+        &ux_sign_transaction_intro,
+        &ux_sign_transaction_confirm,
+        &ux_sign_transaction_transaction_id,
+        &ux_sign_transaction_accept,
+        &ux_sign_transaction_reject);
 
 UX_FLOW(ux_sign_transaction_transfer_flow,
-    &ux_sign_transaction_intro,
-    &ux_sign_transaction_transfer,
-    &ux_sign_transaction_amount,
-    &ux_sign_transaction_address,
-    &ux_sign_transaction_accept,
-    &ux_sign_transaction_reject
-);
+        &ux_sign_transaction_intro,
+        &ux_sign_transaction_transfer,
+        &ux_sign_transaction_amount,
+        &ux_sign_transaction_address,
+        &ux_sign_transaction_accept,
+        &ux_sign_transaction_reject);
 
-int handleSignTransaction(uint8_t *dataBuffer, uint16_t dataLength, volatile unsigned int *flags, bool is_first_chunk, bool more) {
+int handleSignTransaction(uint8_t *dataBuffer,
+                          uint16_t dataLength,
+                          volatile unsigned int *flags,
+                          bool is_first_chunk,
+                          bool more) {
     if (is_first_chunk) {
         reset_app_context();
     }
@@ -176,7 +165,8 @@ int handleSignTransaction(uint8_t *dataBuffer, uint16_t dataLength, volatile uns
 
         // Read wallet type if present
         if (metadata & FLAG_WITH_WALLET_ID) {
-            VALIDATE(dataLength >= offset + sizeof(context->current_wallet_type), ERR_INVALID_REQUEST);
+            VALIDATE(dataLength >= offset + sizeof(context->current_wallet_type),
+                     ERR_INVALID_REQUEST);
             context->current_wallet_type = dataBuffer[offset];
             offset += sizeof(context->current_wallet_type);
         } else {
@@ -215,17 +205,18 @@ int handleSignTransaction(uint8_t *dataBuffer, uint16_t dataLength, volatile uns
             context->sign_with_chain_id = false;
         }
     }
-    // offset is a pointer to dataBuffer, or the number of bytes we moved. here + offset means start of the message
-    // we need to save data to a context buffer and add msg_length to offset of this buffer
-    uint8_t* msg_begin = dataBuffer + offset;
+    // offset is a pointer to dataBuffer, or the number of bytes we moved. here + offset means start
+    // of the message we need to save data to a context buffer and add msg_length to offset of this
+    // buffer
+    uint8_t *msg_begin = dataBuffer + offset;
 
     // Since we check LC dataLength can not be manipulated
     uint16_t msg_length = dataLength - offset;
 
-    if (msg_begin && msg_length > 0) { // if data exists
-        VALIDATE(context->data_offset + msg_length < sizeof(context->data) , ERR_INVALID_DATA);
+    if (msg_begin && msg_length > 0) {  // if data exists
+        VALIDATE(context->data_offset + msg_length < sizeof(context->data), ERR_INVALID_DATA);
         memcpy(context->data + context->data_offset, msg_begin, msg_length);
-        context->data_offset += msg_length; // add length of the new message to our context offset
+        context->data_offset += msg_length;  // add length of the new message to our context offset
     }
 
     if (more) {

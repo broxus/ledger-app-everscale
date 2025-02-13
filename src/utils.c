@@ -7,7 +7,7 @@
 
 #ifndef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
 
-void get_public_key(uint32_t account_number, uint8_t* publicKeyArray) {
+void get_public_key(uint32_t account_number, uint8_t *publicKeyArray) {
     cx_ecfp_private_key_t privateKey;
     cx_ecfp_public_key_t publicKey;
 
@@ -37,13 +37,11 @@ void get_public_key(uint32_t account_number, uint8_t* publicKeyArray) {
 static const uint32_t HARDENED_OFFSET = 0x80000000;
 
 void get_private_key(uint32_t account_number, cx_ecfp_private_key_t *privateKey) {
-    const uint32_t derivePath[BIP32_PATH] = {
-            44 | HARDENED_OFFSET,
-            396 | HARDENED_OFFSET,
-            account_number | HARDENED_OFFSET,
-            0 | HARDENED_OFFSET,
-            0 | HARDENED_OFFSET
-    };
+    const uint32_t derivePath[BIP32_PATH] = {44 | HARDENED_OFFSET,
+                                             396 | HARDENED_OFFSET,
+                                             account_number | HARDENED_OFFSET,
+                                             0 | HARDENED_OFFSET,
+                                             0 | HARDENED_OFFSET};
 
     uint8_t privateKeyData[32];
     BEGIN_TRY {
@@ -56,10 +54,7 @@ void get_private_key(uint32_t account_number, cx_ecfp_private_key_t *privateKey)
                                                 NULL,
                                                 NULL,
                                                 0);
-            cx_ecfp_init_private_key(CX_CURVE_Ed25519,
-                                     privateKeyData,
-                                     32,
-                                     privateKey);
+            cx_ecfp_init_private_key(CX_CURVE_Ed25519, privateKeyData, 32, privateKey);
         }
         CATCH_OTHER(e) {
             explicit_bzero(&privateKeyData, sizeof(privateKeyData));
@@ -73,8 +68,8 @@ void get_private_key(uint32_t account_number, cx_ecfp_private_key_t *privateKey)
 }
 
 void send_response(uint8_t tx, bool approve) {
-    G_io_apdu_buffer[tx++] = approve? 0x90 : 0x69;
-    G_io_apdu_buffer[tx++] = approve? 0x00 : 0x85;
+    G_io_apdu_buffer[tx++] = approve ? 0x90 : 0x69;
+    G_io_apdu_buffer[tx++] = approve ? 0x00 : 0x85;
     reset_app_context();
     // Send back the response, do not restart the event loop
     io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, tx);
@@ -89,9 +84,9 @@ unsigned int ui_prepro(const bagl_element_t *element) {
         if (display) {
             if (element->component.userid == 1) {
                 UX_CALLBACK_SET_INTERVAL(2000);
-            }
-            else {
-                UX_CALLBACK_SET_INTERVAL(MAX(3000, 1000 + bagl_label_roundtrip_duration_ms(element, 7)));
+            } else {
+                UX_CALLBACK_SET_INTERVAL(
+                    MAX(3000, 1000 + bagl_label_roundtrip_duration_ms(element, 7)));
             }
         }
     }
@@ -173,7 +168,10 @@ uint16_t format_hex(const uint8_t *in, size_t in_len, char *out, size_t out_len)
 }
 
 #define SCRATCH_SIZE 37
-uint8_t convert_hex_amount_to_displayable(const uint8_t* amount, uint8_t decimals, uint8_t amount_length, char* out) {
+uint8_t convert_hex_amount_to_displayable(const uint8_t *amount,
+                                          uint8_t decimals,
+                                          uint8_t amount_length,
+                                          char *out) {
     uint8_t LOOP1 = SCRATCH_SIZE - decimals;
     uint8_t LOOP2 = decimals;
     uint16_t scratch[SCRATCH_SIZE];
@@ -194,8 +192,7 @@ uint8_t convert_hex_amount_to_displayable(const uint8_t* amount, uint8_t decimal
         for (j = 0; j < 8; j++) {
             uint8_t k;
             uint16_t shifted_in =
-                    (((amount[i] & 0xff) & ((1 << (7 - j)))) != 0) ? (short)1
-                                                                   : (short)0;
+                (((amount[i] & 0xff) & ((1 << (7 - j)))) != 0) ? (short) 1 : (short) 0;
             for (k = smin; k < nscratch; k++) {
                 scratch[k] += ((scratch[k] >= 5) ? 3 : 0);
             }
@@ -204,11 +201,10 @@ uint8_t convert_hex_amount_to_displayable(const uint8_t* amount, uint8_t decimal
                 smin -= 1;
             }
             for (k = smin; k < nscratch - 1; k++) {
-                scratch[k] =
-                        ((scratch[k] << 1) & 0xF) | ((scratch[k + 1] >= 8) ? 1 : 0);
+                scratch[k] = ((scratch[k] << 1) & 0xF) | ((scratch[k + 1] >= 8) ? 1 : 0);
             }
-            scratch[nscratch - 1] = ((scratch[nscratch - 1] << 1) & 0x0F) |
-                                    (shifted_in == 1 ? 1 : 0);
+            scratch[nscratch - 1] =
+                ((scratch[nscratch - 1] << 1) & 0x0F) | (shifted_in == 1 ? 1 : 0);
         }
     }
 

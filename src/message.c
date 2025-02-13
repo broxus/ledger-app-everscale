@@ -8,7 +8,11 @@
 #define ROOT_CELL_INDEX 0
 #define GIFT_CELL_INDEX 1
 
-void deserialize_array(uint8_t* in, uint8_t in_size, uint16_t offset, uint8_t* out, uint8_t out_size) {
+void deserialize_array(uint8_t* in,
+                       uint8_t in_size,
+                       uint16_t offset,
+                       uint8_t* out,
+                       uint8_t out_size) {
     uint8_t shift = offset % 8;
     uint8_t first_data_byte = offset / 8;
     for (uint16_t i = first_data_byte, j = 0; j < out_size; ++i, ++j) {
@@ -35,7 +39,7 @@ void deserialize_address(struct SliceData_t* slice, int8_t* wc, uint8_t* address
         uint8_t anycast = SliceData_get_next_bit(slice);
         UNUSED(anycast);
 
-        *wc = (int8_t)SliceData_get_next_byte(slice);
+        *wc = (int8_t) SliceData_get_next_byte(slice);
 
         uint8_t* data = SliceData_begin(slice);
         uint16_t offset = SliceData_get_cursor(slice);
@@ -57,18 +61,25 @@ void deserialize_value(struct SliceData_t* slice, uint8_t* value, uint8_t value_
 }
 
 void set_dst_address(uint8_t wc, const uint8_t* address) {
-    char wc_temp[6]; // snprintf always returns zero
-    snprintf(wc_temp, sizeof(wc_temp), "%d:", (int8_t)wc);
+    char wc_temp[6];  // snprintf always returns zero
+    snprintf(wc_temp, sizeof(wc_temp), "%d:", (int8_t) wc);
     int wc_len = strlen(wc_temp);
 
     char* address_str = data_context.sign_tr_context.address_str;
     memcpy(address_str, wc_temp, wc_len);
     address_str += wc_len;
 
-    format_hex(address, ADDRESS_LENGTH, address_str, sizeof(data_context.sign_tr_context.address_str));
+    format_hex(address,
+               ADDRESS_LENGTH,
+               address_str,
+               sizeof(data_context.sign_tr_context.address_str));
 }
 
-void set_amount(const uint8_t* amount, uint8_t amount_length, uint8_t flags, uint8_t decimals, const char* ticker) {
+void set_amount(const uint8_t* amount,
+                uint8_t amount_length,
+                uint8_t flags,
+                uint8_t decimals,
+                const char* ticker) {
     char* amount_str = data_context.sign_tr_context.amount_str;
     size_t amount_str_size = sizeof(data_context.sign_tr_context.amount_str);
 
@@ -77,8 +88,10 @@ void set_amount(const uint8_t* amount, uint8_t amount_length, uint8_t flags, uin
     switch (flags) {
         case NORMAL_FLAG: {
             const char* space = " ";
-            uint8_t text_size = convert_hex_amount_to_displayable(amount, decimals, amount_length, amount_str);
-            VALIDATE(amount_str_size >= text_size + strlen(space) + strlen(ticker), ERR_INVALID_MESSAGE);
+            uint8_t text_size =
+                convert_hex_amount_to_displayable(amount, decimals, amount_length, amount_str);
+            VALIDATE(amount_str_size >= text_size + strlen(space) + strlen(ticker),
+                     ERR_INVALID_MESSAGE);
 
             strncpy(amount_str + text_size, space, strlen(space));
             strncpy(amount_str + text_size + strlen(space), ticker, strlen(ticker));
@@ -106,10 +119,15 @@ void set_amount(const uint8_t* amount, uint8_t amount_length, uint8_t flags, uin
 void set_transaction_id(const uint8_t* transaction_id) {
     char* transaction_id_str = data_context.sign_tr_context.transaction_id_str;
     memset(transaction_id_str, 0, sizeof(data_context.sign_tr_context.transaction_id_str));
-    format_hex(transaction_id, TRANSACTION_ID_LENGTH, transaction_id_str, sizeof(data_context.sign_tr_context.transaction_id_str));
+    format_hex(transaction_id,
+               TRANSACTION_ID_LENGTH,
+               transaction_id_str,
+               sizeof(data_context.sign_tr_context.transaction_id_str));
 }
 
-void deserialize_int_message_header(struct SliceData_t* slice, uint8_t flags, SignTransactionContext_t* ctx) {
+void deserialize_int_message_header(struct SliceData_t* slice,
+                                    uint8_t flags,
+                                    SignTransactionContext_t* ctx) {
     uint8_t int_msg = SliceData_get_next_bit(slice);
     VALIDATE(!int_msg, ERR_INVALID_MESSAGE);
 
@@ -160,11 +178,13 @@ void deserialize_int_message_header(struct SliceData_t* slice, uint8_t flags, Si
     UNUSED(created_at);
 }
 
-
-int deserialize_token_body(struct SliceData_t* slice, struct SliceData_t* ref_slice, SignTransactionContext_t* ctx) {
+int deserialize_token_body(struct SliceData_t* slice,
+                           struct SliceData_t* ref_slice,
+                           SignTransactionContext_t* ctx) {
     // FunctionId
     if (SliceData_remaining_bits(slice) < sizeof(uint32_t) * 8) {
-        if (!ref_slice || !ref_slice->data || (SliceData_remaining_bits(ref_slice) < sizeof(uint32_t) * 8)) {
+        if (!ref_slice || !ref_slice->data ||
+            (SliceData_remaining_bits(ref_slice) < sizeof(uint32_t) * 8)) {
             // Empty payload is ok
             return SIGN_TRANSACTION_FLOW_TRANSFER;
         }
@@ -235,7 +255,11 @@ int deserialize_token_body(struct SliceData_t* slice, struct SliceData_t* ref_sl
     return sign_transaction_flow;
 }
 
-int deserialize_multisig_params(struct SliceData_t* slice, uint32_t function_id, uint8_t wc, uint8_t* address, SignTransactionContext_t* ctx) {
+int deserialize_multisig_params(struct SliceData_t* slice,
+                                uint32_t function_id,
+                                uint8_t wc,
+                                uint8_t* address,
+                                SignTransactionContext_t* ctx) {
     int sign_transaction_flow = SIGN_TRANSACTION_FLOW_ERROR;
 
     switch (function_id) {
@@ -331,10 +355,16 @@ void prepare_payload_hash(BocContext_t* bc) {
     }
 
     if (!data_context.sign_tr_context.sign_with_chain_id) {
-        memcpy(data_context.sign_tr_context.to_sign, &bc->hashes[ROOT_CELL_INDEX * HASH_SIZE], TO_SIGN_LENGTH);
+        memcpy(data_context.sign_tr_context.to_sign,
+               &bc->hashes[ROOT_CELL_INDEX * HASH_SIZE],
+               TO_SIGN_LENGTH);
     } else {
-        memcpy(data_context.sign_tr_context.to_sign, data_context.sign_tr_context.chain_id, CHAIN_ID_LENGTH);
-        memcpy(data_context.sign_tr_context.to_sign + CHAIN_ID_LENGTH, &bc->hashes[ROOT_CELL_INDEX * HASH_SIZE], TO_SIGN_LENGTH);
+        memcpy(data_context.sign_tr_context.to_sign,
+               data_context.sign_tr_context.chain_id,
+               CHAIN_ID_LENGTH);
+        memcpy(data_context.sign_tr_context.to_sign + CHAIN_ID_LENGTH,
+               &bc->hashes[ROOT_CELL_INDEX * HASH_SIZE],
+               TO_SIGN_LENGTH);
     }
 }
 
@@ -372,9 +402,13 @@ uint32_t deserialize_contract_header(struct SliceData_t* slice) {
     return function_id;
 }
 
-void prepend_address_to_cell(uint8_t* cell_buffer, uint16_t cell_buffer_size, struct Cell_t* cell, uint8_t wc, uint8_t* address) {
+void prepend_address_to_cell(uint8_t* cell_buffer,
+                             uint16_t cell_buffer_size,
+                             struct Cell_t* cell,
+                             uint8_t wc,
+                             uint8_t* address) {
     uint16_t bit_len = Cell_bit_len(cell);
-    bit_len += 267; // Prefix(2) + Anycast(1) + WorkchainId(8) + Address(32 * 8)
+    bit_len += 267;  // Prefix(2) + Anycast(1) + WorkchainId(8) + Address(32 * 8)
 
     uint8_t d1 = Cell_get_d1(cell);
     uint8_t d2 = ((bit_len >> 2) & 0b11111110) | (bit_len % 8 != 0);
@@ -386,11 +420,11 @@ void prepend_address_to_cell(uint8_t* cell_buffer, uint16_t cell_buffer_size, st
     SliceData_init(&slice, cell_buffer + CELL_DATA_OFFSET, cell_buffer_size);
 
     // Append prefix
-    uint8_t prefix[] = { 0x80 }; // $100 prefix AddrStd
+    uint8_t prefix[] = {0x80};  // $100 prefix AddrStd
     SliceData_append(&slice, prefix, 3, false);
 
     // Append workchain
-    uint8_t wc_buf[] = { wc };
+    uint8_t wc_buf[] = {wc};
     SliceData_append(&slice, wc_buf, 8, false);
 
     // Append address
@@ -415,7 +449,10 @@ void prepend_address_to_cell(uint8_t* cell_buffer, uint16_t cell_buffer_size, st
     cell->cell_begin = cell_buffer;
 }
 
-int prepare_to_sign(struct ByteStream_t* src, uint8_t wc, uint8_t* address, uint8_t* prepend_address) {
+int prepare_to_sign(struct ByteStream_t* src,
+                    uint8_t wc,
+                    uint8_t* address,
+                    uint8_t* prepend_address) {
     // Init context
     BocContext_t* bc = &boc_context;
     DataContext_t* dc = &data_context;
@@ -465,7 +502,8 @@ int prepare_to_sign(struct ByteStream_t* src, uint8_t wc, uint8_t* address, uint
                 SliceData_t ref_slice;
                 SliceData_from_cell(&ref_slice, ref_cell);
 
-                sign_transaction_flow = deserialize_token_body(&gift_slice, &ref_slice, &dc->sign_tr_context);
+                sign_transaction_flow =
+                    deserialize_token_body(&gift_slice, &ref_slice, &dc->sign_tr_context);
             }
 
             // Calculate payload hash to sign
@@ -494,7 +532,11 @@ int prepare_to_sign(struct ByteStream_t* src, uint8_t wc, uint8_t* address, uint
                 SliceData_from_cell(&gift_slice, gift_cell);
             }
 
-            sign_transaction_flow = deserialize_multisig_params(&gift_slice, function_id, wc, address, &dc->sign_tr_context);
+            sign_transaction_flow = deserialize_multisig_params(&gift_slice,
+                                                                function_id,
+                                                                wc,
+                                                                address,
+                                                                &dc->sign_tr_context);
 
             uint8_t gift_refs_count;
             Cell_get_refs(gift_cell, &gift_refs_count);
@@ -508,7 +550,8 @@ int prepare_to_sign(struct ByteStream_t* src, uint8_t wc, uint8_t* address, uint
                 SliceData_from_cell(&body_slice, body_cell);
 
                 if (!SliceData_is_empty(&body_slice)) {
-                    sign_transaction_flow = deserialize_token_body(&body_slice, NULL, &dc->sign_tr_context);
+                    sign_transaction_flow =
+                        deserialize_token_body(&body_slice, NULL, &dc->sign_tr_context);
                 }
             }
 
@@ -530,7 +573,11 @@ int prepare_to_sign(struct ByteStream_t* src, uint8_t wc, uint8_t* address, uint
             SliceData_t gift_slice;
             SliceData_from_cell(&gift_slice, gift_cell);
 
-            sign_transaction_flow = deserialize_multisig_params(&gift_slice, function_id, wc, address, &dc->sign_tr_context);
+            sign_transaction_flow = deserialize_multisig_params(&gift_slice,
+                                                                function_id,
+                                                                wc,
+                                                                address,
+                                                                &dc->sign_tr_context);
 
             uint8_t gift_refs_count;
             Cell_get_refs(gift_cell, &gift_refs_count);
@@ -544,13 +591,18 @@ int prepare_to_sign(struct ByteStream_t* src, uint8_t wc, uint8_t* address, uint
                 SliceData_from_cell(&body_slice, body_cell);
 
                 if (!SliceData_is_empty(&body_slice)) {
-                    sign_transaction_flow = deserialize_token_body(&body_slice, NULL, &dc->sign_tr_context);
+                    sign_transaction_flow =
+                        deserialize_token_body(&body_slice, NULL, &dc->sign_tr_context);
                 }
             }
 
             // Prepend address to root cell
-            uint8_t cell_buffer[130]; // d1(1) + d2(1) + data(128)
-            prepend_address_to_cell(cell_buffer, sizeof(cell_buffer), root_cell, wc, prepend_address);
+            uint8_t cell_buffer[130];  // d1(1) + d2(1) + data(128)
+            prepend_address_to_cell(cell_buffer,
+                                    sizeof(cell_buffer),
+                                    root_cell,
+                                    wc,
+                                    prepend_address);
 
             // Calculate payload hash to sign
             prepare_payload_hash(bc);

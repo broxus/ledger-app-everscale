@@ -2,7 +2,12 @@
 #include "utils.h"
 #include "errors.h"
 
-void handleGetAppConfiguration(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t dataLength, volatile unsigned int *flags, volatile unsigned int *tx) {
+void handleGetAppConfiguration(uint8_t p1,
+                               uint8_t p2,
+                               uint8_t *dataBuffer,
+                               uint16_t dataLength,
+                               volatile unsigned int *flags,
+                               volatile unsigned int *tx) {
     UNUSED(dataBuffer);
     UNUSED(flags);
     VALIDATE(p1 == 0 && p2 == 0 && dataLength == 0, ERR_INVALID_REQUEST);

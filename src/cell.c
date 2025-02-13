@@ -62,18 +62,20 @@ uint16_t Cell_bit_len(struct Cell_t* self) {
     return bit_len;
 }
 
-uint16_t deserialize_cell(struct Cell_t* cell, const uint8_t cell_index, const uint8_t cells_count) {
+uint16_t deserialize_cell(struct Cell_t* cell,
+                          const uint8_t cell_index,
+                          const uint8_t cells_count) {
     uint8_t d1 = Cell_get_d1(cell);
-    uint8_t level = d1 >> 5; // level
-    uint8_t hashes = (d1 & 16) == 16; // with hashes
-    uint8_t exotic = (d1 & 8) == 8; // exotic
-    uint8_t rc = d1 & 7;	// refs count
+    uint8_t level = d1 >> 5;           // level
+    uint8_t hashes = (d1 & 16) == 16;  // with hashes
+    uint8_t exotic = (d1 & 8) == 8;    // exotic
+    uint8_t rc = d1 & 7;               // refs count
     uint8_t absent = rc == 7 && hashes;
     uint8_t pruned = d1 == PRUNED_BRANCH_D1;
     UNUSED(level);
 
     VALIDATE(!hashes, ERR_INVALID_CELL);
-    VALIDATE(!exotic || pruned, ERR_INVALID_CELL); // only ordinary or pruned cells are valid
+    VALIDATE(!exotic || pruned, ERR_INVALID_CELL);  // only ordinary or pruned cells are valid
     VALIDATE(rc <= MAX_REFERENCES_COUNT, ERR_INVALID_CELL);
     VALIDATE(!absent, ERR_INVALID_CELL);
 
@@ -89,7 +91,7 @@ uint16_t deserialize_cell(struct Cell_t* cell, const uint8_t cell_index, const u
         VALIDATE(ref <= cells_count && ref > cell_index, ERR_INVALID_CELL);
     }
 
-    return CELL_DATA_OFFSET + data_size + refs_count; // cell size
+    return CELL_DATA_OFFSET + data_size + refs_count;  // cell size
 }
 
 void calc_cell_hash(Cell_t* cell, const uint8_t cell_index) {
@@ -108,7 +110,7 @@ void calc_cell_hash(Cell_t* cell, const uint8_t cell_index) {
         return;
     }
 
-    uint8_t hash_buffer[266]; // d1(1) + d2(1) + data(128) + 4 * (depth(2) + hash(32))
+    uint8_t hash_buffer[266];  // d1(1) + d2(1) + data(128) + 4 * (depth(2) + hash(32))
 
     uint16_t hash_buffer_offset = 0;
     hash_buffer[0] = d1 & 0b00011111;
@@ -143,6 +145,9 @@ void calc_cell_hash(Cell_t* cell, const uint8_t cell_index) {
         hash_buffer_offset += HASH_SIZE;
     }
 
-    int result = cx_hash_sha256(hash_buffer, hash_buffer_offset, bc->hashes + cell_index * HASH_SIZE, HASH_SIZE);
+    int result = cx_hash_sha256(hash_buffer,
+                                hash_buffer_offset,
+                                bc->hashes + cell_index * HASH_SIZE,
+                                HASH_SIZE);
     VALIDATE(result == HASH_SIZE, ERR_INVALID_HASH);
 }

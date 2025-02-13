@@ -28,8 +28,9 @@ def test_sign_message(backend: BackendInterface, navigator: Navigator, default_s
     rapdu = client.get_public_key(account_number=account_number)
 
     # Message to sign
-    payload = bytes.fromhex("00000000001111111111111111111111111111111111111111111111111111111111111111")
-
+    message_hash = "1111111111111111111111111111111111111111111111111111111111111111"
+    message_bytes = bytes.fromhex(message_hash)
+    payload = account_number.to_bytes(4, byteorder='big') + message_bytes
     # Send the sign device instruction.
     # As it requires on-screen validation, the function is asynchronous.
     # It will yield the result when the navigation is done
@@ -46,4 +47,4 @@ def test_sign_message(backend: BackendInterface, navigator: Navigator, default_s
     # The device as yielded the result, parse it and ensure that the signature is correct
     response = client.get_async_response().data
     _, der_sig, _ = unpack_sign_tx_response(response)
-    assert der_sig.hex() == "d2edfcb178abad8df455f605d2887e6fed24ed1d2462e1fc216fad55f2e60fa372239ce950b7ab944a2eb80a2bcfaadfa02f870c6b3ed6df29fa9bc7419a730f"
+    assert der_sig.hex() ==    "d4883fb9095f3610dfc0888917c8b5548c7074f0f010966c94a5c405ccabe8d320c90334786dbf2b34f10e75c5370ae151b0b11cb190a16d7509983964d6dd00"

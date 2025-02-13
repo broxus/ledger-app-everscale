@@ -459,14 +459,14 @@ fn prepare_multisig_wallet_deploy(
 fn prepare_token_body(
     tokens: BigUint,
     owner: &MsgAddressInt,
-    destiantion: &MsgAddressInt,
+    destination: &MsgAddressInt,
 ) -> anyhow::Result<SliceData> {
     let payload: ton_types::Cell = Default::default();
 
     let (function_token, input_token) =
         MessageBuilder::new(tip3_1::token_wallet_contract::transfer())
             .arg(BigUint128(tokens)) // amount
-            .arg(destiantion) // recipient owner wallet
+            .arg(destination) // recipient owner wallet
             .arg(BigUint128(INITIAL_BALANCE.into())) // deployWalletValue
             .arg(owner) // remainingGasTo
             .arg(false) // notify

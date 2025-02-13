@@ -56,7 +56,7 @@ UX_STEP_CB(
     {
       &C_icon_validate_14,
       "Sign",
-      "message",
+      "message.",
     });
 
 UX_FLOW(ux_sign_flow,

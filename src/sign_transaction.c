@@ -6,7 +6,7 @@
 #include "contract.h"
 
 static uint8_t set_result_sign_transaction() {
-    cx_ecfp_private_key_t privateKey;
+    cx_ecfp_private_key_t     privateKey;
     SignTransactionContext_t *context = &data_context.sign_tr_context;
 
     BEGIN_TRY {
@@ -42,7 +42,7 @@ static uint8_t set_result_sign_transaction() {
     }
     END_TRY;
 
-    uint8_t tx = 0;
+    uint8_t tx             = 0;
     G_io_apdu_buffer[tx++] = SIGNATURE_LENGTH;
     memmove(G_io_apdu_buffer + tx, context->signature, SIGNATURE_LENGTH);
     tx += SIGNATURE_LENGTH;
@@ -64,19 +64,19 @@ UX_STEP_NOCB(ux_sign_transaction_amount,
              bnnn_paging,
              {
                  .title = "Amount",
-                 .text = data_context.sign_tr_context.amount_str,
+                 .text  = data_context.sign_tr_context.amount_str,
              });
 UX_STEP_NOCB(ux_sign_transaction_address,
              bnnn_paging,
              {
                  .title = "Address",
-                 .text = data_context.sign_tr_context.address_str,
+                 .text  = data_context.sign_tr_context.address_str,
              });
 UX_STEP_NOCB(ux_sign_transaction_transaction_id,
              bnnn_paging,
              {
                  .title = "Transaction id",
-                 .text = data_context.sign_tr_context.transaction_id_str,
+                 .text  = data_context.sign_tr_context.transaction_id_str,
              });
 UX_STEP_CB(ux_sign_transaction_accept,
            pbb,
@@ -123,11 +123,11 @@ UX_FLOW(ux_sign_transaction_transfer_flow,
         &ux_sign_transaction_accept,
         &ux_sign_transaction_reject);
 
-int handleSignTransaction(uint8_t *dataBuffer,
-                          uint16_t dataLength,
+int handleSignTransaction(uint8_t               *dataBuffer,
+                          uint16_t               dataLength,
                           volatile unsigned int *flags,
-                          bool is_first_chunk,
-                          bool more) {
+                          bool                   is_first_chunk,
+                          bool                   more) {
     if (is_first_chunk) {
         reset_app_context();
     }

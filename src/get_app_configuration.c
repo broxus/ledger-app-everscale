@@ -2,10 +2,10 @@
 #include "utils.h"
 #include "errors.h"
 
-void handleGetAppConfiguration(uint8_t p1,
-                               uint8_t p2,
-                               uint8_t *dataBuffer,
-                               uint16_t dataLength,
+void handleGetAppConfiguration(uint8_t                p1,
+                               uint8_t                p2,
+                               uint8_t               *dataBuffer,
+                               uint16_t               dataLength,
                                volatile unsigned int *flags,
                                volatile unsigned int *tx) {
     UNUSED(dataBuffer);
@@ -15,6 +15,6 @@ void handleGetAppConfiguration(uint8_t p1,
     G_io_apdu_buffer[0] = LEDGER_MAJOR_VERSION;
     G_io_apdu_buffer[1] = LEDGER_MINOR_VERSION;
     G_io_apdu_buffer[2] = LEDGER_PATCH_VERSION;
-    *tx = 3;
+    *tx                 = 3;
     THROW(SUCCESS);
 }

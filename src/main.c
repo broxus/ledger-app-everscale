@@ -21,7 +21,7 @@
 
 unsigned char G_io_seproxyhal_spi_buffer[IO_SEPROXYHAL_BUFFER_SIZE_B];
 
-BocContext_t boc_context;
+BocContext_t  boc_context;
 DataContext_t data_context;
 
 void reset_app_context() {
@@ -99,8 +99,8 @@ void handleApdu(volatile unsigned int *flags, volatile unsigned int *tx, int rx)
                 } break;
 
                 case INS_SIGN: {
-                    if (G_io_apdu_buffer[OFFSET_P1] != P1_CONFIRM ||
-                        G_io_apdu_buffer[OFFSET_P2] != 0) {
+                    if (G_io_apdu_buffer[OFFSET_P1] != P1_CONFIRM
+                        || G_io_apdu_buffer[OFFSET_P2] != 0) {
                         THROW(0x6802);
                     }
 
@@ -126,8 +126,8 @@ void handleApdu(volatile unsigned int *flags, volatile unsigned int *tx, int rx)
                         THROW(0x6808);
                     }
 
-                    uint8_t p2 = G_io_apdu_buffer[OFFSET_P2];
-                    bool more = (bool) (p2 & P2_MORE);
+                    uint8_t p2   = G_io_apdu_buffer[OFFSET_P2];
+                    bool    more = (bool) (p2 & P2_MORE);
 
                     // P2_MORE is a signal for more apdu to receive in current chunk;
                     // P2_EXTEND is a signal for extended buffer and can't be in first chunk;
@@ -169,7 +169,7 @@ void handleApdu(volatile unsigned int *flags, volatile unsigned int *tx, int rx)
                     break;
             }
             // Unexpected exception => report
-            G_io_apdu_buffer[*tx] = sw >> 8;
+            G_io_apdu_buffer[*tx]     = sw >> 8;
             G_io_apdu_buffer[*tx + 1] = sw;
             *tx += 2;
         }
@@ -180,8 +180,8 @@ void handleApdu(volatile unsigned int *flags, volatile unsigned int *tx, int rx)
 }
 
 void app_main(void) {
-    volatile unsigned int rx = 0;
-    volatile unsigned int tx = 0;
+    volatile unsigned int rx    = 0;
+    volatile unsigned int tx    = 0;
     volatile unsigned int flags = 0;
 
     // Stores the information about the current command. Some commands expect
@@ -202,7 +202,7 @@ void app_main(void) {
                 rx = tx;
                 tx = 0;  // ensure no race in catch_other if io_exchange throws
                          // an error
-                rx = io_exchange(CHANNEL_APDU | flags, rx);
+                rx    = io_exchange(CHANNEL_APDU | flags, rx);
                 flags = 0;
 
                 // no apdu received, well, reset the session, and reset the
@@ -236,7 +236,7 @@ void app_main(void) {
                     flags &= ~IO_ASYNCH_REPLY;
                 }
                 // Unexpected exception => report
-                G_io_apdu_buffer[tx] = sw >> 8;
+                G_io_apdu_buffer[tx]     = sw >> 8;
                 G_io_apdu_buffer[tx + 1] = sw;
                 tx += 2;
             }
@@ -270,9 +270,9 @@ unsigned char io_event(unsigned char channel) {
             break;
 
         case SEPROXYHAL_TAG_STATUS_EVENT:
-            if (G_io_apdu_media == IO_APDU_MEDIA_USB_HID &&
-                !(U4BE(G_io_seproxyhal_spi_buffer, 3) &
-                  SEPROXYHAL_TAG_STATUS_EVENT_FLAG_USB_POWERED)) {
+            if (G_io_apdu_media == IO_APDU_MEDIA_USB_HID
+                && !(U4BE(G_io_seproxyhal_spi_buffer, 3)
+                     & SEPROXYHAL_TAG_STATUS_EVENT_FLAG_USB_POWERED)) {
                 THROW(EXCEPTION_IO_RESET);
             }
             // no break is intentional

@@ -5,15 +5,15 @@
 
 void SliceData_init(struct SliceData_t* self, uint8_t* data, uint16_t data_size_bytes) {
     VALIDATE(self && data, ERR_SLICE_IS_EMPTY);
-    self->data = data;
+    self->data              = data;
     self->data_window_start = 0;
-    self->data_window_end = data_size_bytes * 8;
-    self->data_size_bytes = data_size_bytes;
+    self->data_window_end   = data_size_bytes * 8;
+    self->data_size_bytes   = data_size_bytes;
 }
 
 void SliceData_from_cell(struct SliceData_t* self, struct Cell_t* cell) {
-    uint8_t* cell_data = Cell_get_data(cell);
-    uint8_t cell_data_size = Cell_get_data_size(cell);
+    uint8_t* cell_data      = Cell_get_data(cell);
+    uint8_t  cell_data_size = Cell_get_data_size(cell);
     SliceData_init(self, cell_data, cell_data_size);
 }
 
@@ -49,8 +49,8 @@ uint8_t SliceData_get_bits(const struct SliceData_t* self, uint16_t offset, uint
     VALIDATE(bits != 0 && bits <= 8, ERR_RANGE_CHECK);
 
     uint16_t index = self->data_window_start + offset;
-    uint8_t q = index / 8;
-    uint8_t r = index % 8;
+    uint8_t  q     = index / 8;
+    uint8_t  r     = index % 8;
     if (r == 0) {
         return self->data[q] >> (8 - r - bits);
     } else if (bits <= (8 - r)) {
@@ -94,7 +94,7 @@ uint64_t SliceData_get_int(const struct SliceData_t* self, uint8_t bits) {
     }
 
     uint64_t value = 0;
-    uint8_t bytes = bits / 8;
+    uint8_t  bytes = bits / 8;
     for (uint8_t i = 0; i < bytes; ++i) {
         uint64_t byte = SliceData_get_byte(self, 8 * i);
         value |= byte << (8 * (7 - i));
@@ -119,8 +119,8 @@ uint64_t SliceData_get_next_size(struct SliceData_t* self, uint16_t max_value) {
     if (max_value == 0) {
         return 0;
     }
-    uint8_t bits = 16 - leading_zeros(max_value);
-    uint64_t res = SliceData_get_next_int(self, bits);
+    uint8_t  bits = 16 - leading_zeros(max_value);
+    uint64_t res  = SliceData_get_next_int(self, bits);
     return res;
 }
 
@@ -130,7 +130,7 @@ bool SliceData_is_empty(const struct SliceData_t* self) {
 }
 
 bool SliceData_equal(const struct SliceData_t* self, const struct SliceData_t* other) {
-    uint32_t self_rb = SliceData_remaining_bits(self);
+    uint32_t self_rb  = SliceData_remaining_bits(self);
     uint32_t other_rb = SliceData_remaining_bits(other);
     if (self_rb != other_rb) {
         return false;
@@ -162,9 +162,9 @@ void SliceData_append(struct SliceData_t* self, uint8_t* in, uint16_t bits, bool
     if (offset % 8 == 0 || bytes == 0) {
         memcpy(self->data + offset / 8, in, bytes ? bytes : 1);
     } else {
-        uint8_t shift = offset % 8;
+        uint8_t shift           = offset % 8;
         uint8_t first_data_byte = offset / 8;
-        uint8_t prev = 0;
+        uint8_t prev            = 0;
         for (uint16_t i = first_data_byte, j = 0; j < bytes; ++i, ++j) {
             VALIDATE(i == (j + first_data_byte) && i < self->data_size_bytes, ERR_INVALID_DATA);
 

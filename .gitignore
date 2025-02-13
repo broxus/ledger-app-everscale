@@ -16,3 +16,6 @@ dist
 *.DS_Store
 client/target
 fuzz/cmake-build-fuzz
+
+__pycache__
+snapshots-tmp

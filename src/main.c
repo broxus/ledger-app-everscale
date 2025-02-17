@@ -33,7 +33,7 @@ void reset_spi_buffer() {
     memset(&G_io_seproxyhal_spi_buffer, 0, sizeof(G_io_seproxyhal_spi_buffer));
 }
 
-void handleApdu(volatile unsigned int *flags, volatile unsigned int *tx, int rx) {
+void handleApdu(volatile unsigned int* flags, volatile unsigned int* tx, int rx) {
     unsigned short sw = 0;
 
     if (!flags || !tx) {
@@ -99,8 +99,8 @@ void handleApdu(volatile unsigned int *flags, volatile unsigned int *tx, int rx)
                 } break;
 
                 case INS_SIGN: {
-                    if (G_io_apdu_buffer[OFFSET_P1] != P1_CONFIRM
-                        || G_io_apdu_buffer[OFFSET_P2] != 0) {
+                    if (G_io_apdu_buffer[OFFSET_P1] != P1_CONFIRM ||
+                        G_io_apdu_buffer[OFFSET_P2] != 0) {
                         THROW(0x6802);
                     }
 
@@ -249,8 +249,8 @@ void app_main(void) {
 }
 
 // override point, but nothing more to do
-void io_seproxyhal_display(const bagl_element_t *element) {
-    io_seproxyhal_display_default((bagl_element_t *) element);
+void io_seproxyhal_display(const bagl_element_t* element) {
+    io_seproxyhal_display_default((bagl_element_t*) element);
 }
 
 unsigned char io_event(unsigned char channel) {
@@ -270,9 +270,9 @@ unsigned char io_event(unsigned char channel) {
             break;
 
         case SEPROXYHAL_TAG_STATUS_EVENT:
-            if (G_io_apdu_media == IO_APDU_MEDIA_USB_HID
-                && !(U4BE(G_io_seproxyhal_spi_buffer, 3)
-                     & SEPROXYHAL_TAG_STATUS_EVENT_FLAG_USB_POWERED)) {
+            if (G_io_apdu_media == IO_APDU_MEDIA_USB_HID &&
+                !(U4BE(G_io_seproxyhal_spi_buffer, 3) &
+                  SEPROXYHAL_TAG_STATUS_EVENT_FLAG_USB_POWERED)) {
                 THROW(EXCEPTION_IO_RESET);
             }
             // no break is intentional

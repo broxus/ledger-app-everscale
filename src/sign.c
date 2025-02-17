@@ -6,7 +6,7 @@ static const char SIGN_MAGIC[] = {0xFF, 0xFF, 0xFF, 0xFF};
 
 static uint8_t set_result_sign() {
     cx_ecfp_private_key_t privateKey;
-    SignContext_t        *context = &data_context.sign_context;
+    SignContext_t*        context = &data_context.sign_context;
     cx_err_t              error;
     BEGIN_TRY {
         TRY {
@@ -70,10 +70,10 @@ UX_FLOW(ux_sign_flow,
         &ux_sign_flow_3_step,
         &ux_sign_flow_4_step);
 
-void handleSign(uint8_t                         *dataBuffer,
+void handleSign(uint8_t*                         dataBuffer,
                 __attribute__((unused)) uint16_t dataLength,
-                volatile unsigned int           *flags) {
-    SignContext_t *context = &data_context.sign_context;
+                volatile unsigned int*           flags) {
+    SignContext_t* context = &data_context.sign_context;
 
     size_t offset = 0;
 

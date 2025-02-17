@@ -7,7 +7,7 @@
 
 #ifndef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
 
-void get_public_key(uint32_t account_number, uint8_t *publicKeyArray) {
+void get_public_key(uint32_t account_number, uint8_t* publicKeyArray) {
     cx_ecfp_private_key_t privateKey;
     cx_ecfp_public_key_t  publicKey;
     cx_err_t              error;
@@ -40,7 +40,7 @@ void get_public_key(uint32_t account_number, uint8_t *publicKeyArray) {
 
 static const uint32_t HARDENED_OFFSET = 0x80000000;
 
-void get_private_key(uint32_t account_number, cx_ecfp_private_key_t *privateKey) {
+void get_private_key(uint32_t account_number, cx_ecfp_private_key_t* privateKey) {
     const uint32_t derivePath[BIP32_PATH] = {44 | HARDENED_OFFSET,
                                              396 | HARDENED_OFFSET,
                                              account_number | HARDENED_OFFSET,
@@ -89,7 +89,7 @@ void send_response(uint8_t tx, bool approve) {
     ui_idle();
 }
 
-unsigned int ui_prepro(const bagl_element_t *element) {
+unsigned int ui_prepro(const bagl_element_t* element) {
     unsigned int display = 1;
     if (element->component.userid > 0) {
         display = (ux_step == element->component.userid - 1);
@@ -107,14 +107,14 @@ unsigned int ui_prepro(const bagl_element_t *element) {
 
 #endif
 
-void writeUint32BE(uint32_t val, uint8_t *bytes) {
+void writeUint32BE(uint32_t val, uint8_t* bytes) {
     bytes[0] = (val >> 24) & 0xFF;
     bytes[1] = (val >> 16) & 0xFF;
     bytes[2] = (val >> 8) & 0xFF;
     bytes[3] = val & 0xFF;
 }
 
-void writeUint64BE(uint64_t val, uint8_t *bytes) {
+void writeUint64BE(uint64_t val, uint8_t* bytes) {
     bytes[0] = (val >> 56) & 0xFF;
     bytes[1] = (val >> 48) & 0xFF;
     bytes[2] = (val >> 40) & 0xFF;
@@ -125,15 +125,15 @@ void writeUint64BE(uint64_t val, uint8_t *bytes) {
     bytes[7] = val & 0xFF;
 }
 
-uint16_t readUint16BE(uint8_t *buffer) {
+uint16_t readUint16BE(uint8_t* buffer) {
     return (buffer[0] << 8) | (buffer[1]);
 }
 
-uint32_t readUint32BE(uint8_t *buffer) {
+uint32_t readUint32BE(uint8_t* buffer) {
     return (buffer[0] << 24) | (buffer[1] << 16) | (buffer[2] << 8) | (buffer[3]);
 }
 
-uint64_t readUint64BE(uint8_t *buffer) {
+uint64_t readUint64BE(uint8_t* buffer) {
     uint32_t i1 = buffer[3] + (buffer[2] << 8u) + (buffer[1] << 16u) + (buffer[0] << 24u);
     uint32_t i2 = buffer[7] + (buffer[6] << 8u) + (buffer[5] << 16u) + (buffer[4] << 24u);
     return i2 | ((uint64_t) i1 << 32u);
@@ -152,7 +152,7 @@ uint8_t leading_zeros(uint16_t value) {
     return lz;
 }
 
-uint16_t format_hex(const uint8_t *in, size_t in_len, char *out, size_t out_len) {
+uint16_t format_hex(const uint8_t* in, size_t in_len, char* out, size_t out_len) {
     if (out_len < 2 * in_len + 1) {
         return -1;
     }
@@ -180,10 +180,10 @@ uint16_t format_hex(const uint8_t *in, size_t in_len, char *out, size_t out_len)
 }
 
 #define SCRATCH_SIZE 37
-uint8_t convert_hex_amount_to_displayable(const uint8_t *amount,
+uint8_t convert_hex_amount_to_displayable(const uint8_t* amount,
                                           uint8_t        decimals,
                                           uint8_t        amount_length,
-                                          char          *out) {
+                                          char*          out) {
     uint8_t  LOOP1 = SCRATCH_SIZE - decimals;
     uint8_t  LOOP2 = decimals;
     uint16_t scratch[SCRATCH_SIZE];

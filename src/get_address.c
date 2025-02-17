@@ -50,10 +50,10 @@ UX_FLOW(ux_display_address_flow,
 
 void handleGetAddress(uint8_t                p1,
                       uint8_t                p2,
-                      uint8_t               *dataBuffer,
+                      uint8_t*               dataBuffer,
                       uint16_t               dataLength,
-                      volatile unsigned int *flags,
-                      volatile unsigned int *tx) {
+                      volatile unsigned int* flags,
+                      volatile unsigned int* tx) {
     VALIDATE(p2 == 0 && dataLength == (sizeof(uint32_t) + sizeof(uint8_t)), ERR_INVALID_REQUEST);
 
     size_t offset = 0;
@@ -70,7 +70,7 @@ void handleGetAddress(uint8_t                p1,
         THROW(SUCCESS);
     }
     if (p1 == P1_CONFIRM) {
-        AddressContext_t *context = &data_context.addr_context;
+        AddressContext_t* context = &data_context.addr_context;
         format_hex(context->address,
                    sizeof(context->address),
                    context->address_str,

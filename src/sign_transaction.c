@@ -7,7 +7,7 @@
 
 static uint8_t set_result_sign_transaction() {
     cx_ecfp_private_key_t     privateKey;
-    SignTransactionContext_t *context = &data_context.sign_tr_context;
+    SignTransactionContext_t* context = &data_context.sign_tr_context;
     cx_err_t                  error;
 
     BEGIN_TRY {
@@ -119,16 +119,16 @@ UX_FLOW(ux_sign_transaction_transfer_flow,
         &ux_sign_transaction_accept,
         &ux_sign_transaction_reject);
 
-void handleSignTransaction(uint8_t               *dataBuffer,
+void handleSignTransaction(uint8_t*               dataBuffer,
                            uint16_t               dataLength,
-                           volatile unsigned int *flags,
+                           volatile unsigned int* flags,
                            bool                   is_first_chunk,
                            bool                   more) {
     if (is_first_chunk) {
         reset_app_context();
     }
 
-    SignTransactionContext_t *context = &data_context.sign_tr_context;
+    SignTransactionContext_t* context = &data_context.sign_tr_context;
 
     size_t offset = 0;
 
@@ -204,7 +204,7 @@ void handleSignTransaction(uint8_t               *dataBuffer,
     // offset is a pointer to dataBuffer, or the number of bytes we moved. here + offset means start
     // of the message we need to save data to a context buffer and add msg_length to offset of this
     // buffer
-    uint8_t *msg_begin = dataBuffer + offset;
+    uint8_t* msg_begin = dataBuffer + offset;
 
     // Since we check LC dataLength can not be manipulated
     uint16_t msg_length = dataLength - offset;

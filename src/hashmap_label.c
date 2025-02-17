@@ -4,7 +4,7 @@
 #include "utils.h"
 #include "errors.h"
 
-uint8_t get_label_same(uint8_t max, struct SliceData_t *slice, struct SliceData_t *label) {
+uint8_t get_label_same(uint8_t max, struct SliceData_t* slice, struct SliceData_t* label) {
     uint8_t value  = SliceData_get_next_bit(slice) ? 0xff : 0;
     uint8_t length = SliceData_get_next_size(slice, max);
     VALIDATE(length <= 64, ERR_RANGE_CHECK);
@@ -15,7 +15,7 @@ uint8_t get_label_same(uint8_t max, struct SliceData_t *slice, struct SliceData_
     return length >= max ? 0 : (max - length);
 }
 
-uint8_t get_label(uint8_t max, struct SliceData_t *slice, struct SliceData_t *label) {
+uint8_t get_label(uint8_t max, struct SliceData_t* slice, struct SliceData_t* label) {
     VALIDATE(SliceData_is_empty(slice) == false, ERR_SLICE_IS_EMPTY);
     VALIDATE(SliceData_get_next_bit(slice) == 1, ERR_WRONG_LABEL);  // label short
     VALIDATE(SliceData_get_next_bit(slice) == 1, ERR_WRONG_LABEL);  // label long
@@ -23,7 +23,7 @@ uint8_t get_label(uint8_t max, struct SliceData_t *slice, struct SliceData_t *la
     return get_label_same(max, slice, label);
 }
 
-void put_to_node(uint8_t cell_index, uint16_t bit_len, struct SliceData_t *key) {
+void put_to_node(uint8_t cell_index, uint16_t bit_len, struct SliceData_t* key) {
     VALIDATE(cell_index != 0 && cell_index <= MAX_CONTRACT_CELLS_COUNT, ERR_INVALID_DATA);
     static const uint8_t key_len_bytes = 8;
     VALIDATE(key && key->data_size_bytes == key_len_bytes, ERR_RANGE_CHECK);
@@ -31,7 +31,7 @@ void put_to_node(uint8_t cell_index, uint16_t bit_len, struct SliceData_t *key) 
         VALIDATE(key->data[i] == 0, ERR_INVALID_KEY);
     }
 
-    Cell_t     *cell = &boc_context.cells[cell_index];
+    Cell_t*     cell = &boc_context.cells[cell_index];
     SliceData_t slice;
     SliceData_init(&slice, Cell_get_data(cell), Cell_get_data_size(cell));
 
@@ -55,8 +55,8 @@ void put_to_node(uint8_t cell_index, uint16_t bit_len, struct SliceData_t *key) 
             MIN(SliceData_remaining_bits(&label), SliceData_remaining_bits(key));
         VALIDATE(max_prefix_len <= 64, ERR_RANGE_CHECK);
         uint8_t i = 0;
-        while (i < max_prefix_len
-               && SliceData_get_bits(&label, i, 1) == SliceData_get_bits(key, i, 1)) {
+        while (i < max_prefix_len &&
+               SliceData_get_bits(&label, i, 1) == SliceData_get_bits(key, i, 1)) {
             i += 1;
         }
 
@@ -72,7 +72,7 @@ void put_to_node(uint8_t cell_index, uint16_t bit_len, struct SliceData_t *key) 
     VALIDATE(next_index == 0, ERR_INVALID_KEY);
 
     uint8_t  refs_count = 0;
-    uint8_t *refs       = Cell_get_refs(&boc_context.cells[cell_index], &refs_count);
+    uint8_t* refs       = Cell_get_refs(&boc_context.cells[cell_index], &refs_count);
     VALIDATE(refs_count > 0 && refs_count <= MAX_REFERENCES_COUNT, ERR_INVALID_DATA);
     uint8_t next_cell = refs[next_index];
     VALIDATE(next_cell != 0 && next_cell <= MAX_CONTRACT_CELLS_COUNT, ERR_INVALID_DATA);

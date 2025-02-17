@@ -9,13 +9,13 @@ void os_longjmp(unsigned int exception) {
     longjmp(try_context_get()->jmp_buf, exception);
 }
 
-try_context_t *current_context = NULL;
-try_context_t *try_context_get(void) {
+try_context_t* current_context = NULL;
+try_context_t* try_context_get(void) {
     return current_context;
 }
 
-try_context_t *try_context_set(try_context_t *ctx) {
-    try_context_t *previous_ctx = current_context;
+try_context_t* try_context_set(try_context_t* ctx) {
+    try_context_t* previous_ctx = current_context;
     current_context             = ctx;
     return previous_ctx;
 }
@@ -31,9 +31,9 @@ try_context_t *try_context_set(try_context_t *ctx) {
 //     return CX_OK;
 // }
 
-size_t cx_hash_sha256(const uint8_t *in, size_t len, uint8_t *out, size_t out_len) {
-    EVP_MD_CTX   *mdctx;
-    const EVP_MD *md;
+size_t cx_hash_sha256(const uint8_t* in, size_t len, uint8_t* out, size_t out_len) {
+    EVP_MD_CTX*   mdctx;
+    const EVP_MD* md;
     unsigned int  hash_len;
 
     uint8_t tmpBuf[EVP_MAX_MD_SIZE];

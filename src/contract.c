@@ -98,7 +98,7 @@ const uint32_t multisig_2_wallet_cell_depth        = 0x0C;
 const uint32_t multisig_2_1_wallet_cell_depth      = 0x0A;
 const uint32_t surf_wallet_cell_depth              = 0x0C;
 
-void deserialize_cells_tree(struct ByteStream_t *src) {
+void deserialize_cells_tree(struct ByteStream_t* src) {
     uint8_t first_byte = ByteStream_read_byte(src);
     {
         bool    index_included = (first_byte & 0x80) != 0;
@@ -123,9 +123,9 @@ void deserialize_cells_tree(struct ByteStream_t *src) {
     {
         uint8_t absent_count = ByteStream_read_uint(src, ref_size);
         UNUSED(absent_count);
-        uint8_t *total_cells_size = ByteStream_read_data(src, offset_size);
+        uint8_t* total_cells_size = ByteStream_read_data(src, offset_size);
         UNUSED(total_cells_size);
-        uint8_t *buf = ByteStream_read_data(src, roots_count * ref_size);
+        uint8_t* buf = ByteStream_read_data(src, roots_count * ref_size);
         UNUSED(buf);
     }
 
@@ -136,7 +136,7 @@ void deserialize_cells_tree(struct ByteStream_t *src) {
     for (uint8_t i = 0; i < cells_count; ++i) {
         VALIDATE(i < MAX_CONTRACT_CELLS_COUNT, ERR_INVALID_CONTRACT);
 
-        uint8_t *cell_begin  = ByteStream_get_cursor(src);
+        uint8_t* cell_begin  = ByteStream_get_cursor(src);
         uint16_t cell_length = ByteStream_get_length(src);
         Cell_init(&cell, cell_begin, cell_length);
         uint16_t offset      = deserialize_cell(&cell, i, cells_count);
@@ -153,11 +153,11 @@ void deserialize_cells_tree(struct ByteStream_t *src) {
 }
 
 void find_public_key_cell() {
-    BocContext_t *bc = &boc_context;
+    BocContext_t* bc = &boc_context;
     VALIDATE(Cell_get_data(&bc->cells[0])[0] & 0x20, ERR_INVALID_CONTRACT);  // has data branch
 
     uint8_t  refs_count = 0;
-    uint8_t *refs       = Cell_get_refs(&bc->cells[0], &refs_count);
+    uint8_t* refs       = Cell_get_refs(&bc->cells[0], &refs_count);
     VALIDATE(refs_count > 0 && refs_count <= 2, ERR_INVALID_CONTRACT);
 
     uint8_t data_root = refs[refs_count - 1];
@@ -176,7 +176,7 @@ void find_public_key_cell() {
 
 #ifndef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
 
-void compute_wallet_v3_address(uint32_t account_number, uint8_t *address) {
+void compute_wallet_v3_address(uint32_t account_number, uint8_t* address) {
     uint8_t data_hash[HASH_SIZE];
 
     // Compute data hash
@@ -234,7 +234,7 @@ void compute_wallet_v3_address(uint32_t account_number, uint8_t *address) {
     }
 }
 
-void compute_ever_wallet_address(uint32_t account_number, uint8_t *address) {
+void compute_ever_wallet_address(uint32_t account_number, uint8_t* address) {
     uint8_t data_hash[HASH_SIZE];
 
     // Compute data hash
@@ -280,8 +280,9 @@ void compute_ever_wallet_address(uint32_t account_number, uint8_t *address) {
         hash_buffer_offset += sizeof(uint32_t);
 
         // Code hash
-        memcpy(
-            hash_buffer + hash_buffer_offset, ever_wallet_code_hash, sizeof(ever_wallet_code_hash));
+        memcpy(hash_buffer + hash_buffer_offset,
+               ever_wallet_code_hash,
+               sizeof(ever_wallet_code_hash));
         hash_buffer_offset += sizeof(ever_wallet_code_hash);
 
         // Data hash
@@ -294,18 +295,18 @@ void compute_ever_wallet_address(uint32_t account_number, uint8_t *address) {
 }
 
 void compute_multisig_address(uint32_t       account_number,
-                              const uint8_t *wallet,
+                              const uint8_t* wallet,
                               uint16_t       wallet_size,
-                              const uint8_t *code_hash,
+                              const uint8_t* code_hash,
                               uint32_t       cell_depth,
-                              uint8_t       *address) {
+                              uint8_t*       address) {
     {
         ByteStream_t src;
-        ByteStream_init(&src, (uint8_t *) wallet, wallet_size);
+        ByteStream_init(&src, (uint8_t*) wallet, wallet_size);
         deserialize_cells_tree(&src);
     }
 
-    BocContext_t *bc = &boc_context;
+    BocContext_t* bc = &boc_context;
 
     VALIDATE(bc->cells_count != 0, ERR_INVALID_CONTRACT);
     find_public_key_cell();  // sets public key cell index to boc_context
@@ -315,31 +316,31 @@ void compute_multisig_address(uint32_t       account_number,
     bc->cell_depth[bc->public_key_cell_index + 1] = cell_depth;
 
     VALIDATE(bc->public_key_cell_index && bc->public_key_label_size_bits, ERR_INVALID_CONTRACT);
-    Cell_t *cell           = &bc->cells[bc->public_key_cell_index];
+    Cell_t* cell           = &bc->cells[bc->public_key_cell_index];
     uint8_t cell_data_size = Cell_get_data_size(cell);
     VALIDATE(cell_data_size != 0 && cell_data_size <= MAX_PUBLIC_KEY_CELL_DATA_SIZE,
              ERR_INVALID_CONTRACT);
-    uint8_t *cell_data = Cell_get_data(cell);
+    uint8_t* cell_data = Cell_get_data(cell);
 
     memcpy(bc->public_key_cell_data, cell_data, cell_data_size);
-    uint8_t *public_key = data_context.pk_context.public_key;
+    uint8_t* public_key = data_context.pk_context.public_key;
     get_public_key(account_number, public_key);
 
-    uint8_t    *data = bc->public_key_cell_data;
+    uint8_t*    data = bc->public_key_cell_data;
     SliceData_t slice;
     SliceData_init(&slice, data, sizeof(bc->public_key_cell_data));
     SliceData_move_by(&slice, bc->public_key_label_size_bits);
     SliceData_append(&slice, public_key, PUBLIC_KEY_LENGTH * 8, true);
 
     for (int16_t i = bc->public_key_cell_index; i >= 0; --i) {
-        Cell_t *it_cell = &bc->cells[i];
+        Cell_t* it_cell = &bc->cells[i];
         calc_cell_hash(it_cell, i);
     }
 
     memcpy(address, bc->hashes, HASH_SIZE);
 }
 
-void get_address(const uint32_t account_number, uint8_t wallet_type, uint8_t *address) {
+void get_address(const uint32_t account_number, uint8_t wallet_type, uint8_t* address) {
     switch (wallet_type) {
         case WALLET_V3: {
             compute_wallet_v3_address(account_number, address);
@@ -419,7 +420,7 @@ void get_address(const uint32_t account_number, uint8_t wallet_type, uint8_t *ad
 
 #else
 
-void get_address(const uint32_t account_number, uint8_t wallet_type, uint8_t *address) {
+void get_address(const uint32_t account_number, uint8_t wallet_type, uint8_t* address) {
 }
 
 #endif

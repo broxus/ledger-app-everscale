@@ -1,3 +1,4 @@
+#ifdef HAVE_BAGL
 #include "menu.h"
 #include "os.h"
 
@@ -23,10 +24,11 @@ UX_STEP_VALID(ux_idle_flow_4_step,
               });
 UX_FLOW(ux_idle_flow, &ux_idle_flow_1_step, &ux_idle_flow_3_step, &ux_idle_flow_4_step, FLOW_LOOP);
 
-void ui_idle(void) {
+void ui_main_menu(void) {
     // reserve a display stack slot if none yet
     if (G_ux.stack_count == 0) {
         ux_stack_push();
     }
     ux_flow_init(0, ux_idle_flow, NULL);
 }
+#endif

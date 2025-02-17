@@ -3,45 +3,8 @@
 #include "utils.h"
 #include "apdu_constants.h"
 #include "errors.h"
-
-static uint8_t set_result_get_public_key() {
-    uint8_t tx = 0;
-    G_io_apdu_buffer[tx++] = PUBLIC_KEY_LENGTH;
-    memmove(G_io_apdu_buffer + tx, data_context.pk_context.public_key, PUBLIC_KEY_LENGTH);
-    tx += PUBLIC_KEY_LENGTH;
-    reset_app_context();
-    return tx;
-}
-
-#ifndef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
-
-UX_STEP_NOCB(ux_display_public_flow_1_step,
-             bnnn_paging,
-             {
-                 .title = "Public key",
-                 .text = data_context.pk_context.public_key_str,
-             });
-UX_STEP_CB(ux_display_public_flow_2_step,
-           pb,
-           send_response(0, false),
-           {
-               &C_icon_crossmark,
-               "Reject",
-           });
-UX_STEP_CB(ux_display_public_flow_3_step,
-           pb,
-           send_response(set_result_get_public_key(), true),
-           {
-               &C_icon_validate_14,
-               "Approve",
-           });
-
-UX_FLOW(ux_display_public_flow,
-        &ux_display_public_flow_1_step,
-        &ux_display_public_flow_2_step,
-        &ux_display_public_flow_3_step);
-
-#endif
+#include "ui/display.h"
+#include "response_setter.h"
 
 void handleGetPublicKey(uint8_t p1,
                         uint8_t p2,
@@ -64,9 +27,7 @@ void handleGetPublicKey(uint8_t p1,
                    sizeof(context->public_key),
                    context->public_key_str,
                    sizeof(context->public_key_str));
-#ifndef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
-        ux_flow_init(0, ux_display_public_flow, NULL);
-#endif
+        ui_display_public_key();
         *flags |= IO_ASYNCH_REPLY;
         return;
     }

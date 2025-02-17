@@ -7,6 +7,6 @@
 #ifndef _MENU_H_
 #define _MENU_H_
 
-void ui_idle(void);
+void ui_main_menu(void);
 
 #endif

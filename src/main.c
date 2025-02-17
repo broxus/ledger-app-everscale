@@ -248,6 +248,7 @@ void app_main(void) {
     // return_to_dashboard
 }
 
+// This does not seem to be used
 // override point, but nothing more to do
 void io_seproxyhal_display(const bagl_element_t* element) {
     io_seproxyhal_display_default((bagl_element_t*) element);
@@ -371,7 +372,7 @@ __attribute__((section(".boot"))) int main(void) {
                 USB_power(0);
                 USB_power(1);
 
-                ui_idle();
+                ui_main_menu();
 
 #ifdef HAVE_BLE
                 BLE_power(0, NULL);

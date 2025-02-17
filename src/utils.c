@@ -86,7 +86,7 @@ void send_response(uint8_t tx, bool approve) {
     // Send back the response, do not restart the event loop
     io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, tx);
     // Display back the original UX
-    ui_idle();
+    ui_main_menu();
 }
 
 unsigned int ui_prepro(const bagl_element_t* element) {

@@ -6,7 +6,7 @@
 #include "byte_stream.h"
 
 static uint8_t set_result_get_address() {
-    uint8_t tx             = 0;
+    uint8_t tx = 0;
     G_io_apdu_buffer[tx++] = ADDRESS_LENGTH;
     memmove(G_io_apdu_buffer + tx, data_context.addr_context.address, ADDRESS_LENGTH);
     tx += ADDRESS_LENGTH;
@@ -25,7 +25,7 @@ UX_STEP_NOCB(ux_display_address_flow_2_step,
              bnnn_paging,
              {
                  .title = "Address",
-                 .text  = data_context.addr_context.address_str,
+                 .text = data_context.addr_context.address_str,
              });
 UX_STEP_CB(ux_display_address_flow_3_step,
            pb,
@@ -48,10 +48,10 @@ UX_FLOW(ux_display_address_flow,
         &ux_display_address_flow_3_step,
         &ux_display_address_flow_4_step);
 
-void handleGetAddress(uint8_t                p1,
-                      uint8_t                p2,
-                      uint8_t*               dataBuffer,
-                      uint16_t               dataLength,
+void handleGetAddress(uint8_t p1,
+                      uint8_t p2,
+                      uint8_t* dataBuffer,
+                      uint16_t dataLength,
                       volatile unsigned int* flags,
                       volatile unsigned int* tx) {
     VALIDATE(p2 == 0 && dataLength == (sizeof(uint32_t) + sizeof(uint8_t)), ERR_INVALID_REQUEST);

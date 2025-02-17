@@ -19,11 +19,11 @@
 #ifdef FUZZ_WITH_PROTOBUF
 #else
 
-BocContext_t  boc_context;
+BocContext_t boc_context;
 DataContext_t data_context;
 
 void hex_to_bytes(const char* hex, uint8_t* bytes) {
-    size_t len       = strlen(hex);
+    size_t len = strlen(hex);
     size_t final_len = len / 2;
     for (size_t i = 0, j = 0; j < final_len; i += 2, j++)
         bytes[j] = (hex[i] % 32 + 9) % 25 * 16 + (hex[i + 1] % 32 + 9) % 25;

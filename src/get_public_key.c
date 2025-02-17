@@ -5,7 +5,7 @@
 #include "errors.h"
 
 static uint8_t set_result_get_public_key() {
-    uint8_t tx             = 0;
+    uint8_t tx = 0;
     G_io_apdu_buffer[tx++] = PUBLIC_KEY_LENGTH;
     memmove(G_io_apdu_buffer + tx, data_context.pk_context.public_key, PUBLIC_KEY_LENGTH);
     tx += PUBLIC_KEY_LENGTH;
@@ -19,7 +19,7 @@ UX_STEP_NOCB(ux_display_public_flow_1_step,
              bnnn_paging,
              {
                  .title = "Public key",
-                 .text  = data_context.pk_context.public_key_str,
+                 .text = data_context.pk_context.public_key_str,
              });
 UX_STEP_CB(ux_display_public_flow_2_step,
            pb,
@@ -43,16 +43,16 @@ UX_FLOW(ux_display_public_flow,
 
 #endif
 
-void handleGetPublicKey(uint8_t                p1,
-                        uint8_t                p2,
-                        uint8_t*               dataBuffer,
-                        uint16_t               dataLength,
+void handleGetPublicKey(uint8_t p1,
+                        uint8_t p2,
+                        uint8_t* dataBuffer,
+                        uint16_t dataLength,
                         volatile unsigned int* flags,
                         volatile unsigned int* tx) {
     VALIDATE(p2 == 0 && dataLength == sizeof(uint32_t), ERR_INVALID_REQUEST);
 
-    uint32_t            account_number = readUint32BE(dataBuffer);
-    PublicKeyContext_t* context        = &data_context.pk_context;
+    uint32_t account_number = readUint32BE(dataBuffer);
+    PublicKeyContext_t* context = &data_context.pk_context;
     get_public_key(account_number, context->public_key);
     if (p1 == P1_NON_CONFIRM) {
         *tx = set_result_get_public_key();

@@ -90,21 +90,21 @@ const uint8_t surf_wallet_code_hash[] = {
     0x70, 0xa5, 0x97, 0x67, 0xdb, 0x2b, 0xf4, 0x78, 0x8b, 0x1d, 0x61, 0xad, 0x42, 0xcd, 0xad, 0x82};
 
 // Cell depths
-const uint32_t safe_multisig_wallet_cell_depth     = 0x0C;
+const uint32_t safe_multisig_wallet_cell_depth = 0x0C;
 const uint32_t safe_multisig_wallet_24h_cell_depth = 0x0C;
-const uint32_t setcode_multisig_wallet_cell_depth  = 0x0D;
-const uint32_t bridge_multisig_wallet_cell_depth   = 0x0B;
-const uint32_t multisig_2_wallet_cell_depth        = 0x0C;
-const uint32_t multisig_2_1_wallet_cell_depth      = 0x0A;
-const uint32_t surf_wallet_cell_depth              = 0x0C;
+const uint32_t setcode_multisig_wallet_cell_depth = 0x0D;
+const uint32_t bridge_multisig_wallet_cell_depth = 0x0B;
+const uint32_t multisig_2_wallet_cell_depth = 0x0C;
+const uint32_t multisig_2_1_wallet_cell_depth = 0x0A;
+const uint32_t surf_wallet_cell_depth = 0x0C;
 
 void deserialize_cells_tree(struct ByteStream_t* src) {
     uint8_t first_byte = ByteStream_read_byte(src);
     {
-        bool    index_included = (first_byte & 0x80) != 0;
-        bool    has_crc        = (first_byte & 0x40) != 0;
-        bool    has_cache_bits = (first_byte & 0x20) != 0;
-        uint8_t flags          = (first_byte & 0x18) >> 3;
+        bool index_included = (first_byte & 0x80) != 0;
+        bool has_crc = (first_byte & 0x40) != 0;
+        bool has_cache_bits = (first_byte & 0x20) != 0;
+        uint8_t flags = (first_byte & 0x18) >> 3;
         UNUSED(flags);
         VALIDATE(!index_included && !has_crc && !has_cache_bits, ERR_INVALID_CONTRACT);
     }
@@ -136,10 +136,10 @@ void deserialize_cells_tree(struct ByteStream_t* src) {
     for (uint8_t i = 0; i < cells_count; ++i) {
         VALIDATE(i < MAX_CONTRACT_CELLS_COUNT, ERR_INVALID_CONTRACT);
 
-        uint8_t* cell_begin  = ByteStream_get_cursor(src);
+        uint8_t* cell_begin = ByteStream_get_cursor(src);
         uint16_t cell_length = ByteStream_get_length(src);
         Cell_init(&cell, cell_begin, cell_length);
-        uint16_t offset      = deserialize_cell(&cell, i, cells_count);
+        uint16_t offset = deserialize_cell(&cell, i, cells_count);
         boc_context.cells[i] = cell;
         ByteStream_read_data(src, offset);
 
@@ -156,8 +156,8 @@ void find_public_key_cell() {
     BocContext_t* bc = &boc_context;
     VALIDATE(Cell_get_data(&bc->cells[0])[0] & 0x20, ERR_INVALID_CONTRACT);  // has data branch
 
-    uint8_t  refs_count = 0;
-    uint8_t* refs       = Cell_get_refs(&bc->cells[0], &refs_count);
+    uint8_t refs_count = 0;
+    uint8_t* refs = Cell_get_refs(&bc->cells[0], &refs_count);
     VALIDATE(refs_count > 0 && refs_count <= 2, ERR_INVALID_CONTRACT);
 
     uint8_t data_root = refs[refs_count - 1];
@@ -165,7 +165,7 @@ void find_public_key_cell() {
     refs = Cell_get_refs(&bc->cells[data_root], &refs_count);
     VALIDATE(refs_count != 0 && refs_count <= MAX_REFERENCES_COUNT, ERR_INVALID_CONTRACT);
 
-    uint8_t     key_buffer[8];
+    uint8_t key_buffer[8];
     SliceData_t key;
     memset(key_buffer, 0, sizeof(key_buffer));
     SliceData_init(&key, key_buffer, sizeof(key_buffer));
@@ -210,8 +210,8 @@ void compute_wallet_v3_address(uint32_t account_number, uint8_t* address) {
         uint8_t hash_buffer[71];  // d1(1) + d2(1) + data(5) + code_hash(32) + data_hash(32)
 
         uint16_t hash_buffer_offset = 0;
-        hash_buffer[0]              = 0x02;  // d1(1)
-        hash_buffer[1]              = 0x01;  // d2(1)
+        hash_buffer[0] = 0x02;  // d1(1)
+        hash_buffer[1] = 0x01;  // d2(1)
         hash_buffer_offset += 2;
 
         // Data
@@ -268,8 +268,8 @@ void compute_ever_wallet_address(uint32_t account_number, uint8_t* address) {
         uint8_t hash_buffer[71];  // d1(1) + d2(1) + data(5) + code_hash(32) + data_hash(32)
 
         uint16_t hash_buffer_offset = 0;
-        hash_buffer[0]              = 0x02;  // d1(1)
-        hash_buffer[1]              = 0x01;  // d2(1)
+        hash_buffer[0] = 0x02;  // d1(1)
+        hash_buffer[1] = 0x01;  // d2(1)
         hash_buffer_offset += 2;
 
         // Data
@@ -294,12 +294,12 @@ void compute_ever_wallet_address(uint32_t account_number, uint8_t* address) {
     }
 }
 
-void compute_multisig_address(uint32_t       account_number,
+void compute_multisig_address(uint32_t account_number,
                               const uint8_t* wallet,
-                              uint16_t       wallet_size,
+                              uint16_t wallet_size,
                               const uint8_t* code_hash,
-                              uint32_t       cell_depth,
-                              uint8_t*       address) {
+                              uint32_t cell_depth,
+                              uint8_t* address) {
     {
         ByteStream_t src;
         ByteStream_init(&src, (uint8_t*) wallet, wallet_size);
@@ -316,7 +316,7 @@ void compute_multisig_address(uint32_t       account_number,
     bc->cell_depth[bc->public_key_cell_index + 1] = cell_depth;
 
     VALIDATE(bc->public_key_cell_index && bc->public_key_label_size_bits, ERR_INVALID_CONTRACT);
-    Cell_t* cell           = &bc->cells[bc->public_key_cell_index];
+    Cell_t* cell = &bc->cells[bc->public_key_cell_index];
     uint8_t cell_data_size = Cell_get_data_size(cell);
     VALIDATE(cell_data_size != 0 && cell_data_size <= MAX_PUBLIC_KEY_CELL_DATA_SIZE,
              ERR_INVALID_CONTRACT);
@@ -326,7 +326,7 @@ void compute_multisig_address(uint32_t       account_number,
     uint8_t* public_key = data_context.pk_context.public_key;
     get_public_key(account_number, public_key);
 
-    uint8_t*    data = bc->public_key_cell_data;
+    uint8_t* data = bc->public_key_cell_data;
     SliceData_t slice;
     SliceData_init(&slice, data, sizeof(bc->public_key_cell_data));
     SliceData_move_by(&slice, bc->public_key_label_size_bits);

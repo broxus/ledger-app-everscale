@@ -16,7 +16,7 @@ try_context_t* try_context_get(void) {
 
 try_context_t* try_context_set(try_context_t* ctx) {
     try_context_t* previous_ctx = current_context;
-    current_context             = ctx;
+    current_context = ctx;
     return previous_ctx;
 }
 
@@ -32,13 +32,13 @@ try_context_t* try_context_set(try_context_t* ctx) {
 // }
 
 size_t cx_hash_sha256(const uint8_t* in, size_t len, uint8_t* out, size_t out_len) {
-    EVP_MD_CTX*   mdctx;
+    EVP_MD_CTX* mdctx;
     const EVP_MD* md;
-    unsigned int  hash_len;
+    unsigned int hash_len;
 
     uint8_t tmpBuf[EVP_MAX_MD_SIZE];
 
-    md    = EVP_sha256();
+    md = EVP_sha256();
     mdctx = EVP_MD_CTX_new();
     EVP_DigestInit_ex(mdctx, md, NULL);
     EVP_DigestUpdate(mdctx, in, len);

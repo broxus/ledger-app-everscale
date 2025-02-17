@@ -3,7 +3,7 @@
 
 void Cell_init(struct Cell_t* self, uint8_t* cell_begin, uint16_t cell_length) {
     VALIDATE(self && cell_begin, ERR_CELL_IS_EMPTY);
-    self->cell_begin  = cell_begin;
+    self->cell_begin = cell_begin;
     self->cell_length = cell_length;
 }
 
@@ -30,8 +30,8 @@ uint8_t* Cell_get_data(const struct Cell_t* self) {
 }
 
 uint8_t* Cell_get_refs(const struct Cell_t* self, uint8_t* refs_count) {
-    uint8_t d1        = Cell_get_d1(self);
-    *refs_count       = d1 & 7;
+    uint8_t d1 = Cell_get_d1(self);
+    *refs_count = d1 & 7;
     uint8_t data_size = Cell_get_data_size(self);
     return self->cell_begin + CELL_DATA_OFFSET + data_size;
 }
@@ -63,13 +63,13 @@ uint16_t Cell_bit_len(struct Cell_t* self) {
 }
 
 uint16_t deserialize_cell(struct Cell_t* cell,
-                          const uint8_t  cell_index,
-                          const uint8_t  cells_count) {
-    uint8_t d1     = Cell_get_d1(cell);
-    uint8_t level  = d1 >> 5;          // level
+                          const uint8_t cell_index,
+                          const uint8_t cells_count) {
+    uint8_t d1 = Cell_get_d1(cell);
+    uint8_t level = d1 >> 5;           // level
     uint8_t hashes = (d1 & 16) == 16;  // with hashes
     uint8_t exotic = (d1 & 8) == 8;    // exotic
-    uint8_t rc     = d1 & 7;           // refs count
+    uint8_t rc = d1 & 7;               // refs count
     uint8_t absent = rc == 7 && hashes;
     uint8_t pruned = d1 == PRUNED_BRANCH_D1;
     UNUSED(level);
@@ -82,8 +82,8 @@ uint16_t deserialize_cell(struct Cell_t* cell,
     uint8_t data_size = Cell_get_data_size(cell);
     VALIDATE(!pruned || pruned && (data_size == PRUNED_BRANCH_DATA_SIZE), ERR_INVALID_CELL);
 
-    uint8_t  refs_count = 0;
-    uint8_t* refs       = Cell_get_refs(cell, &refs_count);
+    uint8_t refs_count = 0;
+    uint8_t* refs = Cell_get_refs(cell, &refs_count);
     for (uint8_t i = 0; i < refs_count; ++i) {
         VALIDATE(cell && cell->cell_length > CELL_DATA_OFFSET + data_size + i, ERR_INVALID_CELL);
 
@@ -113,8 +113,8 @@ void calc_cell_hash(Cell_t* cell, const uint8_t cell_index) {
     uint8_t hash_buffer[266];  // d1(1) + d2(1) + data(128) + 4 * (depth(2) + hash(32))
 
     uint16_t hash_buffer_offset = 0;
-    hash_buffer[0]              = d1 & 0b00011111;
-    hash_buffer[1]              = Cell_get_d2(cell);
+    hash_buffer[0] = d1 & 0b00011111;
+    hash_buffer[1] = Cell_get_d2(cell);
     hash_buffer_offset += 2;
     uint8_t data_size = Cell_get_data_size(cell);
     if (bc->public_key_cell_index && cell_index == bc->public_key_cell_index) {
@@ -124,14 +124,14 @@ void calc_cell_hash(Cell_t* cell, const uint8_t cell_index) {
     }
     hash_buffer_offset += data_size;
 
-    uint8_t  refs_count = 0;
-    uint8_t* refs       = Cell_get_refs(cell, &refs_count);
+    uint8_t refs_count = 0;
+    uint8_t* refs = Cell_get_refs(cell, &refs_count);
     VALIDATE(refs_count <= MAX_REFERENCES_COUNT, ERR_INVALID_CELL);
     for (uint8_t child = 0; child < refs_count; ++child) {
         uint8_t* depth = &bc->cell_depth[cell_index];
         VALIDATE(refs[child] < MAX_CONTRACT_CELLS_COUNT, ERR_INVALID_CELL);
         uint8_t child_depth = bc->cell_depth[refs[child]];
-        *depth              = (*depth > child_depth + 1) ? *depth : (child_depth + 1);
+        *depth = (*depth > child_depth + 1) ? *depth : (child_depth + 1);
         uint8_t buf[2];
         buf[0] = 0;
         buf[1] = child_depth;

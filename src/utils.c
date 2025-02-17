@@ -9,8 +9,8 @@
 
 void get_public_key(uint32_t account_number, uint8_t* publicKeyArray) {
     cx_ecfp_private_key_t privateKey;
-    cx_ecfp_public_key_t  publicKey;
-    cx_err_t              error;
+    cx_ecfp_public_key_t publicKey;
+    cx_err_t error;
 
     get_private_key(account_number, &privateKey);
     BEGIN_TRY {
@@ -47,7 +47,7 @@ void get_private_key(uint32_t account_number, cx_ecfp_private_key_t* privateKey)
                                              0 | HARDENED_OFFSET,
                                              0 | HARDENED_OFFSET};
 
-    uint8_t  privateKeyData[64];
+    uint8_t privateKeyData[64];
     cx_err_t error;
     BEGIN_TRY {
         TRY {
@@ -140,7 +140,7 @@ uint64_t readUint64BE(uint8_t* buffer) {
 }
 
 uint8_t leading_zeros(uint16_t value) {
-    uint8_t  lz  = 0;
+    uint8_t lz = 0;
     uint16_t msb = 0x8000;
     for (uint8_t i = 0; i < 16; ++i) {
         if ((value << i) & msb) {
@@ -157,17 +157,17 @@ uint16_t format_hex(const uint8_t* in, size_t in_len, char* out, size_t out_len)
         return -1;
     }
 
-    const char hex[]   = "0123456789abcdef";
-    size_t     i       = 0;
-    int        written = 0;
+    const char hex[] = "0123456789abcdef";
+    size_t i = 0;
+    int written = 0;
 
     while (i < in_len && (i * 2 + (2 + 1)) <= out_len) {
         uint8_t high_nibble = (in[i] & 0xF0) >> 4;
-        *out                = hex[high_nibble];
+        *out = hex[high_nibble];
         out++;
 
         uint8_t low_nibble = in[i] & 0x0F;
-        *out               = hex[low_nibble];
+        *out = hex[low_nibble];
         out++;
 
         i++;
@@ -181,28 +181,28 @@ uint16_t format_hex(const uint8_t* in, size_t in_len, char* out, size_t out_len)
 
 #define SCRATCH_SIZE 37
 uint8_t convert_hex_amount_to_displayable(const uint8_t* amount,
-                                          uint8_t        decimals,
-                                          uint8_t        amount_length,
-                                          char*          out) {
-    uint8_t  LOOP1 = SCRATCH_SIZE - decimals;
-    uint8_t  LOOP2 = decimals;
+                                          uint8_t decimals,
+                                          uint8_t amount_length,
+                                          char* out) {
+    uint8_t LOOP1 = SCRATCH_SIZE - decimals;
+    uint8_t LOOP2 = decimals;
     uint16_t scratch[SCRATCH_SIZE];
-    uint8_t  offset  = 0;
-    uint8_t  nonZero = 0;
-    uint8_t  i;
-    uint8_t  targetOffset = 0;
-    uint8_t  workOffset;
-    uint8_t  j;
-    uint8_t  nscratch = SCRATCH_SIZE;
-    uint8_t  smin     = nscratch - 2;
-    uint8_t  comma    = 0;
+    uint8_t offset = 0;
+    uint8_t nonZero = 0;
+    uint8_t i;
+    uint8_t targetOffset = 0;
+    uint8_t workOffset;
+    uint8_t j;
+    uint8_t nscratch = SCRATCH_SIZE;
+    uint8_t smin = nscratch - 2;
+    uint8_t comma = 0;
 
     for (i = 0; i < SCRATCH_SIZE; i++) {
         scratch[i] = 0;
     }
     for (i = 0; i < amount_length; i++) {
         for (j = 0; j < 8; j++) {
-            uint8_t  k;
+            uint8_t k;
             uint16_t shifted_in =
                 (((amount[i] & 0xff) & ((1 << (7 - j)))) != 0) ? (short) 1 : (short) 0;
             for (k = smin; k < nscratch; k++) {
@@ -224,7 +224,7 @@ uint8_t convert_hex_amount_to_displayable(const uint8_t* amount,
         if (!nonZero && (scratch[offset] == 0)) {
             offset++;
         } else {
-            nonZero             = 1;
+            nonZero = 1;
             out[targetOffset++] = scratch[offset++] + '0';
         }
     }
@@ -246,7 +246,7 @@ uint8_t convert_hex_amount_to_displayable(const uint8_t* amount,
         }
         if (!comma) {
             out[targetOffset++] = '.';
-            comma               = 1;
+            comma = 1;
         }
         out[targetOffset++] = scratch[offset++] + '0';
     }

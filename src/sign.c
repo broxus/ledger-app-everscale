@@ -6,8 +6,8 @@ static const char SIGN_MAGIC[] = {0xFF, 0xFF, 0xFF, 0xFF};
 
 static uint8_t set_result_sign() {
     cx_ecfp_private_key_t privateKey;
-    SignContext_t*        context = &data_context.sign_context;
-    cx_err_t              error;
+    SignContext_t* context = &data_context.sign_context;
+    cx_err_t error;
     BEGIN_TRY {
         TRY {
             get_private_key(context->account_number, &privateKey);
@@ -27,7 +27,7 @@ static uint8_t set_result_sign() {
     }
     END_TRY;
 
-    uint8_t tx             = 0;
+    uint8_t tx = 0;
     G_io_apdu_buffer[tx++] = SIGNATURE_LENGTH;
     memmove(G_io_apdu_buffer + tx, context->signature, SIGNATURE_LENGTH);
     tx += SIGNATURE_LENGTH;
@@ -45,7 +45,7 @@ UX_STEP_NOCB(ux_sign_flow_2_step,
              bnnn_paging,
              {
                  .title = "Message",
-                 .text  = data_context.sign_context.to_sign_str,
+                 .text = data_context.sign_context.to_sign_str,
              });
 UX_STEP_CB(ux_sign_flow_3_step,
            pbb,
@@ -70,9 +70,9 @@ UX_FLOW(ux_sign_flow,
         &ux_sign_flow_3_step,
         &ux_sign_flow_4_step);
 
-void handleSign(uint8_t*                         dataBuffer,
+void handleSign(uint8_t* dataBuffer,
                 __attribute__((unused)) uint16_t dataLength,
-                volatile unsigned int*           flags) {
+                volatile unsigned int* flags) {
     SignContext_t* context = &data_context.sign_context;
 
     size_t offset = 0;

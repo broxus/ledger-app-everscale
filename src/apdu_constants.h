@@ -42,7 +42,7 @@ void handleGetAddress(uint8_t                p1,
                       volatile unsigned int *flags,
                       volatile unsigned int *tx);
 void handleSign(uint8_t *dataBuffer, uint16_t dataLength, volatile unsigned int *flags);
-int  handleSignTransaction(uint8_t               *dataBuffer,
+void handleSignTransaction(uint8_t               *dataBuffer,
                            uint16_t               dataLength,
                            volatile unsigned int *flags,
                            bool                   is_first_chunk,

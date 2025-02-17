@@ -119,11 +119,11 @@ UX_FLOW(ux_sign_transaction_transfer_flow,
         &ux_sign_transaction_accept,
         &ux_sign_transaction_reject);
 
-int handleSignTransaction(uint8_t               *dataBuffer,
-                          uint16_t               dataLength,
-                          volatile unsigned int *flags,
-                          bool                   is_first_chunk,
-                          bool                   more) {
+void handleSignTransaction(uint8_t               *dataBuffer,
+                           uint16_t               dataLength,
+                           volatile unsigned int *flags,
+                           bool                   is_first_chunk,
+                           bool                   more) {
     if (is_first_chunk) {
         reset_app_context();
     }

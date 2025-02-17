@@ -1,0 +1,385 @@
+/usr/bin/docker run --name cf2912b6eda476ca142b2814c965c07_cbf8c6 --label 119993 --workdir /github/workspace --rm -e "INPUT_SOURCE" -e "INPUT_EXTENSIONS" -e "INPUT_CLANGFORMATVERSION" -e "INPUT_EXCLUDE" -e "INPUT_STYLE" -e "INPUT_INPLACE" -e "HOME" -e "GITHUB_JOB" -e "GITHUB_REF" -e "GITHUB_SHA" -e "GITHUB_REPOSITORY" -e "GITHUB_REPOSITORY_OWNER" -e "GITHUB_REPOSITORY_OWNER_ID" -e "GITHUB_RUN_ID" -e "GITHUB_RUN_NUMBER" -e "GITHUB_RETENTION_DAYS" -e "GITHUB_RUN_ATTEMPT" -e "GITHUB_REPOSITORY_ID" -e "GITHUB_ACTOR_ID" -e "GITHUB_ACTOR" -e "GITHUB_TRIGGERING_ACTOR" -e "GITHUB_WORKFLOW" -e "GITHUB_HEAD_REF" -e "GITHUB_BASE_REF" -e "GITHUB_EVENT_NAME" -e "GITHUB_SERVER_URL" -e "GITHUB_API_URL" -e "GITHUB_GRAPHQL_URL" -e "GITHUB_REF_NAME" -e "GITHUB_REF_PROTECTED" -e "GITHUB_REF_TYPE" -e "GITHUB_WORKFLOW_REF" -e "GITHUB_WORKFLOW_SHA" -e "GITHUB_WORKSPACE" -e "GITHUB_ACTION" -e "GITHUB_EVENT_PATH" -e "GITHUB_ACTION_REPOSITORY" -e "GITHUB_ACTION_REF" -e "GITHUB_PATH" -e "GITHUB_ENV" -e "GITHUB_STEP_SUMMARY" -e "GITHUB_STATE" -e "GITHUB_OUTPUT" -e "RUNNER_OS" -e "RUNNER_ARCH" -e "RUNNER_NAME" -e "RUNNER_ENVIRONMENT" -e "RUNNER_TOOL_CACHE" -e "RUNNER_TEMP" -e "RUNNER_WORKSPACE" -e "ACTIONS_RUNTIME_URL" -e "ACTIONS_RUNTIME_TOKEN" -e "ACTIONS_CACHE_URL" -e "ACTIONS_RESULTS_URL" -e GITHUB_ACTIONS=true -e CI=true --network github_network_87a5535abc654fe98bcb659114df86d4 -v "/var/run/docker.sock":"/var/run/docker.sock" -v "/home/runner/work/_temp/_github_home":"/github/home" -v "/home/runner/work/_temp/_github_workflow":"/github/workflow" -v "/home/runner/work/_temp/_runner_file_commands":"/github/file_commands" -v "/home/runner/work/app-everscale/app-everscale":"/github/workspace" 119993:0cf2912b6eda476ca142b2814c965c07  "--clang-format-executable" "/clang-format/clang-format12" "-r" "--color" "always" "--style" "file" "--inplace" "false" "--extensions" "h,c" "--exclude" "none" "./src"
+Processing 26 files: ./src/menu.c, ./src/sign.c, ./src/main.c, ./src/contract.c, ./src/contract.h, ./src/hashmap_label.c, ./src/message.h, ./src/menu.h, ./src/apdu_constants.h, ./src/message.c, ./src/cell.h, ./src/slice_data.c, ./src/byte_stream.c, ./src/get_app_configuration.c, ./src/slice_data.h, ./src/get_public_key.c, ./src/globals.c, ./src/sign_transaction.c, ./src/globals.h, ./src/errors.h, ./src/cell.c, ./src/get_address.c, ./src/utils.c, ./src/byte_stream.h, ./src/hashmap_label.h, ./src/utils.h
+--- ./src/message.h	(original)
++++ ./src/message.h	(reformatted)
+@@ -6,6 +6,9 @@
+#define DEFAULT_WORKCHAIN_ID 0
+ 
+ struct ByteStream_t;
+-
+    int
+    prepare_to_sign(struct ByteStream_t* src,
+                    uint8_t wc,
+                    uint8_t* address,
+                    uint8_t* prepend_address);
++
+    int
+    prepare_to_sign(struct ByteStream_t* src,
+                    +uint8_t wc,
+                    +uint8_t* address,
+                    +uint8_t* prepend_address);
+
+#endif
+-- -./ src / contract.h(original)++ +./ src / contract.h(reformatted) @ @-13, 21 + 13,
+    21 @ @
+#define SIGN_TRANSACTION_FLOW_BURN 3
+
+    enum {
+        -WALLET_V3 = 0,
+        -EVER_WALLET = 1,
+        -SAFE_MULTISIG_WALLET = 2,
+        +WALLET_V3 = 0,
+        +EVER_WALLET = 1,
+        +SAFE_MULTISIG_WALLET = 2,
+        SAFE_MULTISIG_WALLET_24H = 3,
+        -SETCODE_MULTISIG_WALLET = 4,
+        -BRIDGE_MULTISIG_WALLET = 5,
+        -SURF_WALLET = 6,
+        -MULTISIG_2 = 7,
+        -MULTISIG_2_1 = 8,
+        +SETCODE_MULTISIG_WALLET = 4,
+        +BRIDGE_MULTISIG_WALLET = 5,
+        +SURF_WALLET = 6,
+        +MULTISIG_2 = 7,
+        +MULTISIG_2_1 = 8,
+    };
+
+enum {
+    -MULTISIG_DEPLOY_TRANSACTION = 1813932348,
+    -MULTISIG_SEND_TRANSACTION = 1290691692,
+    -MULTISIG_SUBMIT_TRANSACTION = 320701133,
+    +MULTISIG_DEPLOY_TRANSACTION = 1813932348,
+    +MULTISIG_SEND_TRANSACTION = 1290691692,
+    +MULTISIG_SUBMIT_TRANSACTION = 320701133,
+    MULTISIG_CONFIRM_TRANSACTION = 447168749,
+
+    MULTISIG2_DEPLOY_TRANSACTION = 733015951,
+    @ @-35,
+    16 + 35,
+    12 @ @
+};
+
+enum {
+    -TOKEN_BURN = 1445284013,               // Burn
+    -TOKEN_TRANSFER = 1944199491,           // Deploy
+    +TOKEN_BURN = 1445284013,               // Burn
+    +TOKEN_TRANSFER = 1944199491,           // Deploy
+    TOKEN_TRANSFER_TO_WALLET = 1185535980,  // Ordinary transfer
+};
+
+- enum { -NORMAL_FLAG = 3, -ALL_BALANCE_FLAG = 128, -ALL_BALANCE_AND_DELETE_FLAG = 160 - };
++ enum { NORMAL_FLAG = 3, ALL_BALANCE_FLAG = 128, ALL_BALANCE_AND_DELETE_FLAG = 160 };
+
+struct ByteStream_t;
+void deserialize_cells_tree(struct ByteStream_t* src);
+-- -./ src / apdu_constants.h(original)++ +./ src / apdu_constants.h(reformatted) @ @-23, 29 + 23,
+    29 @ @
+#define OFFSET_LC    4
+#define OFFSET_CDATA 5
+
+    -void handleGetAppConfiguration(uint8_t p1,
+                                    -uint8_t p2,
+                                    -uint8_t* dataBuffer,
+                                    -uint16_t dataLength,
+                                    -volatile unsigned int* flags,
+                                    -volatile unsigned int* tx);
+- void
+handleGetPublicKey(uint8_t p1,
+                   -uint8_t p2,
+                   -uint8_t* dataBuffer,
+                   -uint16_t dataLength,
+                   -volatile unsigned int* flags,
+                   -volatile unsigned int* tx);
+- void
+handleGetAddress(uint8_t p1,
+                 -uint8_t p2,
+                 -uint8_t* dataBuffer,
+                 -uint16_t dataLength,
+                 -volatile unsigned int* flags,
+                 -volatile unsigned int* tx);
+- void handleSign(uint8_t* dataBuffer, uint16_t dataLength, volatile unsigned int* flags);
+- void
+handleSignTransaction(uint8_t* dataBuffer,
+                      -uint16_t dataLength,
+                      -volatile unsigned int* flags,
+                      -bool is_first_chunk,
+                      -bool more);
++ void
+handleGetAppConfiguration(uint8_t p1,
+                          +uint8_t p2,
+                          +uint8_t* dataBuffer,
+                          +uint16_t dataLength,
+                          +volatile unsigned int* flags,
+                          +volatile unsigned int* tx);
++ void
+handleGetPublicKey(uint8_t p1,
+                   +uint8_t p2,
+                   +uint8_t* dataBuffer,
+                   +uint16_t dataLength,
+                   +volatile unsigned int* flags,
+                   +volatile unsigned int* tx);
++ void
+handleGetAddress(uint8_t p1,
+                 +uint8_t p2,
+                 +uint8_t* dataBuffer,
+                 +uint16_t dataLength,
+                 +volatile unsigned int* flags,
+                 +volatile unsigned int* tx);
++ void handleSign(uint8_t* dataBuffer, uint16_t dataLength, volatile unsigned int* flags);
++ void
+handleSignTransaction(uint8_t* dataBuffer,
+                      +uint16_t dataLength,
+                      +volatile unsigned int* flags,
+                      +bool is_first_chunk,
+                      +bool more);
+
+#endif
+-- -./ src / cell.h(original)++ +./ src / cell.h(reformatted) @ @-12, 14 + 12,
+    14 @ @uint16_t cell_length;
+}
+Cell_t;
+
+- void Cell_init(struct Cell_t* self, uint8_t* cell_begin, uint16_t cell_length);
+- uint8_t Cell_get_d1(const struct Cell_t* self);
+- uint8_t Cell_get_d2(const struct Cell_t* self);
+- uint8_t Cell_get_data_size(const struct Cell_t* self);
++ void Cell_init(struct Cell_t* self, uint8_t* cell_begin, uint16_t cell_length);
++ uint8_t Cell_get_d1(const struct Cell_t* self);
++ uint8_t Cell_get_d2(const struct Cell_t* self);
++ uint8_t Cell_get_data_size(const struct Cell_t* self);
+uint8_t* Cell_get_data(const struct Cell_t* self);
+uint8_t* Cell_get_refs(const struct Cell_t* self, uint8_t* refs_count);
+uint16_t Cell_bit_len(struct Cell_t* self);
+uint16_t deserialize_cell(struct Cell_t* cell, const uint8_t cell_index, const uint8_t cells_count);
+- void calc_cell_hash(Cell_t* cell, const uint8_t cell_index);
++ void calc_cell_hash(Cell_t* cell, const uint8_t cell_index);
+
+#endif
+-- -./ src / slice_data.h(original)++ +./ src / slice_data.h(reformatted) @ @-13, 22 + 13,
+    22 @ @
+
+    struct Cell_t;
+
+- void SliceData_init(struct SliceData_t* self, uint8_t* data, uint16_t data_size_bytes);
+- void SliceData_from_cell(struct SliceData_t* self, struct Cell_t* cell);
+- void SliceData_fill(struct SliceData_t* self, uint8_t value, uint16_t data_size_bytes);
+- void SliceData_truncate(struct SliceData_t* self, uint16_t size);
++ void SliceData_init(struct SliceData_t* self, uint8_t* data, uint16_t data_size_bytes);
++ void SliceData_from_cell(struct SliceData_t* self, struct Cell_t* cell);
++ void SliceData_fill(struct SliceData_t* self, uint8_t value, uint16_t data_size_bytes);
++ void SliceData_truncate(struct SliceData_t* self, uint16_t size);
+uint16_t SliceData_remaining_bits(const struct SliceData_t* self);
+- void SliceData_move_by(struct SliceData_t* self, uint16_t offset);
+- uint8_t SliceData_get_bits(const struct SliceData_t* self, uint16_t offset, uint8_t bits);
+- uint8_t SliceData_get_next_bit(struct SliceData_t* self);
+- uint8_t SliceData_get_next_byte(struct SliceData_t* self);
++ void SliceData_move_by(struct SliceData_t* self, uint16_t offset);
++ uint8_t SliceData_get_bits(const struct SliceData_t* self, uint16_t offset, uint8_t bits);
++ uint8_t SliceData_get_next_bit(struct SliceData_t* self);
++ uint8_t SliceData_get_next_byte(struct SliceData_t* self);
+uint64_t SliceData_get_next_int(struct SliceData_t* self, uint8_t bits);
+uint64_t SliceData_get_next_size(struct SliceData_t* self, uint16_t max_value);
+- bool SliceData_is_empty(const struct SliceData_t* self);
+- bool SliceData_equal(const struct SliceData_t* self, const struct SliceData_t* other);
++ bool SliceData_is_empty(const struct SliceData_t* self);
++ bool SliceData_equal(const struct SliceData_t* self, const struct SliceData_t* other);
+uint16_t SliceData_get_cursor(const struct SliceData_t* self);
+uint8_t* SliceData_begin(const struct SliceData_t* self);
+uint16_t SliceData_data_size(const struct SliceData_t* self);
+- void SliceData_append(struct SliceData_t* self, uint8_t* data, uint16_t bits, bool append_tag);
++ void SliceData_append(struct SliceData_t* self, uint8_t* data, uint16_t bits, bool append_tag);
+
+#endif
+-- -./ src / globals.h(original)++ +./ src / globals.h(reformatted) @ @-46, 7 + 46,
+    7 @ @ void reset_app_context(void);
+
+typedef struct BocContext_t {
+    - Cell_t cells[MAX_CONTRACT_CELLS_COUNT];
+    + Cell_t cells[MAX_CONTRACT_CELLS_COUNT];
+    uint8_t hashes[HASHES_BUFFER_SIZE];
+    uint8_t cell_depth[MAX_CONTRACT_CELLS_COUNT];
+    uint8_t public_key_cell_data[MAX_PUBLIC_KEY_CELL_DATA_SIZE];
+    @ @-57, 46 + 57,
+        46 @ @
+
+        typedef struct AddressContext_t {
+        uint8_t address[ADDRESS_LENGTH];
+        - char address_str[65];
+        + char address_str[65];
+    } AddressContext_t;
+
+    typedef struct PublicKeyContext_t {
+        uint8_t public_key[PUBLIC_KEY_LENGTH];
+        - char public_key_str[65];
+        + char public_key_str[65];
+    } PublicKeyContext_t;
+
+    typedef struct SignContext_t {
+        - uint8_t chain_id[CHAIN_ID_LENGTH];
+        - uint8_t to_sign[SIGN_MAGIC_LENGTH + TO_SIGN_LENGTH];
+        - uint8_t signature[SIGNATURE_LENGTH];
+        + uint8_t chain_id[CHAIN_ID_LENGTH];
+        + uint8_t to_sign[SIGN_MAGIC_LENGTH + TO_SIGN_LENGTH];
+        + uint8_t signature[SIGNATURE_LENGTH];
+        uint32_t account_number;
+        - char to_sign_str[73];
+        + char to_sign_str[73];
+    } SignContext_t;
+
+    typedef struct SignTransactionContext_t {
+        - bool sign_with_chain_id;
+        - uint8_t chain_id[CHAIN_ID_LENGTH];
+        - uint8_t to_sign[CHAIN_ID_LENGTH + TO_SIGN_LENGTH];
+        - uint8_t signature[SIGNATURE_LENGTH];
+        - char address_str[70];
+        - char amount_str[40];
+        - char transaction_id_str[20];
+        + bool sign_with_chain_id;
+        + uint8_t chain_id[CHAIN_ID_LENGTH];
+        + uint8_t to_sign[CHAIN_ID_LENGTH + TO_SIGN_LENGTH];
+        + uint8_t signature[SIGNATURE_LENGTH];
+        + char address_str[70];
+        + char amount_str[40];
+        + char transaction_id_str[20];
+        uint32_t account_number;
+        - uint8_t origin_wallet_type;
+        - uint8_t current_wallet_type;
+        - uint8_t decimals;
+        - uint8_t address[ADDRESS_LENGTH];
+        - uint8_t prepend_address[ADDRESS_LENGTH];
+        - uint8_t wc;
+        - uint8_t data[MAX_DATA_LEN];
+        + uint8_t origin_wallet_type;
+        + uint8_t current_wallet_type;
+        + uint8_t decimals;
+        + uint8_t address[ADDRESS_LENGTH];
+        + uint8_t prepend_address[ADDRESS_LENGTH];
+        + uint8_t wc;
+        + uint8_t data[MAX_DATA_LEN];
+        uint16_t data_offset;
+        - char ticker[MAX_TICKER_LEN];
+        + char ticker[MAX_TICKER_LEN];
+    } SignTransactionContext_t;
+
+    typedef union {
+        - PublicKeyContext_t pk_context;
+        - AddressContext_t addr_context;
+        - SignContext_t sign_context;
+        + PublicKeyContext_t pk_context;
+        + AddressContext_t addr_context;
+        + SignContext_t sign_context;
+        SignTransactionContext_t sign_tr_context;
+    } DataContext_t;
+
+    @ @-104, 7 + 104, 7 @ @ extern unsigned int ux_step;
+    extern unsigned int ux_step_count;
+
+    - extern BocContext_t boc_context;
+    + extern BocContext_t boc_context;
+    extern DataContext_t data_context;
+
+#endif
+    -- -./ src / byte_stream.h(original)++ +./ src / byte_stream.h(reformatted) @ @-9, 9 + 9,
+        9 @ @uint8_t* data;
+} ByteStream_t;
+
+- void ByteStream_init(struct ByteStream_t* self, uint8_t* data, uint16_t data_size);
++ void ByteStream_init(struct ByteStream_t* self, uint8_t* data, uint16_t data_size);
+uint8_t* ByteStream_read_data(struct ByteStream_t* self, uint32_t data_size);
+- uint8_t ByteStream_read_byte(struct ByteStream_t* self);
++ uint8_t ByteStream_read_byte(struct ByteStream_t* self);
+uint32_t ByteStream_read_u32(struct ByteStream_t* self);
+uint8_t* ByteStream_get_cursor(struct ByteStream_t* self);
+uint16_t ByteStream_get_length(struct ByteStream_t* self);
+-- -./ src / errors.h(original)++ +./ src / errors.h(reformatted) @ @-2, 28 + 2,
+    28 @ @
+#define _ERRORS_H_
+
+    enum {
+        -SUCCESS = 0x9000,
+        -ERR_INVALID_DATA = 0x6B00,
+        -ERR_CELL_UNDERFLOW = 0x6B01,
+        -ERR_RANGE_CHECK = 0x6B02,
+        -ERR_WRONG_LABEL = 0x6B03,
+        -ERR_INVALID_FLAG = 0x6B04,
+        -ERR_END_OF_STREAM = 0x6B05,
+        -ERR_SLICE_IS_EMPTY = 0x6B06,
+        -ERR_INVALID_KEY = 0x6B07,
+        -ERR_CELL_IS_EMPTY = 0x6B08,
+        -ERR_INVALID_HASH = 0x6B09,
+        -ERR_INVALID_CELL_INDEX = 0x6B10,
+        -ERR_INVALID_REQUEST = 0x6B11,
+        +SUCCESS = 0x9000,
+        +ERR_INVALID_DATA = 0x6B00,
+        +ERR_CELL_UNDERFLOW = 0x6B01,
+        +ERR_RANGE_CHECK = 0x6B02,
+        +ERR_WRONG_LABEL = 0x6B03,
+        +ERR_INVALID_FLAG = 0x6B04,
+        +ERR_END_OF_STREAM = 0x6B05,
+        +ERR_SLICE_IS_EMPTY = 0x6B06,
+        +ERR_INVALID_KEY = 0x6B07,
+        +ERR_CELL_IS_EMPTY = 0x6B08,
+        +ERR_INVALID_HASH = 0x6B09,
+        +ERR_INVALID_CELL_INDEX = 0x6B10,
+        +ERR_INVALID_REQUEST = 0x6B11,
+        ERR_INVALID_FUNCTION_ID = 0x6B12,
+        ERR_INVALID_SRC_ADDRESS = 0x6B13,
+        -ERR_INVALID_WALLET_ID = 0x6B14,
+        +ERR_INVALID_WALLET_ID = 0x6B14,
+        ERR_INVALID_WALLET_TYPE = 0x6B15,
+        -ERR_TICKER_LENGTH = 0x6B16,
+        -ERR_INVALID_CELL = 0x6B17,
+        -ERR_INVALID_CONTRACT = 0x6B18,
+        -ERR_INVALID_MESSAGE = 0x6B19,
+        -ERR_SIGNING_FAILED = 0x6B20,
+        +ERR_TICKER_LENGTH = 0x6B16,
+        +ERR_INVALID_CELL = 0x6B17,
+        +ERR_INVALID_CONTRACT = 0x6B18,
+        +ERR_INVALID_MESSAGE = 0x6B19,
+        +ERR_SIGNING_FAILED = 0x6B20,
+        ERR_GENERATE_PAIR_FAILED = 0x6B21,
+        ERR_INIT_PRIVATE_KEY_FAILED = 0x6B22,
+        ERR_DERIVE_PATH_FAILED = 0x6B23,
+        -- -./ src / utils.h(original)++ +./ src / utils.h(reformatted) @ @-10,
+        26 + 10,
+        26 @ @
+
+#ifndef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+
+        -unsigned int ui_prepro(const bagl_element_t* element);
+        -void get_public_key(uint32_t accountNumber, uint8_t* publicKeyArray);
+        -void get_private_key(uint32_t accountNumber, cx_ecfp_private_key_t* privateKey);
+        -void send_response(uint8_t tx, bool approve);
+        +unsigned int ui_prepro(const bagl_element_t* element);
+        +void get_public_key(uint32_t accountNumber, uint8_t* publicKeyArray);
+        +void get_private_key(uint32_t accountNumber, cx_ecfp_private_key_t* privateKey);
+        +void send_response(uint8_t tx, bool approve);
+
+#endif
+
+        -void writeUint32BE(uint32_t val, uint8_t* bytes);
+        -void writeUint64BE(uint64_t val, uint8_t* bytes);
+        +void writeUint32BE(uint32_t val, uint8_t* bytes);
+        +void writeUint64BE(uint64_t val, uint8_t* bytes);
+
+        -uint16_t readUint16BE(uint8_t * buffer);
+        -uint32_t readUint32BE(uint8_t * buffer);
+        -uint64_t readUint64BE(uint8_t * buffer);
+        -uint8_t leading_zeros(uint16_t value);
+        +uint16_t readUint16BE(uint8_t * buffer);
+        +uint32_t readUint32BE(uint8_t * buffer);
+        +uint64_t readUint64BE(uint8_t * buffer);
+        +uint8_t leading_zeros(uint16_t value);
+
+        -uint16_t format_hex(const uint8_t* in, size_t in_len, char* out, size_t out_len);
+        -uint8_t convert_hex_amount_to_displayable(const uint8_t* amount,
+                                                   -uint8_t decimals,
+                                                   -uint8_t amount_length,
+                                                   -char* out);
+        +uint16_t format_hex(const uint8_t* in, size_t in_len, char* out, size_t out_len);
+        +uint8_t convert_hex_amount_to_displayable(const uint8_t* amount,
+                                                   +uint8_t decimals,
+                                                   +uint8_t amount_length,
+                                                   +char* out);
+
+#define VALIDATE(cond, error) do {

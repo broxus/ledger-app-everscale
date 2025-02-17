@@ -46,7 +46,7 @@
 void reset_app_context(void);
 
 typedef struct BocContext_t {
-    Cell_t  cells[MAX_CONTRACT_CELLS_COUNT];
+    Cell_t cells[MAX_CONTRACT_CELLS_COUNT];
     uint8_t hashes[HASHES_BUFFER_SIZE];
     uint8_t cell_depth[MAX_CONTRACT_CELLS_COUNT];
     uint8_t public_key_cell_data[MAX_PUBLIC_KEY_CELL_DATA_SIZE];
@@ -57,46 +57,46 @@ typedef struct BocContext_t {
 
 typedef struct AddressContext_t {
     uint8_t address[ADDRESS_LENGTH];
-    char    address_str[65];
+    char address_str[65];
 } AddressContext_t;
 
 typedef struct PublicKeyContext_t {
     uint8_t public_key[PUBLIC_KEY_LENGTH];
-    char    public_key_str[65];
+    char public_key_str[65];
 } PublicKeyContext_t;
 
 typedef struct SignContext_t {
-    uint8_t  chain_id[CHAIN_ID_LENGTH];
-    uint8_t  to_sign[SIGN_MAGIC_LENGTH + TO_SIGN_LENGTH];
-    uint8_t  signature[SIGNATURE_LENGTH];
+    uint8_t chain_id[CHAIN_ID_LENGTH];
+    uint8_t to_sign[SIGN_MAGIC_LENGTH + TO_SIGN_LENGTH];
+    uint8_t signature[SIGNATURE_LENGTH];
     uint32_t account_number;
-    char     to_sign_str[73];
+    char to_sign_str[73];
 } SignContext_t;
 
 typedef struct SignTransactionContext_t {
-    bool     sign_with_chain_id;
-    uint8_t  chain_id[CHAIN_ID_LENGTH];
-    uint8_t  to_sign[CHAIN_ID_LENGTH + TO_SIGN_LENGTH];
-    uint8_t  signature[SIGNATURE_LENGTH];
-    char     address_str[70];
-    char     amount_str[40];
-    char     transaction_id_str[20];
+    bool sign_with_chain_id;
+    uint8_t chain_id[CHAIN_ID_LENGTH];
+    uint8_t to_sign[CHAIN_ID_LENGTH + TO_SIGN_LENGTH];
+    uint8_t signature[SIGNATURE_LENGTH];
+    char address_str[70];
+    char amount_str[40];
+    char transaction_id_str[20];
     uint32_t account_number;
-    uint8_t  origin_wallet_type;
-    uint8_t  current_wallet_type;
-    uint8_t  decimals;
-    uint8_t  address[ADDRESS_LENGTH];
-    uint8_t  prepend_address[ADDRESS_LENGTH];
-    uint8_t  wc;
-    uint8_t  data[MAX_DATA_LEN];
+    uint8_t origin_wallet_type;
+    uint8_t current_wallet_type;
+    uint8_t decimals;
+    uint8_t address[ADDRESS_LENGTH];
+    uint8_t prepend_address[ADDRESS_LENGTH];
+    uint8_t wc;
+    uint8_t data[MAX_DATA_LEN];
     uint16_t data_offset;
-    char     ticker[MAX_TICKER_LEN];
+    char ticker[MAX_TICKER_LEN];
 } SignTransactionContext_t;
 
 typedef union {
-    PublicKeyContext_t       pk_context;
-    AddressContext_t         addr_context;
-    SignContext_t            sign_context;
+    PublicKeyContext_t pk_context;
+    AddressContext_t addr_context;
+    SignContext_t sign_context;
     SignTransactionContext_t sign_tr_context;
 } DataContext_t;
 
@@ -104,7 +104,7 @@ typedef union {
 extern unsigned int ux_step;
 extern unsigned int ux_step_count;
 
-extern BocContext_t  boc_context;
+extern BocContext_t boc_context;
 extern DataContext_t data_context;
 
 #endif

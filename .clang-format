@@ -1,5 +1,5 @@
----
 BasedOnStyle: Google
+DerivePointerAlignment: false
 IndentWidth: 4
 Language: Cpp
 ColumnLimit: 100
@@ -31,3 +31,6 @@ IndentWrappedFunctionNames: false
 KeepEmptyLinesAtTheStartOfBlocks: false
 AlignTrailingComments: true
 SortUsingDeclarations: false
+PointerBindsToType: true
+BraceWrapping:
+  AfterEnum: true

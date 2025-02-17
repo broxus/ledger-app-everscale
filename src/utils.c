@@ -10,11 +10,15 @@
 void get_public_key(uint32_t account_number, uint8_t *publicKeyArray) {
     cx_ecfp_private_key_t privateKey;
     cx_ecfp_public_key_t  publicKey;
+    cx_err_t              error;
 
     get_private_key(account_number, &privateKey);
     BEGIN_TRY {
         TRY {
-            cx_ecfp_generate_pair(CX_CURVE_Ed25519, &publicKey, &privateKey, 1);
+            error = cx_ecfp_generate_pair_no_throw(CX_CURVE_Ed25519, &publicKey, &privateKey, 1);
+            if (error != CX_OK) {
+                THROW(ERR_GENERATE_PAIR_FAILED);
+            }
         }
         CATCH_OTHER(e) {
             explicit_bzero(&privateKey, sizeof(privateKey));
@@ -43,18 +47,26 @@ void get_private_key(uint32_t account_number, cx_ecfp_private_key_t *privateKey)
                                              0 | HARDENED_OFFSET,
                                              0 | HARDENED_OFFSET};
 
-    uint8_t privateKeyData[32];
+    uint8_t  privateKeyData[64];
+    cx_err_t error;
     BEGIN_TRY {
         TRY {
-            os_perso_derive_node_bip32_seed_key(HDW_ED25519_SLIP10,
-                                                CX_CURVE_Ed25519,
-                                                derivePath,
-                                                BIP32_PATH,
-                                                privateKeyData,
-                                                NULL,
-                                                NULL,
-                                                0);
-            cx_ecfp_init_private_key(CX_CURVE_Ed25519, privateKeyData, 32, privateKey);
+            error = os_derive_bip32_with_seed_no_throw(HDW_ED25519_SLIP10,
+                                                       CX_CURVE_Ed25519,
+                                                       derivePath,
+                                                       BIP32_PATH,
+                                                       privateKeyData,
+                                                       NULL,
+                                                       NULL,
+                                                       0);
+            if (error != CX_OK) {
+                THROW(ERR_DERIVE_PATH_FAILED);
+            }
+            error =
+                cx_ecfp_init_private_key_no_throw(CX_CURVE_Ed25519, privateKeyData, 32, privateKey);
+            if (error != CX_OK) {
+                THROW(ERR_INIT_PRIVATE_KEY_FAILED);
+            }
         }
         CATCH_OTHER(e) {
             explicit_bzero(&privateKeyData, sizeof(privateKeyData));

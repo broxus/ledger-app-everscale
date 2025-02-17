@@ -8,32 +8,28 @@
 static uint8_t set_result_sign_transaction() {
     cx_ecfp_private_key_t     privateKey;
     SignTransactionContext_t *context = &data_context.sign_tr_context;
+    cx_err_t                  error;
 
     BEGIN_TRY {
         TRY {
             get_private_key(context->account_number, &privateKey);
             if (!context->sign_with_chain_id) {
-                cx_eddsa_sign(&privateKey,
-                              CX_LAST,
-                              CX_SHA512,
-                              context->to_sign,
-                              TO_SIGN_LENGTH,
-                              NULL,
-                              0,
-                              context->signature,
-                              SIGNATURE_LENGTH,
-                              NULL);
+                error = cx_eddsa_sign_no_throw(&privateKey,
+                                               CX_SHA512,
+                                               context->to_sign,
+                                               TO_SIGN_LENGTH,
+                                               context->signature,
+                                               SIGNATURE_LENGTH);
             } else {
-                cx_eddsa_sign(&privateKey,
-                              CX_LAST,
-                              CX_SHA512,
-                              context->to_sign,
-                              CHAIN_ID_LENGTH + TO_SIGN_LENGTH,
-                              NULL,
-                              0,
-                              context->signature,
-                              SIGNATURE_LENGTH,
-                              NULL);
+                error = cx_eddsa_sign_no_throw(&privateKey,
+                                               CX_SHA512,
+                                               context->to_sign,
+                                               CHAIN_ID_LENGTH + TO_SIGN_LENGTH,
+                                               context->signature,
+                                               SIGNATURE_LENGTH);
+            }
+            if (error != CX_OK) {
+                THROW(ERR_SIGNING_FAILED);
             }
         }
         FINALLY {

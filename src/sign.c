@@ -7,20 +7,19 @@ static const char SIGN_MAGIC[] = {0xFF, 0xFF, 0xFF, 0xFF};
 static uint8_t set_result_sign() {
     cx_ecfp_private_key_t privateKey;
     SignContext_t        *context = &data_context.sign_context;
-
+    cx_err_t              error;
     BEGIN_TRY {
         TRY {
             get_private_key(context->account_number, &privateKey);
-            cx_eddsa_sign(&privateKey,
-                          CX_LAST,
-                          CX_SHA512,
-                          context->to_sign,
-                          SIGN_MAGIC_LENGTH + TO_SIGN_LENGTH,
-                          NULL,
-                          0,
-                          context->signature,
-                          SIGNATURE_LENGTH,
-                          NULL);
+            error = cx_eddsa_sign_no_throw(&privateKey,
+                                           CX_SHA512,
+                                           context->to_sign,
+                                           SIGN_MAGIC_LENGTH + TO_SIGN_LENGTH,
+                                           context->signature,
+                                           SIGNATURE_LENGTH);
+            if (error != CX_OK) {
+                THROW(ERR_SIGNING_FAILED);
+            }
         }
         FINALLY {
             explicit_bzero(&privateKey, sizeof(privateKey));

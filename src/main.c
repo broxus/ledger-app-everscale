@@ -1,19 +1,19 @@
 /*******************************************************************************
-*   Ledger Free TON App
-*   (c) 2016 Ledger
-*
-*  Licensed under the Apache License, Version 2.0 (the "License");
-*  you may not use this file except in compliance with the License.
-*  You may obtain a copy of the License at
-*
-*      http://www.apache.org/licenses/LICENSE-2.0
-*
-*  Unless required by applicable law or agreed to in writing, software
-*  distributed under the License is distributed on an "AS IS" BASIS,
-*  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-*  See the License for the specific language governing permissions and
-*  limitations under the License.
-********************************************************************************/
+ *   Ledger Free TON App
+ *   (c) 2016 Ledger
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ ********************************************************************************/
 
 #include "utils.h"
 #include "menu.h"
@@ -29,36 +29,122 @@ void reset_app_context() {
     memset(&data_context, 0, sizeof(data_context));
 }
 
-void handleApdu(volatile unsigned int *flags, volatile unsigned int *tx) {
+void reset_spi_buffer() {
+    memset(&G_io_seproxyhal_spi_buffer, 0, sizeof(G_io_seproxyhal_spi_buffer));
+}
+
+void handleApdu(volatile unsigned int* flags, volatile unsigned int* tx, int rx) {
     unsigned short sw = 0;
+
+    if (!flags || !tx) {
+        THROW(0x6802);
+    }
+
+    if (rx < 0) {
+        THROW(0x6813);
+    }
 
     BEGIN_TRY {
         TRY {
             if (G_io_apdu_buffer[OFFSET_CLA] != CLA) {
-            THROW(0x6E00);
+                THROW(0x6E00);
             }
-
+            // must at least hold the class and instruction
+            if (rx <= OFFSET_INS) {
+                THROW(0x6b00);
+            }
+            PRINTF("command: %d\n", G_io_apdu_buffer[OFFSET_INS]);
             switch (G_io_apdu_buffer[OFFSET_INS]) {
+                case INS_GET_APP_CONFIGURATION: {
+                    if (G_io_apdu_buffer[OFFSET_P1] != 0 || G_io_apdu_buffer[OFFSET_P2] != 0) {
+                        THROW(0x6802);
+                    }
 
-                case INS_GET_APP_CONFIGURATION:
-                    handleGetAppConfiguration(G_io_apdu_buffer[OFFSET_P1], G_io_apdu_buffer[OFFSET_P2], G_io_apdu_buffer + OFFSET_CDATA, G_io_apdu_buffer[OFFSET_LC], flags, tx);
-                    break;
+                    handleGetAppConfiguration(G_io_apdu_buffer[OFFSET_P1],
+                                              G_io_apdu_buffer[OFFSET_P2],
+                                              G_io_apdu_buffer + OFFSET_CDATA,
+                                              G_io_apdu_buffer[OFFSET_LC],
+                                              flags,
+                                              tx);
+                } break;
 
-                case INS_GET_PUBLIC_KEY:
-                    handleGetPublicKey(G_io_apdu_buffer[OFFSET_P1], G_io_apdu_buffer[OFFSET_P2], G_io_apdu_buffer + OFFSET_CDATA, G_io_apdu_buffer[OFFSET_LC], flags, tx);
-                    break;
+                case INS_GET_PUBLIC_KEY: {
+                    if (G_io_apdu_buffer[OFFSET_LC] != rx - OFFSET_CDATA) {
+                        // the length of the APDU should match what's in the 5-byte header.
+                        // If not fail.  Don't want to buffer overrun or anything.
+                        THROW(0x6985);
+                    }
 
-                case INS_SIGN:
-                    handleSign(G_io_apdu_buffer[OFFSET_P1], G_io_apdu_buffer[OFFSET_P2], G_io_apdu_buffer + OFFSET_CDATA, G_io_apdu_buffer[OFFSET_LC], flags, tx);
-                    break;
+                    handleGetPublicKey(G_io_apdu_buffer[OFFSET_P1],
+                                       G_io_apdu_buffer[OFFSET_P2],
+                                       G_io_apdu_buffer + OFFSET_CDATA,
+                                       G_io_apdu_buffer[OFFSET_LC],
+                                       flags,
+                                       tx);
+                } break;
 
-                case INS_GET_ADDRESS:
-                    handleGetAddress(G_io_apdu_buffer[OFFSET_P1], G_io_apdu_buffer[OFFSET_P2], G_io_apdu_buffer + OFFSET_CDATA, G_io_apdu_buffer[OFFSET_LC], flags, tx);
-                    break;
+                case INS_GET_ADDRESS: {
+                    if (G_io_apdu_buffer[OFFSET_LC] != rx - OFFSET_CDATA) {
+                        // the length of the APDU should match what's in the 5-byte header.
+                        // If not fail.  Don't want to buffer overrun or anything.
+                        THROW(0x6985);
+                    }
 
-                case INS_SIGN_TRANSACTION:
-                    handleSignTransaction(G_io_apdu_buffer[OFFSET_P1], G_io_apdu_buffer[OFFSET_P2], G_io_apdu_buffer + OFFSET_CDATA, G_io_apdu_buffer[OFFSET_LC], flags, tx);
-                    break;
+                    handleGetAddress(G_io_apdu_buffer[OFFSET_P1],
+                                     G_io_apdu_buffer[OFFSET_P2],
+                                     G_io_apdu_buffer + OFFSET_CDATA,
+                                     G_io_apdu_buffer[OFFSET_LC],
+                                     flags,
+                                     tx);
+                } break;
+
+                case INS_SIGN: {
+                    if (G_io_apdu_buffer[OFFSET_P1] != P1_CONFIRM ||
+                        G_io_apdu_buffer[OFFSET_P2] != 0) {
+                        THROW(0x6802);
+                    }
+
+                    if (G_io_apdu_buffer[OFFSET_LC] != rx - OFFSET_CDATA) {
+                        // the length of the APDU should match what's in the 5-byte header.
+                        // If not fail.  Don't want to buffer overrun or anything.
+                        THROW(0x6985);
+                    }
+
+                    handleSign(G_io_apdu_buffer + OFFSET_CDATA, G_io_apdu_buffer[OFFSET_LC], flags);
+                } break;
+
+                case INS_SIGN_TRANSACTION: {
+                    if (G_io_apdu_buffer[OFFSET_LC] != rx - OFFSET_CDATA) {
+                        // the length of the APDU should match what's in the 5-byte header.
+                        // If not fail.  Don't want to buffer overrun or anything.
+                        THROW(0x6985);
+                    }
+
+                    uint8_t p1 = G_io_apdu_buffer[OFFSET_P1];
+                    if (p1 == P1_NON_CONFIRM) {
+                        // Don't allow blind signing.
+                        THROW(0x6808);
+                    }
+
+                    uint8_t p2 = G_io_apdu_buffer[OFFSET_P2];
+                    bool more = (bool) (p2 & P2_MORE);
+
+                    // P2_MORE is a signal for more apdu to receive in current chunk;
+                    // P2_EXTEND is a signal for extended buffer and can't be in first chunk;
+                    // P2_MORE && !P2_EXTEND = first chunk;
+                    // P2_EXTEND && !P2_MORE = last chunk;
+                    // P2_EXTEND && P2_MORE = ordinary request without chunks;
+
+                    // P2_EXTEND is set to signal that this APDU buffer extends, rather
+                    // than replaces, the current message buffer
+                    bool first_data_chunk = !(p2 & P2_EXTEND);
+
+                    handleSignTransaction(G_io_apdu_buffer + OFFSET_CDATA,
+                                          G_io_apdu_buffer[OFFSET_LC],
+                                          flags,
+                                          first_data_chunk,
+                                          more);
+                } break;
 
                 default:
                     THROW(0x6D00);
@@ -69,20 +155,18 @@ void handleApdu(volatile unsigned int *flags, volatile unsigned int *tx) {
             THROW(EXCEPTION_IO_RESET);
         }
         CATCH_OTHER(e) {
-        switch (e & 0xF000) {
-            case 0x6000:
-                sw = e;
-                reset_app_context();
-                break;
-            case 0x9000:
-                // All is well
-                sw = e;
-                break;
-            default:
-                // Internal error
-                sw = 0x6800 | (e & 0x7FF);
-                reset_app_context();
-                break;
+            switch (e & 0xF000) {
+                case 0x6000:
+                    sw = e;
+                    break;
+                case 0x9000:
+                    // All is well
+                    sw = e;
+                    break;
+                default:
+                    // Internal error
+                    sw = 0x6800 | (e & 0x7FF);
+                    break;
             }
             // Unexpected exception => report
             G_io_apdu_buffer[*tx] = sw >> 8;
@@ -99,7 +183,11 @@ void app_main(void) {
     volatile unsigned int rx = 0;
     volatile unsigned int tx = 0;
     volatile unsigned int flags = 0;
+
+    // Stores the information about the current command. Some commands expect
+    // multiple APDUs before they become complete and executed.
     reset_app_context();
+    reset_spi_buffer();
 
     // DESIGN NOTE: the bootloader ignores the way APDU are fetched. The only
     // goal is to retrieve APDU.
@@ -109,12 +197,11 @@ void app_main(void) {
     // APDU injection faults.
     for (;;) {
         volatile unsigned short sw = 0;
-
         BEGIN_TRY {
             TRY {
                 rx = tx;
-                tx = 0; // ensure no race in catch_other if io_exchange throws
-                        // an error
+                tx = 0;  // ensure no race in catch_other if io_exchange throws
+                         // an error
                 rx = io_exchange(CHANNEL_APDU | flags, rx);
                 flags = 0;
 
@@ -124,17 +211,17 @@ void app_main(void) {
                     THROW(0x6982);
                 }
 
-                // PRINTF("New APDU received:\n%.*h\n", rx, G_io_apdu_buffer);
-                handleApdu(&flags, &tx);
+                PRINTF("New APDU received:\n%.*H\n", rx, G_io_apdu_buffer);
+
+                handleApdu(&flags, &tx, rx);
             }
             CATCH(EXCEPTION_IO_RESET) {
-              THROW(EXCEPTION_IO_RESET);
+                THROW(EXCEPTION_IO_RESET);
             }
             CATCH_OTHER(e) {
                 switch (e & 0xF000) {
                     case 0x6000:
                         sw = e;
-                        reset_app_context();
                         break;
                     case 0x9000:
                         // All is well
@@ -143,7 +230,6 @@ void app_main(void) {
                     default:
                         // Internal error
                         sw = 0x6800 | (e & 0x7FF);
-                        reset_app_context();
                         break;
                 }
                 if (e != 0x9000) {
@@ -159,14 +245,12 @@ void app_main(void) {
         }
         END_TRY;
     }
-
-//return_to_dashboard:
-    return;
+    // return_to_dashboard
 }
 
 // override point, but nothing more to do
-void io_seproxyhal_display(const bagl_element_t *element) {
-    io_seproxyhal_display_default((bagl_element_t*)element);
+void io_seproxyhal_display(const bagl_element_t* element) {
+    io_seproxyhal_display_default((bagl_element_t*) element);
 }
 
 unsigned char io_event(unsigned char channel) {
@@ -186,10 +270,13 @@ unsigned char io_event(unsigned char channel) {
             break;
 
         case SEPROXYHAL_TAG_STATUS_EVENT:
-            if (G_io_apdu_media == IO_APDU_MEDIA_USB_HID && !(U4BE(G_io_seproxyhal_spi_buffer, 3) & SEPROXYHAL_TAG_STATUS_EVENT_FLAG_USB_POWERED)) {
+            if (G_io_apdu_media == IO_APDU_MEDIA_USB_HID &&
+                !(U4BE(G_io_seproxyhal_spi_buffer, 3) &
+                  SEPROXYHAL_TAG_STATUS_EVENT_FLAG_USB_POWERED)) {
                 THROW(EXCEPTION_IO_RESET);
             }
             // no break is intentional
+            __attribute__((fallthrough));
         default:
             UX_DEFAULT_EVENT();
             break;
@@ -199,18 +286,17 @@ unsigned char io_event(unsigned char channel) {
             break;
 
         case SEPROXYHAL_TAG_TICKER_EVENT:
-            UX_TICKER_EVENT(G_io_seproxyhal_spi_buffer,
-            {
+            UX_TICKER_EVENT(G_io_seproxyhal_spi_buffer, {
 #ifndef TARGET_NANOX
                 if (UX_ALLOWED) {
                     if (ux_step_count) {
-                    // prepare next screen
-                    ux_step = (ux_step+1)%ux_step_count;
-                    // redisplay screen
-                    UX_REDISPLAY();
+                        // prepare next screen
+                        ux_step = (ux_step + 1) % ux_step_count;
+                        // redisplay screen
+                        UX_REDISPLAY();
                     }
                 }
-#endif // TARGET_NANOX
+#endif  // TARGET_NANOX
             });
             break;
     }
@@ -223,7 +309,6 @@ unsigned char io_event(unsigned char channel) {
     // command has been processed, DO NOT reset the current APDU transport
     return 1;
 }
-
 
 unsigned short io_exchange_al(unsigned char channel, unsigned short tx_len) {
     switch (channel & ~(IO_FLAGS)) {
@@ -238,11 +323,10 @@ unsigned short io_exchange_al(unsigned char channel, unsigned short tx_len) {
                 if (channel & IO_RESET_AFTER_REPLIED) {
                     reset();
                 }
-                return 0; // nothing received from the master so far (it's a tx
-                        // transaction)
+                return 0;  // nothing received from the master so far (it's a tx
+                           // transaction)
             } else {
-                return io_seproxyhal_spi_recv(G_io_apdu_buffer,
-                                            sizeof(G_io_apdu_buffer), 0);
+                return io_seproxyhal_spi_recv(G_io_apdu_buffer, sizeof(G_io_apdu_buffer), 0);
             }
 
         default:
@@ -251,22 +335,21 @@ unsigned short io_exchange_al(unsigned char channel, unsigned short tx_len) {
     return 0;
 }
 
-
-void app_exit(void) {
-
+/**
+ * Exit the application and go back to the dashboard.
+ */
+void app_exit() {
     BEGIN_TRY_L(exit) {
         TRY_L(exit) {
             os_sched_exit(-1);
         }
         FINALLY_L(exit) {
-
         }
     }
     END_TRY_L(exit);
 }
 
 void nv_app_state_init() {
-
 }
 
 __attribute__((section(".boot"))) int main(void) {
@@ -293,7 +376,7 @@ __attribute__((section(".boot"))) int main(void) {
 #ifdef HAVE_BLE
                 BLE_power(0, NULL);
                 BLE_power(1, "Nano X");
-#endif // HAVE_BLE
+#endif  // HAVE_BLE
 
                 app_main();
             }

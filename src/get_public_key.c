@@ -13,37 +13,42 @@ static uint8_t set_result_get_public_key() {
     return tx;
 }
 
-UX_STEP_NOCB(
-    ux_display_public_flow_1_step,
-    bnnn_paging,
-    {
-        .title = "Public key",
-        .text = data_context.pk_context.public_key_str,
-    });
-UX_STEP_CB(
-    ux_display_public_flow_2_step,
-    pb,
-    send_response(0, false),
-    {
-        &C_icon_crossmark,
-        "Reject",
-    });
-UX_STEP_CB(
-    ux_display_public_flow_3_step,
-    pb,
-    send_response(set_result_get_public_key(), true),
-    {
-        &C_icon_validate_14,
-        "Approve",
-    });
+#ifndef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+
+UX_STEP_NOCB(ux_display_public_flow_1_step,
+             bnnn_paging,
+             {
+                 .title = "Public key",
+                 .text = data_context.pk_context.public_key_str,
+             });
+UX_STEP_CB(ux_display_public_flow_2_step,
+           pb,
+           send_response(0, false),
+           {
+               &C_icon_crossmark,
+               "Reject",
+           });
+UX_STEP_CB(ux_display_public_flow_3_step,
+           pb,
+           send_response(set_result_get_public_key(), true),
+           {
+               &C_icon_validate_14,
+               "Approve",
+           });
 
 UX_FLOW(ux_display_public_flow,
-    &ux_display_public_flow_1_step,
-    &ux_display_public_flow_2_step,
-    &ux_display_public_flow_3_step
-);
+        &ux_display_public_flow_1_step,
+        &ux_display_public_flow_2_step,
+        &ux_display_public_flow_3_step);
 
-void handleGetPublicKey(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t dataLength, volatile unsigned int *flags, volatile unsigned int *tx) {
+#endif
+
+void handleGetPublicKey(uint8_t p1,
+                        uint8_t p2,
+                        uint8_t* dataBuffer,
+                        uint16_t dataLength,
+                        volatile unsigned int* flags,
+                        volatile unsigned int* tx) {
     VALIDATE(p2 == 0 && dataLength == sizeof(uint32_t), ERR_INVALID_REQUEST);
 
     uint32_t account_number = readUint32BE(dataBuffer);
@@ -52,11 +57,16 @@ void handleGetPublicKey(uint8_t p1, uint8_t p2, uint8_t *dataBuffer, uint16_t da
     if (p1 == P1_NON_CONFIRM) {
         *tx = set_result_get_public_key();
         THROW(SUCCESS);
-    } 
+    }
 
     if (p1 == P1_CONFIRM) {
-        snprintf(context->public_key_str, sizeof(context->public_key_str), "%.*H", sizeof(context->public_key), context->public_key);
+        format_hex(context->public_key,
+                   sizeof(context->public_key),
+                   context->public_key_str,
+                   sizeof(context->public_key_str));
+#ifndef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
         ux_flow_init(0, ux_display_public_flow, NULL);
+#endif
         *flags |= IO_ASYNCH_REPLY;
         return;
     }

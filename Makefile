@@ -29,8 +29,8 @@ endif
 APP_LOAD_PARAMS += $(COMMON_LOAD_PARAMS)
 
 # Pending review parameters
-APP_LOAD_PARAMS += --tlvraw 9F:01
-DEFINES += HAVE_PENDING_REVIEW_SCREEN
+# APP_LOAD_PARAMS += --tlvraw 9F:01
+# DEFINES += HAVE_PENDING_REVIEW_SCREEN
 
 ##################
 # Define Version #
@@ -38,11 +38,11 @@ DEFINES += HAVE_PENDING_REVIEW_SCREEN
 
 APPVERSION_M = 1
 APPVERSION_N = 0
-APPVERSION_P = 9
+APPVERSION_P = 10
 APPVERSION   = "$(APPVERSION_M).$(APPVERSION_N).$(APPVERSION_P)"
 
 ###########################
-# Set Chain environnement #
+# Set Chain environment #
 ###########################
 
 ifeq ($(CHAIN),)

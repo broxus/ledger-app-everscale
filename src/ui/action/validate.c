@@ -27,3 +27,11 @@ void validate_pubkey(bool choice) {
         io_send_sw(ERR_USER_REJECTED);
     }
 }
+
+void validate_address(bool choice) {
+    if (choice) {
+        helper_send_response_address();
+    } else {
+        io_send_sw(ERR_USER_REJECTED);
+    }
+}

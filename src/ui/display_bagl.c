@@ -12,6 +12,11 @@ static void ui_action_validate_pubkey(bool choice) {
     ui_main_menu();
 }
 
+static void ui_action_validate_address(bool choice) {
+    validate_address(choice);
+    ui_main_menu();
+}
+
 // Screens and flows
 UX_STEP_NOCB(ux_display_address_flow_1_step,
              pnn,
@@ -28,14 +33,14 @@ UX_STEP_NOCB(ux_display_address_flow_2_step,
              });
 UX_STEP_CB(ux_display_address_flow_3_step,
            pb,
-           send_response(0, false),
+           (*g_validate_callback)(false),
            {
                &C_icon_crossmark,
                "Reject",
            });
 UX_STEP_CB(ux_display_address_flow_4_step,
            pb,
-           send_response(set_result_get_address(), true),
+           (*g_validate_callback)(true),
            {
                &C_icon_validate_14,
                "Approve",
@@ -185,6 +190,7 @@ UX_FLOW(ux_sign_transaction_transfer_flow,
 
 // Display functions
 void ui_display_address() {
+    g_validate_callback = &ui_action_validate_address;
     ux_flow_init(0, ux_display_address_flow, NULL);
 }
 

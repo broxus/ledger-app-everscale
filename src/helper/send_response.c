@@ -10,13 +10,14 @@ int helper_send_response_public_key() {
     return io_send_response_pointer(resp, offset, SUCCESS);
 }
 
-uint8_t helper_send_response_address() {
-    uint8_t tx = 0;
-    G_io_apdu_buffer[tx++] = ADDRESS_LENGTH;
-    memmove(G_io_apdu_buffer + tx, data_context.addr_context.address, ADDRESS_LENGTH);
-    tx += ADDRESS_LENGTH;
+int helper_send_response_address() {
+    uint8_t resp[1 + ADDRESS_LENGTH] = {0};
+    size_t offset = 0;
+    resp[offset++] = ADDRESS_LENGTH;
+    memmove(resp + offset, data_context.addr_context.address, ADDRESS_LENGTH);
+    offset += ADDRESS_LENGTH;
     reset_app_context();
-    return tx;
+    return io_send_response_pointer(resp, offset, SUCCESS);
 }
 
 uint8_t helper_send_response_sign_transaction() {

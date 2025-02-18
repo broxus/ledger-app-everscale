@@ -12,6 +12,14 @@
 void validate_pubkey(bool choice);
 
 /**
+ * Action for address validation and export.
+ *
+ * @param[in] choice
+ *   User choice (either approved or rejectd).
+ *
+ */
+void validate_address(bool choice);
+/**
  * Action for transaction information validation.
  *
  * @param[in] choice

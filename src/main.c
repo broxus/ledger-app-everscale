@@ -229,11 +229,23 @@ void app_main(void) {
                cmd.lc,
                cmd.lc,
                cmd.data);
-        // Dispatch structured APDU command to handler
-        if (apdu_dispatcher(&cmd, &flags) < 0) {
-            PRINTF("=> apdu_dispatcher failure\n");
-            return;
+        BEGIN_TRY {
+            TRY {
+                // Dispatch structured APDU command to handler
+                if (apdu_dispatcher(&cmd, &flags) < 0) {
+                    PRINTF("=> apdu_dispatcher failure\n");
+                    return;
+                }
+            }
+            CATCH_OTHER(e) {
+                PRINTF("=> exception: %d\n", e);
+                io_send_sw(e);
+                return;
+            }
+            FINALLY {
+            }
         }
+        END_TRY;
 
         // volatile unsigned short sw = 0;
         // BEGIN_TRY {

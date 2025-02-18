@@ -27,3 +27,10 @@ void validate_address(bool choice);
  *
  */
 void validate_transaction(bool choice);
+
+/**
+ * Action for sign validation.
+ *
+ * @param[in] choice
+ */
+void validate_sign(bool choice);

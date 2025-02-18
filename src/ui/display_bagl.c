@@ -17,6 +17,11 @@ static void ui_action_validate_address(bool choice) {
     ui_main_menu();
 }
 
+static void ui_action_validate_sign(bool choice) {
+    validate_sign(choice);
+    ui_main_menu();
+}
+
 // Screens and flows
 UX_STEP_NOCB(ux_display_address_flow_1_step,
              pnn,
@@ -93,7 +98,7 @@ UX_STEP_NOCB(ux_sign_flow_2_step,
              });
 UX_STEP_CB(ux_sign_flow_3_step,
            pbb,
-           send_response(0, false),
+           (*g_validate_callback)(false),
            {
                &C_icon_crossmark,
                "Cancel",
@@ -101,7 +106,7 @@ UX_STEP_CB(ux_sign_flow_3_step,
            });
 UX_STEP_CB(ux_sign_flow_4_step,
            pbb,
-           send_response(set_result_sign(), true),
+           (*g_validate_callback)(true),
            {
                &C_icon_validate_14,
                "Sign",
@@ -200,6 +205,7 @@ void ui_display_public_key() {
 }
 
 void ui_display_sign() {
+    g_validate_callback = &ui_action_validate_sign;
     ux_flow_init(0, ux_sign_flow, NULL);
 }
 

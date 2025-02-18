@@ -1,16 +1,10 @@
-#ifndef __SIGN_H__
-#define __SIGN_H__
+#pragma once
 
 #include <stdint.h>
-
+#include "buffer.h"
 /**
  * Handles the sign command
- * @param dataBuffer input data buffer
- * @param dataLength length of input data
+ * @param cdata input data buffer
  * @param flags pointer to flags
  */
-void handleSign(uint8_t* dataBuffer,
-               uint16_t dataLength,
-               volatile unsigned int* flags);
-
-#endif // __SIGN_H__
+int handleSign(buffer_t* cdata, volatile unsigned int* flags);

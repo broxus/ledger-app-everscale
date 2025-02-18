@@ -15,10 +15,12 @@
  *  limitations under the License.
  *****************************************************************************/
 
+#include "io.h"
 #include "validate.h"
 #include "errors.h"
+#include "globals.h"
+#include "utils.h"
 #include "helper/send_response.h"
-#include "io.h"
 
 void validate_pubkey(bool choice) {
     if (choice) {
@@ -31,6 +33,41 @@ void validate_pubkey(bool choice) {
 void validate_address(bool choice) {
     if (choice) {
         helper_send_response_address();
+    } else {
+        io_send_sw(ERR_USER_REJECTED);
+    }
+}
+
+static int crypto_sign_message(void) {
+    cx_ecfp_private_key_t privateKey;
+    SignContext_t* context = &data_context.sign_context;
+    cx_err_t error;
+
+    if (get_private_key(context->account_number, &privateKey) != 0) {
+        return -1;
+    }
+    error = cx_eddsa_sign_no_throw(&privateKey,
+                                   CX_SHA512,
+                                   context->to_sign,
+                                   SIGN_MAGIC_LENGTH + TO_SIGN_LENGTH,
+                                   context->signature,
+                                   SIGNATURE_LENGTH);
+    if (error != CX_OK) {
+        return -2;
+    }
+
+    explicit_bzero(&privateKey, sizeof(privateKey));
+    PRINTF("Signature: %.*H\n", SIGNATURE_LENGTH, context->signature);
+    return 0;
+}
+
+void validate_sign(bool choice) {
+    if (choice) {
+        if (crypto_sign_message() != 0) {
+            io_send_sw(ERR_SIGNING_FAILED);
+        } else {
+            helper_send_response_sign();
+        }
     } else {
         io_send_sw(ERR_USER_REJECTED);
     }

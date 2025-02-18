@@ -29,6 +29,8 @@
 #include "handler/get_public_key.h"
 #include "handler/sign_transaction.h"
 #include "handler/get_address.h"
+#include "handler/sign.h"
+
 int apdu_dispatcher(const command_t* cmd, volatile unsigned int* flags) {
     LEDGER_ASSERT(cmd != NULL, "NULL cmd");
 
@@ -82,6 +84,20 @@ int apdu_dispatcher(const command_t* cmd, volatile unsigned int* flags) {
             buf.offset = 0;
 
             return handleGetAddress(&buf, (bool) cmd->p1, flags);
+        case INS_SIGN:
+            if (cmd->p1 != 1 || cmd->p2 > 0) {
+                return io_send_sw(ERR_WRONG_P1P2);
+            }
+            if (cmd->lc == 0) {
+                return io_send_sw(ERR_WRONG_DATA_LENGTH);
+            }
+
+            buf.ptr = cmd->data;
+            buf.size = cmd->lc;
+            buf.offset = 0;
+
+            return handleSign(&buf, flags);
+
         // case SIGN_TX:
         //     if ((cmd->p1 == P1_START && cmd->p2 != P2_MORE) ||  //
         //         cmd->p1 > P1_MAX ||                             //

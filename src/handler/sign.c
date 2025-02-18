@@ -1,3 +1,4 @@
+#include "format.h"
 #include "apdu_constants.h"
 #include "utils.h"
 #include "errors.h"

@@ -1,36 +1,31 @@
 #include "os.h"
 #include "ux.h"
+#include "format.h"
+#include "read.h"
+#include "buffer.h"
+#include "parser.h"
 #include "utils.h"
 #include "apdu_constants.h"
 #include "errors.h"
 #include "ui/display.h"
 #include "response_setter.h"
+#include "helper/send_response.h"
 
-void handleGetPublicKey(uint8_t p1,
-                        uint8_t p2,
-                        uint8_t* dataBuffer,
-                        uint16_t dataLength,
-                        volatile unsigned int* flags,
-                        volatile unsigned int* tx) {
-    VALIDATE(p2 == 0 && dataLength == sizeof(uint32_t), ERR_INVALID_REQUEST);
-
-    uint32_t account_number = readUint32BE(dataBuffer);
+int handleGetPublicKey(buffer_t* cdata, bool display, volatile unsigned int* flags) {
+    uint32_t account_number = read_u32_be(cdata->ptr, cdata->offset);
     PublicKeyContext_t* context = &data_context.pk_context;
-    get_public_key(account_number, context->public_key);
-    if (p1 == P1_NON_CONFIRM) {
-        *tx = set_result_get_public_key();
-        THROW(SUCCESS);
+    if (get_public_key(account_number, context->public_key) != 0) {
+        return io_send_sw(ERR_GET_PUBLIC_KEY_FAILED);
     }
 
-    if (p1 == P1_CONFIRM) {
+    if (display) {
         format_hex(context->public_key,
                    sizeof(context->public_key),
                    context->public_key_str,
                    sizeof(context->public_key_str));
         ui_display_public_key();
         *flags |= IO_ASYNCH_REPLY;
-        return;
+        return 0;
     }
-
-    THROW(ERR_INVALID_REQUEST);
+    return helper_send_response_public_key();
 }

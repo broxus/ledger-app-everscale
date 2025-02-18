@@ -1,5 +1,4 @@
-#ifndef _APDU_CONSTANTS_H_
-#define _APDU_CONSTANTS_H_
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -24,5 +23,3 @@
 #define OFFSET_CDATA 5
 
 #define APPVERSION_LEN 3
-
-#endif

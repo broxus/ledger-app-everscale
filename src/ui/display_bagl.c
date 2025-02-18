@@ -2,6 +2,16 @@
 #include "display.h"
 #include "response_setter.h"
 #include "contract.h"
+#include "ui/action/validate.h"
+#include "ui/menu.h"
+
+static action_validate_cb g_validate_callback;
+
+static void ui_action_validate_pubkey(bool choice) {
+    validate_pubkey(choice);
+    ui_main_menu();
+}
+
 // Screens and flows
 UX_STEP_NOCB(ux_display_address_flow_1_step,
              pnn,
@@ -45,14 +55,14 @@ UX_STEP_NOCB(ux_display_public_flow_1_step,
              });
 UX_STEP_CB(ux_display_public_flow_2_step,
            pb,
-           send_response(0, false),
+           (*g_validate_callback)(false),
            {
                &C_icon_crossmark,
                "Reject",
            });
 UX_STEP_CB(ux_display_public_flow_3_step,
            pb,
-           send_response(set_result_get_public_key(), true),
+           (*g_validate_callback)(true),
            {
                &C_icon_validate_14,
                "Approve",
@@ -179,6 +189,7 @@ void ui_display_address() {
 }
 
 void ui_display_public_key() {
+    g_validate_callback = &ui_action_validate_pubkey;
     ux_flow_init(0, ux_display_public_flow, NULL);
 }
 

@@ -48,20 +48,23 @@ int apdu_dispatcher(const command_t* cmd, volatile unsigned int* flags) {
             }
 
             return handleGetAppConfiguration();
-        // case INS_GET_PUBLIC_KEY:
-        //     if (cmd->p1 > 1 || cmd->p2 > 0) {
-        //         return io_send_sw(SW_WRONG_P1P2);
-        //     }
+        case INS_GET_PUBLIC_KEY:
+            if (cmd->p1 > 1 || cmd->p2 > 0) {
+                return io_send_sw(ERR_WRONG_P1P2);
+            }
+            if (cmd->lc != sizeof(uint32_t)) {
+                return io_send_sw(ERR_WRONG_DATA_LENGTH);
+            }
 
-        //     if (!cmd->data) {
-        //         return io_send_sw(SW_WRONG_DATA_LENGTH);
-        //     }
+            if (!cmd->data) {
+                return io_send_sw(ERR_NO_DATA);
+            }
 
-        //     buf.ptr = cmd->data;
-        //     buf.size = cmd->lc;
-        //     buf.offset = 0;
+            buf.ptr = cmd->data;
+            buf.size = cmd->lc;
+            buf.offset = 0;
 
-        //     return handler_get_public_key(&buf, (bool) cmd->p1);
+            return handleGetPublicKey(&buf, (bool) cmd->p1, flags);
         // case SIGN_TX:
         //     if ((cmd->p1 == P1_START && cmd->p2 != P2_MORE) ||  //
         //         cmd->p1 > P1_MAX ||                             //

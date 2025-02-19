@@ -1,6 +1,5 @@
 #ifdef HAVE_BAGL
 #include "display.h"
-#include "response_setter.h"
 #include "contract.h"
 #include "ui/action/validate.h"
 #include "ui/menu.h"

@@ -6,7 +6,6 @@
 #include "contract.h"
 #include "slice_data.h"
 #include "byte_stream.h"
-#include "response_setter.h"
 #include "ui/display.h"
 #include "errors.h"
 #include "io.h"

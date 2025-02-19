@@ -1,6 +1,5 @@
 #ifdef HAVE_NBGL
 #include "display.h"
-#include "response_setter.h"
 #include "contract.h"
 
 // TODO: Implement this

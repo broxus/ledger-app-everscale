@@ -8,7 +8,6 @@
 #include "apdu_constants.h"
 #include "errors.h"
 #include "ui/display.h"
-#include "response_setter.h"
 #include "helper/send_response.h"
 
 int handleGetPublicKey(buffer_t* cdata, bool display, volatile unsigned int* flags) {

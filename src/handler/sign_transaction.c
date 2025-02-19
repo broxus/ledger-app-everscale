@@ -7,7 +7,6 @@
 #include "byte_stream.h"
 #include "message.h"
 #include "contract.h"
-#include "response_setter.h"
 #include "ui/display.h"
 
 int handleSignTransaction(buffer_t* cdata,

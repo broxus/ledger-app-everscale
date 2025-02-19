@@ -10,10 +10,8 @@
 
 #ifndef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
 
-unsigned int ui_prepro(const bagl_element_t* element);
 int get_public_key(uint32_t accountNumber, uint8_t* publicKeyArray);
 int get_private_key(uint32_t accountNumber, cx_ecfp_private_key_t* privateKey);
-void send_response(uint8_t tx, bool approve);
 
 #endif
 

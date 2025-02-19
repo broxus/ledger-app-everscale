@@ -1,7 +1,9 @@
 #ifdef HAVE_NBGL
 
-#include "menu.h"
 #include "os.h"
+#include "nbgl_content.h"
+#include "nbgl_use_case.h"
+#include "menu.h"
 
 //  -----------------------------------------------------------
 //  --------------------- SETTINGS MENU -----------------------
@@ -18,23 +20,20 @@ static const nbgl_contentInfoList_t infoList = {
 //  -----------------------------------------------------------
 //  ----------------------- HOME PAGE -------------------------
 //  -----------------------------------------------------------
+void app_quit(void) {
+    // exit app here
+    os_sched_exit(-1);
+}
 
 void ui_main_menu(void) {
-    tx_state->currentInstruction = -1;
-
     nbgl_useCaseHomeAndSettings(APPNAME,
-                                &C_app_everscale_64px,
+                                &C_app_everscale_40px,
                                 NULL,
                                 INIT_HOME_PAGE,
                                 NULL,
                                 &infoList,
                                 NULL,
                                 app_quit);
-}
-
-void app_quit(void) {
-    // exit app here
-    os_sched_exit(-1);
 }
 
 #endif

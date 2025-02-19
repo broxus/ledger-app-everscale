@@ -1,6 +1,8 @@
 #ifdef HAVE_NBGL
 #include "display.h"
 #include "contract.h"
+#include "ui/action/validate.h"
+#include "ui/menu.h"
 
 // TODO: Implement this
 void ui_display_address() {

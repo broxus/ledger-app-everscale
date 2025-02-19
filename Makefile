@@ -27,6 +27,8 @@ include $(BOLOS_SDK)/Makefile.defines
 # Application name
 APPNAME = "Everscale"
 
+APP_LOAD_FLAGS=--appFlags 0x200
+
 # Application version
 APPVERSION_M = 1
 APPVERSION_N = 0

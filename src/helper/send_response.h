@@ -5,5 +5,5 @@
 
 int helper_send_response_public_key();
 int helper_send_response_address();
-uint8_t helper_send_response_sign_transaction();
+int helper_send_response_sign_transaction();
 int helper_send_response_sign();

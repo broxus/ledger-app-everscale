@@ -98,22 +98,30 @@ int apdu_dispatcher(const command_t* cmd, volatile unsigned int* flags) {
 
             return handleSign(&buf, flags);
 
-        // case SIGN_TX:
-        //     if ((cmd->p1 == P1_START && cmd->p2 != P2_MORE) ||  //
-        //         cmd->p1 > P1_MAX ||                             //
-        //         (cmd->p2 != P2_LAST && cmd->p2 != P2_MORE)) {
-        //         return io_send_sw(SW_WRONG_P1P2);
-        //     }
+        case INS_SIGN_TRANSACTION:
+            if (cmd->p1 != P1_CONFIRM || (cmd->p2 < 0 || cmd->p2 > 3)) {
+                return io_send_sw(ERR_WRONG_P1P2);
+            }
 
-        //     if (!cmd->data) {
-        //         return io_send_sw(SW_WRONG_DATA_LENGTH);
-        //     }
+            if (!cmd->data) {
+                return io_send_sw(ERR_NO_DATA);
+            }
+            // P2_MORE is a signal for more apdu to receive in current chunk;
+            // P2_EXTEND is a signal for extended buffer and can't be in first chunk;
+            // P2_MORE && !P2_EXTEND = first chunk;
+            // P2_EXTEND && !P2_MORE = last chunk;
+            // P2_EXTEND && P2_MORE = ordinary request without chunks;
 
-        //     buf.ptr = cmd->data;
-        //     buf.size = cmd->lc;
-        //     buf.offset = 0;
+            // P2_EXTEND is set to signal that this APDU buffer extends, rather
+            // than replaces, the current message buffer
+            bool more = (bool) (cmd->p2 & P2_MORE);
+            bool first_data_chunk = !(cmd->p2 & P2_EXTEND);
 
-        //     return handler_sign_tx(&buf, cmd->p1, (bool) (cmd->p2 & P2_MORE));
+            buf.ptr = cmd->data;
+            buf.size = cmd->lc;
+            buf.offset = 0;
+
+            return handleSignTransaction(&buf, first_data_chunk, more, flags);
         default:
             return io_send_sw(ERR_INS_NOT_SUPPORTED);
     }

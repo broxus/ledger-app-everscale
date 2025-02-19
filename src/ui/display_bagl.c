@@ -22,6 +22,11 @@ static void ui_action_validate_sign(bool choice) {
     ui_main_menu();
 }
 
+static void ui_action_validate_transaction(bool choice) {
+    validate_transaction(choice);
+    ui_main_menu();
+}
+
 // Screens and flows
 UX_STEP_NOCB(ux_display_address_flow_1_step,
              pnn,
@@ -210,6 +215,7 @@ void ui_display_sign() {
 }
 
 void ui_display_sign_transaction(int flow) {
+    g_validate_callback = &ui_action_validate_transaction;
     switch (flow) {
         case SIGN_TRANSACTION_FLOW_TRANSFER:
             ux_flow_init(0, ux_sign_transaction_transfer_flow, NULL);

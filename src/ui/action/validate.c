@@ -72,3 +72,45 @@ void validate_sign(bool choice) {
         io_send_sw(ERR_USER_REJECTED);
     }
 }
+
+static int crypto_sign_transaction(void) {
+    cx_ecfp_private_key_t privateKey;
+    SignTransactionContext_t* context = &data_context.sign_tr_context;
+    cx_err_t error;
+
+    if (get_private_key(context->account_number, &privateKey) != 0) {
+        return -1;
+    }
+    if (!context->sign_with_chain_id) {
+        error = cx_eddsa_sign_no_throw(&privateKey,
+                                       CX_SHA512,
+                                       context->to_sign,
+                                       TO_SIGN_LENGTH,
+                                       context->signature,
+                                       SIGNATURE_LENGTH);
+    } else {
+        error = cx_eddsa_sign_no_throw(&privateKey,
+                                       CX_SHA512,
+                                       context->to_sign,
+                                       CHAIN_ID_LENGTH + TO_SIGN_LENGTH,
+                                       context->signature,
+                                       SIGNATURE_LENGTH);
+    }
+    if (error != CX_OK) {
+        return -2;
+    }
+    explicit_bzero(&privateKey, sizeof(privateKey));
+    return 0;
+}
+
+void validate_transaction(bool choice) {
+    if (choice) {
+        if (crypto_sign_transaction() != 0) {
+            io_send_sw(ERR_SIGNING_FAILED);
+        } else {
+            helper_send_response_sign_transaction();
+        }
+    } else {
+        io_send_sw(ERR_USER_REJECTED);
+    }
+}

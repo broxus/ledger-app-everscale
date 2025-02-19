@@ -5,14 +5,13 @@
 
 /**
  * Handles the sign transaction command
- * @param dataBuffer input data buffer
- * @param dataLength length of input data
- * @param flags pointer to flags
+ * @param cdata input data buffer
  * @param is_first_chunk indicates if this is the first chunk of data
  * @param more indicates if more chunks are expected
+ * @param flags pointer to flags
+ * @return 0 on success, -1 on error
  */
-void handleSignTransaction(uint8_t* dataBuffer,
-                           uint16_t dataLength,
-                           volatile unsigned int* flags,
-                           bool is_first_chunk,
-                           bool more);
+int handleSignTransaction(buffer_t* cdata,
+                          bool is_first_chunk,
+                          bool more,
+                          volatile unsigned int* flags);

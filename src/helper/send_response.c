@@ -20,45 +20,45 @@ int helper_send_response_address() {
     return io_send_response_pointer(resp, offset, SUCCESS);
 }
 
-uint8_t helper_send_response_sign_transaction() {
-    cx_ecfp_private_key_t privateKey;
-    SignTransactionContext_t* context = &data_context.sign_tr_context;
-    cx_err_t error;
+// uint8_t helper_send_response_sign_transaction() {
+//     cx_ecfp_private_key_t privateKey;
+//     SignTransactionContext_t* context = &data_context.sign_tr_context;
+//     cx_err_t error;
 
-    BEGIN_TRY {
-        TRY {
-            get_private_key(context->account_number, &privateKey);
-            if (!context->sign_with_chain_id) {
-                error = cx_eddsa_sign_no_throw(&privateKey,
-                                               CX_SHA512,
-                                               context->to_sign,
-                                               TO_SIGN_LENGTH,
-                                               context->signature,
-                                               SIGNATURE_LENGTH);
-            } else {
-                error = cx_eddsa_sign_no_throw(&privateKey,
-                                               CX_SHA512,
-                                               context->to_sign,
-                                               CHAIN_ID_LENGTH + TO_SIGN_LENGTH,
-                                               context->signature,
-                                               SIGNATURE_LENGTH);
-            }
-            if (error != CX_OK) {
-                THROW(ERR_SIGNING_FAILED);
-            }
-        }
-        FINALLY {
-            explicit_bzero(&privateKey, sizeof(privateKey));
-        }
-    }
-    END_TRY;
+//     BEGIN_TRY {
+//         TRY {
+//             get_private_key(context->account_number, &privateKey);
+//             if (!context->sign_with_chain_id) {
+//                 error = cx_eddsa_sign_no_throw(&privateKey,
+//                                                CX_SHA512,
+//                                                context->to_sign,
+//                                                TO_SIGN_LENGTH,
+//                                                context->signature,
+//                                                SIGNATURE_LENGTH);
+//             } else {
+//                 error = cx_eddsa_sign_no_throw(&privateKey,
+//                                                CX_SHA512,
+//                                                context->to_sign,
+//                                                CHAIN_ID_LENGTH + TO_SIGN_LENGTH,
+//                                                context->signature,
+//                                                SIGNATURE_LENGTH);
+//             }
+//             if (error != CX_OK) {
+//                 THROW(ERR_SIGNING_FAILED);
+//             }
+//         }
+//         FINALLY {
+//             explicit_bzero(&privateKey, sizeof(privateKey));
+//         }
+//     }
+//     END_TRY;
 
-    uint8_t tx = 0;
-    G_io_apdu_buffer[tx++] = SIGNATURE_LENGTH;
-    memmove(G_io_apdu_buffer + tx, context->signature, SIGNATURE_LENGTH);
-    tx += SIGNATURE_LENGTH;
-    return tx;
-}
+//     uint8_t tx = 0;
+//     G_io_apdu_buffer[tx++] = SIGNATURE_LENGTH;
+//     memmove(G_io_apdu_buffer + tx, context->signature, SIGNATURE_LENGTH);
+//     tx += SIGNATURE_LENGTH;
+//     return tx;
+// }
 
 int helper_send_response_sign() {
     uint8_t resp[1 + SIGNATURE_LENGTH] = {0};
@@ -67,5 +67,14 @@ int helper_send_response_sign() {
     memmove(resp + offset, data_context.sign_context.signature, SIGNATURE_LENGTH);
     offset += SIGNATURE_LENGTH;
     // reset_app_context();
+    return io_send_response_pointer(resp, offset, SUCCESS);
+}
+
+int helper_send_response_sign_transaction() {
+    uint8_t resp[1 + SIGNATURE_LENGTH] = {0};
+    size_t offset = 0;
+    resp[offset++] = SIGNATURE_LENGTH;
+    memmove(resp + offset, data_context.sign_tr_context.signature, SIGNATURE_LENGTH);
+    offset += SIGNATURE_LENGTH;
     return io_send_response_pointer(resp, offset, SUCCESS);
 }

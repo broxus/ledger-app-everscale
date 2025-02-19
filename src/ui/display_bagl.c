@@ -155,7 +155,7 @@ UX_STEP_NOCB(ux_sign_transaction_transaction_id,
              });
 UX_STEP_CB(ux_sign_transaction_accept,
            pbb,
-           send_response(set_result_sign_transaction(), true),
+           (*g_validate_callback)(true),
            {
                &C_icon_validate_14,
                "Accept",
@@ -163,7 +163,7 @@ UX_STEP_CB(ux_sign_transaction_accept,
            });
 UX_STEP_CB(ux_sign_transaction_reject,
            pb,
-           send_response(0, false),
+           (*g_validate_callback)(false),
            {
                &C_icon_crossmark,
                "Reject",

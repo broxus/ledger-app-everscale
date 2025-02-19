@@ -45,15 +45,18 @@ int get_private_key(uint32_t account_number, cx_ecfp_private_key_t* privateKey) 
                                              0 | HARDENED_OFFSET};
 
     uint8_t privateKeyData[64];
-    cx_err_t error = os_derive_bip32_with_seed_no_throw(HDW_ED25519_SLIP10,
-                                                        CX_CURVE_Ed25519,
-                                                        derivePath,
-                                                        BIP32_PATH,
-                                                        privateKeyData,
-                                                        NULL,
-                                                        NULL,
-                                                        0);
-    error = cx_ecfp_init_private_key_no_throw(CX_CURVE_Ed25519, privateKeyData, 32, privateKey);
+    if (os_derive_bip32_with_seed_no_throw(HDW_ED25519_SLIP10,
+                                           CX_CURVE_Ed25519,
+                                           derivePath,
+                                           BIP32_PATH,
+                                           privateKeyData,
+                                           NULL,
+                                           NULL,
+                                           0) != CX_OK) {
+        return -1;
+    }
+    cx_err_t error =
+        cx_ecfp_init_private_key_no_throw(CX_CURVE_Ed25519, privateKeyData, 32, privateKey);
 
     explicit_bzero(&privateKeyData, sizeof(privateKeyData));
 

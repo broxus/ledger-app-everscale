@@ -3,9 +3,24 @@
 #include "contract.h"
 #include "ui/action/validate.h"
 #include "ui/menu.h"
+static void review_choice_address(bool choice) {
+    // Answer, display a status page and go back to main
+    validate_address(choice);
+    if (choice) {
+        nbgl_useCaseReviewStatus(STATUS_TYPE_ADDRESS_VERIFIED, ui_main_menu);
+    } else {
+        nbgl_useCaseReviewStatus(STATUS_TYPE_ADDRESS_REJECTED, ui_main_menu);
+    }
+}
 
 // TODO: Implement this
 void ui_display_address() {
+    nbgl_useCaseAddressReview(data_context.addr_context.address_str,
+                              NULL,
+                              &C_app_everscale_40px,
+                              "Verify Address",
+                              NULL,
+                              review_choice_address);
 }
 
 // TODO: Implement this

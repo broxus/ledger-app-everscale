@@ -59,7 +59,7 @@ def test_get_public_key_confirm_refused(backend: BackendInterface, firmware, nav
 
     with pytest.raises(ExceptionRAPDU) as e:
         with client.get_public_key_with_confirmation(account_number=account_number):
-            navigate_until_text_and_compare(firmware, navigator, "Approve", default_screenshot_path, test_name, True, True, confirm_instructions)
+            navigate_until_text_and_compare(firmware, navigator, "Reject", default_screenshot_path, test_name, True, True, confirm_instructions)
 
         # with client.get_public_key_with_confirmation(account_number=account_number):
         #     scenario_navigator.address_review_reject()

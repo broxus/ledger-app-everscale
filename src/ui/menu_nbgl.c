@@ -27,7 +27,7 @@ void app_quit(void) {
 
 void ui_main_menu(void) {
     nbgl_useCaseHomeAndSettings(APPNAME,
-                                &C_app_everscale_40px,
+                                &C_app_everscale_64px,
                                 NULL,
                                 INIT_HOME_PAGE,
                                 NULL,

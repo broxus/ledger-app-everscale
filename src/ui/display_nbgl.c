@@ -42,7 +42,7 @@ static void review_choice_message(bool choice) {
 void ui_display_address() {
     nbgl_useCaseAddressReview(data_context.addr_context.address_str,
                               NULL,
-                              &C_app_everscale_40px,
+                              &C_app_everscale_64px,
                               "Verify Address",
                               NULL,
                               review_choice_address);
@@ -108,7 +108,7 @@ void ui_display_sign_transaction(int flow) {
     // Setup the review screen
     nbgl_useCaseReview(TYPE_TRANSACTION,
                        &pairList,
-                       &C_app_everscale_40px,
+                       &C_app_everscale_64px,
                        "Review transaction",
                        NULL,  // No subtitle
                        "Review transaction",
@@ -131,7 +131,7 @@ void ui_display_sign() {
     // Setup the review screen
     nbgl_useCaseReview(TYPE_MESSAGE,
                        &pairList,
-                       &C_app_everscale_40px,
+                       &C_app_everscale_64px,
                        "Sign message",
                        NULL,  // No subtitle
                        "Sign message.",

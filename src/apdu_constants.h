@@ -1,5 +1,4 @@
-#ifndef _APDU_CONSTANTS_H_
-#define _APDU_CONSTANTS_H_
+#pragma once
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -23,29 +22,4 @@
 #define OFFSET_LC    4
 #define OFFSET_CDATA 5
 
-void handleGetAppConfiguration(uint8_t p1,
-                               uint8_t p2,
-                               uint8_t* dataBuffer,
-                               uint16_t dataLength,
-                               volatile unsigned int* flags,
-                               volatile unsigned int* tx);
-void handleGetPublicKey(uint8_t p1,
-                        uint8_t p2,
-                        uint8_t* dataBuffer,
-                        uint16_t dataLength,
-                        volatile unsigned int* flags,
-                        volatile unsigned int* tx);
-void handleGetAddress(uint8_t p1,
-                      uint8_t p2,
-                      uint8_t* dataBuffer,
-                      uint16_t dataLength,
-                      volatile unsigned int* flags,
-                      volatile unsigned int* tx);
-void handleSign(uint8_t* dataBuffer, uint16_t dataLength, volatile unsigned int* flags);
-void handleSignTransaction(uint8_t* dataBuffer,
-                           uint16_t dataLength,
-                           volatile unsigned int* flags,
-                           bool is_first_chunk,
-                           bool more);
-
-#endif
+#define APPVERSION_LEN 3

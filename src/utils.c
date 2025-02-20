@@ -7,28 +7,17 @@
 
 #ifndef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
 
-void get_public_key(uint32_t account_number, uint8_t* publicKeyArray) {
+int get_public_key(uint32_t account_number, uint8_t* publicKeyArray) {
     cx_ecfp_private_key_t privateKey;
     cx_ecfp_public_key_t publicKey;
-    cx_err_t error;
-
-    get_private_key(account_number, &privateKey);
-    BEGIN_TRY {
-        TRY {
-            error = cx_ecfp_generate_pair_no_throw(CX_CURVE_Ed25519, &publicKey, &privateKey, 1);
-            if (error != CX_OK) {
-                THROW(ERR_GENERATE_PAIR_FAILED);
-            }
-        }
-        CATCH_OTHER(e) {
-            explicit_bzero(&privateKey, sizeof(privateKey));
-            THROW(e);
-        }
-        FINALLY {
-            explicit_bzero(&privateKey, sizeof(privateKey));
-        }
+    if (get_private_key(account_number, &privateKey) != 0) {
+        return -1;
     }
-    END_TRY;
+    cx_err_t error = cx_ecfp_generate_pair_no_throw(CX_CURVE_Ed25519, &publicKey, &privateKey, 1);
+    if (error != CX_OK) {
+        return -2;
+    }
+    explicit_bzero(&privateKey, sizeof(privateKey));
 
     for (int i = 0; i < 32; i++) {
         publicKeyArray[i] = publicKey.W[64 - i];
@@ -36,11 +25,19 @@ void get_public_key(uint32_t account_number, uint8_t* publicKeyArray) {
     if ((publicKey.W[32] & 1) != 0) {
         publicKeyArray[31] |= 0x80;
     }
+    return 0;
 }
 
 static const uint32_t HARDENED_OFFSET = 0x80000000;
 
-void get_private_key(uint32_t account_number, cx_ecfp_private_key_t* privateKey) {
+/**
+ * @brief Get the private key object
+ *
+ * @param account_number
+ * @param privateKey
+ * @return 0 on success, -1 on error
+ */
+int get_private_key(uint32_t account_number, cx_ecfp_private_key_t* privateKey) {
     const uint32_t derivePath[BIP32_PATH] = {44 | HARDENED_OFFSET,
                                              396 | HARDENED_OFFSET,
                                              account_number | HARDENED_OFFSET,
@@ -48,61 +45,26 @@ void get_private_key(uint32_t account_number, cx_ecfp_private_key_t* privateKey)
                                              0 | HARDENED_OFFSET};
 
     uint8_t privateKeyData[64];
-    cx_err_t error;
-    BEGIN_TRY {
-        TRY {
-            error = os_derive_bip32_with_seed_no_throw(HDW_ED25519_SLIP10,
-                                                       CX_CURVE_Ed25519,
-                                                       derivePath,
-                                                       BIP32_PATH,
-                                                       privateKeyData,
-                                                       NULL,
-                                                       NULL,
-                                                       0);
-            if (error != CX_OK) {
-                THROW(ERR_DERIVE_PATH_FAILED);
-            }
-            error =
-                cx_ecfp_init_private_key_no_throw(CX_CURVE_Ed25519, privateKeyData, 32, privateKey);
-            if (error != CX_OK) {
-                THROW(ERR_INIT_PRIVATE_KEY_FAILED);
-            }
-        }
-        CATCH_OTHER(e) {
-            explicit_bzero(&privateKeyData, sizeof(privateKeyData));
-            THROW(e);
-        }
-        FINALLY {
-            explicit_bzero(&privateKeyData, sizeof(privateKeyData));
-        }
+    if (os_derive_bip32_with_seed_no_throw(HDW_ED25519_SLIP10,
+                                           CX_CURVE_Ed25519,
+                                           derivePath,
+                                           BIP32_PATH,
+                                           privateKeyData,
+                                           NULL,
+                                           NULL,
+                                           0) != CX_OK) {
+        return -1;
     }
-    END_TRY;
-}
+    cx_err_t error =
+        cx_ecfp_init_private_key_no_throw(CX_CURVE_Ed25519, privateKeyData, 32, privateKey);
 
-void send_response(uint8_t tx, bool approve) {
-    G_io_apdu_buffer[tx++] = approve ? 0x90 : 0x69;
-    G_io_apdu_buffer[tx++] = approve ? 0x00 : 0x85;
-    reset_app_context();
-    // Send back the response, do not restart the event loop
-    io_exchange(CHANNEL_APDU | IO_RETURN_AFTER_TX, tx);
-    // Display back the original UX
-    ui_idle();
-}
+    explicit_bzero(&privateKeyData, sizeof(privateKeyData));
 
-unsigned int ui_prepro(const bagl_element_t* element) {
-    unsigned int display = 1;
-    if (element->component.userid > 0) {
-        display = (ux_step == element->component.userid - 1);
-        if (display) {
-            if (element->component.userid == 1) {
-                UX_CALLBACK_SET_INTERVAL(2000);
-            } else {
-                UX_CALLBACK_SET_INTERVAL(
-                    MAX(3000, 1000 + bagl_label_roundtrip_duration_ms(element, 7)));
-            }
-        }
+    if (error != CX_OK) {
+        return -1;
     }
-    return display;
+
+    return 0;
 }
 
 #endif
@@ -150,33 +112,6 @@ uint8_t leading_zeros(uint16_t value) {
     }
 
     return lz;
-}
-
-uint16_t format_hex(const uint8_t* in, size_t in_len, char* out, size_t out_len) {
-    if (out_len < 2 * in_len + 1) {
-        return -1;
-    }
-
-    const char hex[] = "0123456789abcdef";
-    size_t i = 0;
-    int written = 0;
-
-    while (i < in_len && (i * 2 + (2 + 1)) <= out_len) {
-        uint8_t high_nibble = (in[i] & 0xF0) >> 4;
-        *out = hex[high_nibble];
-        out++;
-
-        uint8_t low_nibble = in[i] & 0x0F;
-        *out = hex[low_nibble];
-        out++;
-
-        i++;
-        written += 2;
-    }
-
-    *out = '\0';
-
-    return written + 1;
 }
 
 #define SCRATCH_SIZE 37

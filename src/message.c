@@ -4,6 +4,7 @@
 #include "slice_data.h"
 #include "byte_stream.h"
 #include "contract.h"
+#include "format.h"
 
 #define ROOT_CELL_INDEX 0
 #define GIFT_CELL_INDEX 1

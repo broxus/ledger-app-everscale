@@ -195,7 +195,7 @@ void compute_wallet_v3_address(uint32_t account_number, uint8_t* address) {
 
         // Pubkey
         uint8_t public_key[PUBLIC_KEY_LENGTH];
-        get_public_key(account_number, public_key);
+        VALIDATE(get_public_key(account_number, public_key) == 0, ERR_GET_PUBLIC_KEY_FAILED);
 
         memcpy(hash_buffer + hash_buffer_offset, public_key, PUBLIC_KEY_LENGTH);
         hash_buffer_offset += PUBLIC_KEY_LENGTH;
@@ -249,7 +249,7 @@ void compute_ever_wallet_address(uint32_t account_number, uint8_t* address) {
 
         // Pubkey
         uint8_t public_key[PUBLIC_KEY_LENGTH];
-        get_public_key(account_number, public_key);
+        VALIDATE(get_public_key(account_number, public_key) == 0, ERR_GET_PUBLIC_KEY_FAILED);
 
         memcpy(hash_buffer + hash_buffer_offset, public_key, PUBLIC_KEY_LENGTH);
         hash_buffer_offset += PUBLIC_KEY_LENGTH;
@@ -324,7 +324,7 @@ void compute_multisig_address(uint32_t account_number,
 
     memcpy(bc->public_key_cell_data, cell_data, cell_data_size);
     uint8_t* public_key = data_context.pk_context.public_key;
-    get_public_key(account_number, public_key);
+    VALIDATE(get_public_key(account_number, public_key) == 0, ERR_GET_PUBLIC_KEY_FAILED);
 
     uint8_t* data = bc->public_key_cell_data;
     SliceData_t slice;

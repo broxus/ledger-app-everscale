@@ -3,7 +3,10 @@ import pytest
 from ragger.bip import calculate_public_key_and_chaincode, CurveChoice
 from ragger.error import ExceptionRAPDU
 from ragger.backend.interface import BackendInterface
+from ragger.navigator import NavInsID
 from ragger.navigator.navigation_scenario import NavigateWithScenario
+
+from utils import navigate_until_text_and_compare
 
 from application_client.everscale_command_sender import EverscaleCommandSender, Errors
 from application_client.everscale_response_unpacker import unpack_get_public_key_response
@@ -33,11 +36,11 @@ def test_get_public_key_no_confirm(backend: BackendInterface) -> None:
 
 # In this test we check that the GET_PUBLIC_KEY works in confirmation mode
 @pytest.mark.active_test_scope
-def test_get_public_key_confirm_accepted(backend: BackendInterface, scenario_navigator: NavigateWithScenario) -> None:
+def test_get_public_key_confirm_accepted(backend: BackendInterface, firmware, navigator, default_screenshot_path, test_name) -> None:
     client = EverscaleCommandSender(backend)
     account_number = 0
     with client.get_public_key_with_confirmation(account_number=account_number):
-        scenario_navigator.address_review_approve()
+        navigate_until_text_and_compare(firmware, navigator, "Approve", default_screenshot_path, test_name, True, True, [NavInsID.USE_CASE_CHOICE_CONFIRM])
 
     response = client.get_async_response().data
     _, public_key  = unpack_get_public_key_response(response)
@@ -48,13 +51,18 @@ def test_get_public_key_confirm_accepted(backend: BackendInterface, scenario_nav
 
 # In this test we check that the GET_PUBLIC_KEY in confirmation mode replies an error if the user refuses
 @pytest.mark.active_test_scope
-def test_get_public_key_confirm_refused(backend: BackendInterface, scenario_navigator: NavigateWithScenario) -> None:
+def test_get_public_key_confirm_refused(backend: BackendInterface, firmware, navigator, default_screenshot_path, test_name, scenario_navigator) -> None:
     client = EverscaleCommandSender(backend)
     account_number = 0
+    
+    confirm_instructions = [NavInsID.USE_CASE_CHOICE_REJECT, NavInsID.USE_CASE_CHOICE_CONFIRM]
 
     with pytest.raises(ExceptionRAPDU) as e:
         with client.get_public_key_with_confirmation(account_number=account_number):
-            scenario_navigator.address_review_reject()
+            navigate_until_text_and_compare(firmware, navigator, "Reject", default_screenshot_path, test_name, True, True, confirm_instructions)
+
+        # with client.get_public_key_with_confirmation(account_number=account_number):
+        #     scenario_navigator.address_review_reject()
 
     # Assert that we have received a refusal
     assert e.value.status == Errors.SW_DENY

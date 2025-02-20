@@ -8,6 +8,16 @@
 static nbgl_contentTagValue_t pairs[10];
 static nbgl_contentTagValueList_t pairList;
 
+static void review_choice_pubkey(bool choice) {
+    // Answer, display a status page and go back to main
+    validate_pubkey(choice);
+    if (choice) {
+        nbgl_useCaseReviewStatus(STATUS_TYPE_ADDRESS_VERIFIED, ui_main_menu);
+    } else {
+        nbgl_useCaseReviewStatus(STATUS_TYPE_ADDRESS_REJECTED, ui_main_menu);
+    }
+}
+
 static void review_choice_address(bool choice) {
     // Answer, display a status page and go back to main
     validate_address(choice);
@@ -50,6 +60,36 @@ void ui_display_address() {
 
 // TODO: Implement this
 void ui_display_public_key() {
+    // Create the page content
+
+    uint8_t pairIndex = 0;
+    pairs[pairIndex].item = "Public Key";
+    pairs[pairIndex].value = (char*) data_context.pk_context.public_key_str;
+    pairIndex++;
+
+    nbgl_contentTagValueList_t content;
+    content.nbPairs = pairIndex;
+    content.pairs = pairs;
+    content.smallCaseForValue = false;
+    content.nbMaxLinesForValue = 0;
+    content.startIndex = 0;
+
+    // to signing screens.
+    // Setup the review screen
+    nbgl_useCaseReviewLight(TYPE_OPERATION,
+                            &content,
+                            &C_app_everscale_64px,
+                            "Verify Public Key",
+                            NULL,  // No subtitle
+                            "Approve",
+                            review_choice_pubkey);
+
+    // nbgl_useCaseAddressReview(data_context.pk_context.public_key_str,
+    //                           NULL,
+    //                           &C_app_everscale_40px,
+    //                           "Verify Public Key",
+    //                           NULL,
+    //                           review_choice_pubkey);
 }
 
 void ui_display_sign_transaction(int flow) {

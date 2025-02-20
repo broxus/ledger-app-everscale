@@ -28,6 +28,16 @@ static void review_choice_transaction(bool choice) {
     }
 }
 
+static void review_choice_message(bool choice) {
+    // Answer, display a status page and go back to main
+    validate_message(choice);
+    if (choice) {
+        nbgl_useCaseReviewStatus(STATUS_TYPE_MESSAGE_SIGNED, ui_main_menu);
+    } else {
+        nbgl_useCaseReviewStatus(STATUS_TYPE_MESSAGE_REJECTED, ui_main_menu);
+    }
+}
+
 // TODO: Implement this
 void ui_display_address() {
     nbgl_useCaseAddressReview(data_context.addr_context.address_str,
@@ -42,7 +52,6 @@ void ui_display_address() {
 void ui_display_public_key() {
 }
 
-// TODO: Implement this
 void ui_display_sign_transaction(int flow) {
     uint8_t pairIndex = 0;
 
@@ -106,8 +115,27 @@ void ui_display_sign_transaction(int flow) {
                        review_choice_transaction);
 }
 
-// TODO: Implement this
 void ui_display_sign() {
+    uint8_t pairIndex = 0;
+
+    pairs[pairIndex].item = "Message";
+    pairs[pairIndex].value = data_context.sign_context.to_sign_str;
+    pairIndex++;
+
+    // Setup list
+    pairList.nbMaxLinesForValue = 0;
+    pairList.nbPairs = pairIndex;
+    pairList.pairs = pairs;
+
+    // to signing screens.
+    // Setup the review screen
+    nbgl_useCaseReview(TYPE_MESSAGE,
+                       &pairList,
+                       &C_app_everscale_40px,
+                       "Sign message",
+                       NULL,  // No subtitle
+                       "Sign message.",
+                       review_choice_message);
 }
 
 #endif

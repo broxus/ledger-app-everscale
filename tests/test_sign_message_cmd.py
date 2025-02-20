@@ -19,7 +19,7 @@ from utils import navigate_until_text_and_compare
 
 # TODO: Add a valid raw message and a valid expected signature
 @pytest.mark.active_test_scope
-def test_sign_message(backend: BackendInterface, navigator: Navigator, default_screenshot_path: str, test_name: str) -> None:
+def test_sign_message(backend: BackendInterface, navigator: Navigator, default_screenshot_path: str, test_name: str, scenario_navigator, firmware) -> None:
     # Use the app interface instead of raw interface
     client = EverscaleCommandSender(backend)
     account_number = 0
@@ -36,13 +36,16 @@ def test_sign_message(backend: BackendInterface, navigator: Navigator, default_s
     # It will yield the result when the navigation is done
     with client.sign_message(payload=payload):
         # Validate the on-screen request by performing the navigation appropriate for this device
-        navigate_until_text_and_compare(
-            backend.firmware,
-            navigator,
-            "message.",
-            default_screenshot_path,
-            test_name
-        )
+        if firmware.is_nano:
+            navigate_until_text_and_compare(
+                backend.firmware,
+                navigator,
+                "message.",
+                default_screenshot_path,
+                test_name
+            )
+        else:
+            scenario_navigator.review_approve()
 
     # The device as yielded the result, parse it and ensure that the signature is correct
     response = client.get_async_response().data

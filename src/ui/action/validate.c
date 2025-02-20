@@ -61,7 +61,7 @@ static int crypto_sign_message(void) {
     return 0;
 }
 
-void validate_sign(bool choice) {
+void validate_message(bool choice) {
     if (choice) {
         if (crypto_sign_message() != 0) {
             io_send_sw(ERR_SIGNING_FAILED);

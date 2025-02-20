@@ -33,4 +33,4 @@ void validate_transaction(bool choice);
  *
  * @param[in] choice
  */
-void validate_sign(bool choice);
+void validate_message(bool choice);

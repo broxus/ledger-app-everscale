@@ -16,8 +16,8 @@ static void ui_action_validate_address(bool choice) {
     ui_main_menu();
 }
 
-static void ui_action_validate_sign(bool choice) {
-    validate_sign(choice);
+static void ui_action_validate_message(bool choice) {
+    validate_message(choice);
     ui_main_menu();
 }
 
@@ -209,7 +209,7 @@ void ui_display_public_key() {
 }
 
 void ui_display_sign() {
-    g_validate_callback = &ui_action_validate_sign;
+    g_validate_callback = &ui_action_validate_message;
     ux_flow_init(0, ux_sign_flow, NULL);
 }
 

@@ -43,17 +43,8 @@ void app_main(void) {
 
     ui_main_menu();
 
-    // Stores the information about the current command. Some commands expect
-    // multiple APDUs before they become complete and executed.
     reset_app_context();
-    // reset_spi_buffer();
 
-    // DESIGN NOTE: the bootloader ignores the way APDU are fetched. The only
-    // goal is to retrieve APDU.
-    // When APDU are to be fetched from multiple IOs, like NFC+USB+BLE, make
-    // sure the io_event is called with a
-    // switch event, before the apdu is replied to the bootloader. This avoid
-    // APDU injection faults.
     for (;;) {
         // Receive command bytes in G_io_apdu_buffer
         if ((input_len = io_recv_command()) < 0) {

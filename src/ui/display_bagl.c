@@ -40,14 +40,14 @@ UX_STEP_NOCB(ux_display_address_flow_2_step,
                  .title = "Address",
                  .text = data_context.addr_context.address_str,
              });
-UX_STEP_CB(ux_display_address_flow_3_step,
+UX_STEP_CB(ux_display_reject_step,
            pb,
            (*g_validate_callback)(false),
            {
                &C_icon_crossmark,
                "Reject",
            });
-UX_STEP_CB(ux_display_address_flow_4_step,
+UX_STEP_CB(ux_display_approve_step,
            pb,
            (*g_validate_callback)(true),
            {
@@ -58,8 +58,8 @@ UX_STEP_CB(ux_display_address_flow_4_step,
 UX_FLOW(ux_display_address_flow,
         &ux_display_address_flow_1_step,
         &ux_display_address_flow_2_step,
-        &ux_display_address_flow_3_step,
-        &ux_display_address_flow_4_step);
+        &ux_display_approve_step,
+        &ux_display_reject_step);
 
 UX_STEP_NOCB(ux_display_public_flow_1_step,
              pnn,
@@ -74,26 +74,12 @@ UX_STEP_NOCB(ux_display_public_flow_2_step,
                  .title = "Public key",
                  .text = data_context.pk_context.public_key_str,
              });
-UX_STEP_CB(ux_display_public_flow_3_step,
-           pb,
-           (*g_validate_callback)(false),
-           {
-               &C_icon_crossmark,
-               "Reject",
-           });
-UX_STEP_CB(ux_display_public_flow_4_step,
-           pb,
-           (*g_validate_callback)(true),
-           {
-               &C_icon_validate_14,
-               "Approve",
-           });
 
 UX_FLOW(ux_display_public_flow,
         &ux_display_public_flow_1_step,
         &ux_display_public_flow_2_step,
-        &ux_display_public_flow_3_step,
-        &ux_display_public_flow_4_step);
+        &ux_display_approve_step,
+        &ux_display_reject_step);
 
 UX_STEP_NOCB(ux_sign_flow_1_step,
              pnn,
@@ -108,7 +94,7 @@ UX_STEP_NOCB(ux_sign_flow_2_step,
                  .title = "Message",
                  .text = data_context.sign_context.to_sign_str,
              });
-UX_STEP_CB(ux_sign_flow_3_step,
+UX_STEP_CB(ux_sign_flow_4_step,
            pbb,
            (*g_validate_callback)(false),
            {
@@ -116,7 +102,7 @@ UX_STEP_CB(ux_sign_flow_3_step,
                "Cancel",
                "signature",
            });
-UX_STEP_CB(ux_sign_flow_4_step,
+UX_STEP_CB(ux_sign_flow_3_step,
            pbb,
            (*g_validate_callback)(true),
            {
@@ -160,50 +146,35 @@ UX_STEP_NOCB(ux_sign_transaction_transaction_id,
                  .title = "Transaction id",
                  .text = data_context.sign_tr_context.transaction_id_str,
              });
-UX_STEP_CB(ux_sign_transaction_accept,
-           pbb,
-           (*g_validate_callback)(true),
-           {
-               &C_icon_validate_14,
-               "Accept",
-               "and send",
-           });
-UX_STEP_CB(ux_sign_transaction_reject,
-           pb,
-           (*g_validate_callback)(false),
-           {
-               &C_icon_crossmark,
-               "Reject",
-           });
 
 UX_FLOW(ux_sign_transaction_burn_flow,
         &ux_sign_transaction_intro,
         &ux_sign_transaction_burn,
         &ux_sign_transaction_amount,
-        &ux_sign_transaction_accept,
-        &ux_sign_transaction_reject);
+        &ux_display_approve_step,
+        &ux_display_reject_step);
 
 UX_FLOW(ux_sign_transaction_deploy_flow,
         &ux_sign_transaction_intro,
         &ux_sign_transaction_deploy,
         &ux_sign_transaction_address,
-        &ux_sign_transaction_accept,
-        &ux_sign_transaction_reject);
+        &ux_display_approve_step,
+        &ux_display_reject_step);
 
 UX_FLOW(ux_sign_transaction_confirm_flow,
         &ux_sign_transaction_intro,
         &ux_sign_transaction_confirm,
         &ux_sign_transaction_transaction_id,
-        &ux_sign_transaction_accept,
-        &ux_sign_transaction_reject);
+        &ux_display_approve_step,
+        &ux_display_reject_step);
 
 UX_FLOW(ux_sign_transaction_transfer_flow,
         &ux_sign_transaction_intro,
         &ux_sign_transaction_transfer,
         &ux_sign_transaction_amount,
         &ux_sign_transaction_address,
-        &ux_sign_transaction_accept,
-        &ux_sign_transaction_reject);
+        &ux_display_approve_step,
+        &ux_display_reject_step);
 
 // Display functions
 void ui_display_address() {

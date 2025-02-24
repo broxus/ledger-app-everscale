@@ -36,7 +36,7 @@ def run_test(
             navigate_until_text_and_compare(
                 backend.firmware,
                 navigator,
-                "Accept",
+                "Approve",
                 default_screenshot_path,
                 test_name,
             )

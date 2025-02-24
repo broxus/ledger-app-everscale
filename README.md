@@ -4,7 +4,9 @@
   </a>
 </p>
 
-![Build Status](https://github.com/broxus/ledger-app-everscale/actions/workflows/ci.yml/badge.svg?branch=master)
+[![Ensure compliance with Ledger guidelines](https://github.com/blooo-io/app-everscale/actions/workflows/guidelines_enforcer.yml/badge.svg)](https://github.com/blooo-io/app-everscale/actions/workflows/guidelines_enforcer.yml)
+
+[![Build and run functional tests using ragger through reusable workflow](https://github.com/blooo-io/app-everscale/actions/workflows/build_and_functional_tests.yml/badge.svg)](https://github.com/blooo-io/app-everscale/actions/workflows/build_and_functional_tests.yml)
 
 # Everscale app for Ledger Wallet
 
@@ -13,188 +15,207 @@
 This app adds support for the Everscale tokens to Ledger hardware wallets.
 
 Current Features:
+
 - Pubkey queries
 - Address queries
 - Sign transaction hash
-- Parse, display and sign Everscale transaction 
+- Parse, display and sign Everscale transaction
 
-## Build and load application
-* [Install Docker](https://docs.docker.com/get-docker/)
-* For Linux hosts, install the Ledger [udev rules](https://github.com/LedgerHQ/udev-rules)
+## Quick start guide
 
-1. Pull the default image
-```
-docker pull ghcr.io/ledgerhq/ledger-app-builder/ledger-app-builder:latest
-```
+### With VSCode
 
-2. Compile your app in the container
-* For Nano S
-```bash
-$ docker run --rm -ti -v "$(realpath .):/app" --user $(id -u $USER):$(id -g $USER) ghcr.io/ledgerhq/ledger-app-builder/ledger-app-builder:latest
-root@656be163fe84:/app# BOLOS_SDK=$NANOS_SDK make
-```
+You can quickly setup a convenient environment to build and test your application
+by using [Ledger's VSCode developer tools extension](https://marketplace.visualstudio.com/items?itemName=LedgerHQ.ledger-dev-tools)
+which leverages the [ledger-app-dev-tools](https://github.com/LedgerHQ/ledger-app-builder/pkgs/container/ledger-app-builder%2Fledger-app-dev-tools)
+docker image.
 
-* For Nano X
-```bash
-$ docker run --rm -ti -v "$(realpath .):/app" --user $(id -u $USER):$(id -g $USER) ghcr.io/ledgerhq/ledger-app-builder/ledger-app-builder:latest
-root@656be163fe84:/app# BOLOS_SDK=$NANOX_SDK make
-```
+It will allow you, whether you are developing on macOS, Windows or Linux to quickly **build** your apps,
+**test** them on **Speculos** and **load** them on any supported device.
 
-* For Nano S+
-```bash
-$ docker run --rm -ti -v "$(realpath .):/app" --user $(id -u $USER):$(id -g $USER) ghcr.io/ledgerhq/ledger-app-builder/ledger-app-builder:latest
-root@656be163fe84:/app# BOLOS_SDK=$NANOSP_SDK make
-```
+- Install and run [Docker](https://www.docker.com/products/docker-desktop/).
+- Make sure you have an X11 server running :
+  - On Ubuntu Linux, it should be running by default.
+  - On macOS, install and launch [XQuartz](https://www.xquartz.org/)
+    (make sure to go to XQuartz > Preferences > Security and check "Allow client connections").
+  - On Windows, install and launch [VcXsrv](https://sourceforge.net/projects/vcxsrv/)
+    (make sure to configure it to disable access control).
+- Install [VScode](https://code.visualstudio.com/download) and add [Ledger's extension](https://marketplace.visualstudio.com/items?itemName=LedgerHQ.ledger-dev-tools).
+- Open a terminal and clone `app-everscale` with `git clone git@github.com:blooo-io/app-everscale.git`.
+- Open the `app-everscale` folder with VSCode.
+- Use Ledger extension's sidebar menu or open the tasks menu with `ctrl + shift + b`
+  (`command + shift + b` on a Mac) to conveniently execute actions :
+  - Build the app for the device model of your choice with `Build`.
+  - Test your binary on [Speculos](https://github.com/LedgerHQ/speculos) with `Run with Speculos`.
+  - You can also run functional tests, load the app on a physical device, and more.
 
-3. Code static analysis
-The Docker images include the [Clang Static Analyzer](https://clang-analyzer.llvm.org/), which can be invoked with:
-```bash
-$ docker run --rm -ti -v "$(realpath .):/app" --user $(id -u $USER):$(id -g $USER) ghcr.io/ledgerhq/ledger-app-builder/ledger-app-builder:latest
-root@656be163fe84:/app# BOLOS_SDK=$NANOS_SDK make scan-build
-```
+:information_source: The terminal tab of VSCode will show you what commands the extension runs behind the scene.
 
-4. Load the app on a physical device
+### With a terminal
 
-:warning: Only Nano S and Nano S+ devices allow application side-loading. This section will not work with a Nano X.
+The [ledger-app-dev-tools](https://github.com/LedgerHQ/ledger-app-builder/pkgs/container/ledger-app-builder%2Fledger-app-dev-tools)
+docker image contains all the required tools and libraries to **build**, **test** and **load** an application.
 
-To load the app from the container, you will need additional docker arguments in order to allow Docker to access your USB port.
-Your physical device must be connected, unlocked and the screen showing the dashboard (not inside an application). Same as for compilation, `BOLOS_SDK` variable is used to specify the target device. Use the following docker command to load the app (here for Nano S device) :
+You can download it from the ghcr.io docker repository:
 
-```bash
-$ docker run --rm -ti  -v "$(realpath .):/app" --privileged -v "/dev/bus/usb:/dev/bus/usb" --user $(id -u $USER):$(id -g $USER) ghcr.io/ledgerhq/ledger-app-builder/ledger-app-builder:latest
-root@656be163fe84:/app# BOLOS_SDK=$NANOS_SDK make load
+```shell
+sudo docker pull ghcr.io/ledgerhq/ledger-app-builder/ledger-app-dev-tools:latest
 ```
 
-## Fuzzing
+You can then enter this development environment by executing the following command
+from the directory of the application `git` repository:
 
-* Build docker image
-```bash
-cd fuzz && docker build -t ledger-app-fuzzer .
+#### Linux (Ubuntu)
+
+```shell
+sudo docker run --rm -ti --user "$(id -u):$(id -g)" --privileged -v "/dev/bus/usb:/dev/bus/usb" -v "$(realpath .):/app" ghcr.io/ledgerhq/ledger-app-builder/ledger-app-dev-tools:latest
 ```
 
-* Build fuzzer
-```bash
-docker run --rm -ti -v "$(realpath .):/app" ledger-app-fuzzer:latest
-root@72edae7503e3:/# cd /app/fuzz && ./build.sh
+#### macOS
+
+```shell
+sudo docker run  --rm -ti --user "$(id -u):$(id -g)" --privileged -v "$(pwd -P):/app" ghcr.io/ledgerhq/ledger-app-builder/ledger-app-dev-tools:latest
 ```
 
-* Run fuzzer
-```bash
-root@72edae7503e3:/app/fuzz/cmake-build-fuzz# cd cmake-build-fuzz && mkdir out && ./fuzzer
+#### Windows (with PowerShell)
+
+```shell
+docker run --rm -ti --privileged -v "$(Get-Location):/app" ghcr.io/ledgerhq/ledger-app-builder/ledger-app-dev-tools:latest
 ```
 
-## Example of Ledger wallet functionality
+The application's code will be available from inside the docker container,
+you can proceed to the following compilation steps to build your app.
 
-**Install Rust to compile client to interact with Everscale Ledger app**
-```bash
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+## Compilation and load
+
+To easily setup a development environment for compilation and loading on a physical device,
+you can use the [VSCode integration](#with-vscode) whether you are on Linux, macOS or Windows.
+
+If you prefer using a terminal to perform the steps manually, you can use the guide below.
+
+### Compilation
+
+Setup a compilation environment by following the [shell with docker approach](#with-a-terminal).
+
+From inside the container, use the following command to build the app :
+
+```shell
+make DEBUG=1  # compile optionally with PRINTF
 ```
 
-**List of Everscale wallets**
-```bash
-cargo run --manifest-path client/Cargo.toml get-wallets
+You can choose which device to compile and load for by setting the `BOLOS_SDK` environment variable
+to the following values :
+
+- `BOLOS_SDK=$NANOX_SDK`
+- `BOLOS_SDK=$NANOSP_SDK`
+- `BOLOS_SDK=$STAX_SDK`
+- `BOLOS_SDK=$FLEX_SDK`
+
+By default this variable is set to build/load for Nano S+.
+
+### Loading on a physical device
+
+This step will vary slightly depending on your platform.
+
+:information_source: Your physical device must be connected, unlocked and the screen showing the dashboard
+(not inside an application).
+
+#### Linux (Ubuntu)
+
+First make sure you have the proper udev rules added on your host :
+
+```shell
+# Run these commands on your host, from the app's source folder.
+sudo cp .vscode/20-ledger.ledgerblue.rules /etc/udev/rules.d/
+sudo udevadm control --reload-rules
+sudo udevadm trigger
 ```
 
-**Request public key**
-```bash
-cargo run --manifest-path client/Cargo.toml get-pubkey --account ${LEDGER_ACCOUNT_NUMBER}
+Then once you have [opened a terminal](#with-a-terminal) in the `app-builder` image and [built the app](#compilation-and-load)
+for the device you want, run the following command :
+
+```shell
+# Run this command from the app-builder container terminal.
+make load    # load the app on a Nano S+ by default
 ```
 
-```bash
-# Example
-cargo run --manifest-path client/Cargo.toml get-pubkey --account 0
+[Setting the BOLOS_SDK environment variable](#compilation-and-load) will allow you to load on whichever supported
+device you want.
+
+#### macOS / Windows (with PowerShell)
+
+:information_source: It is assumed you have [Python](https://www.python.org/downloads/) installed on your computer.
+
+Run these commands on your host from the app's source folder once you have [built the app](#compilation-and-load)
+for the device you want :
+
+```shell
+# Install Python virtualenv
+python3 -m pip install virtualenv
+# Create the 'ledger' virtualenv
+python3 -m virtualenv ledger
 ```
 
-**Request address**
-```bash
-cargo run --manifest-path client/Cargo.toml get-address --account ${LEDGER_ACCOUNT_NUMBER} --wallet ${WALLET_TYPE}
-# send some EVER's to the this address (about 1 should be enough)
+Enter the Python virtual environment
+
+- macOS : `source ledger/bin/activate`
+- Windows : `.\ledger\Scripts\Activate.ps1`
+
+```shell
+# Install Ledgerblue (tool to load the app)
+python3 -m pip install ledgerblue
+# Load the app.
+python3 -m ledgerblue.runScript --scp --fileName bin/app.apdu --elfFile bin/app.elf
 ```
 
-```bash
-# Example
-cargo run --manifest-path client/Cargo.toml get-address --account 0 --wallet EverWallet
+## Test
+
+The Everscale app comes with functional tests implemented with Ledger's [Ragger](https://github.com/LedgerHQ/ragger)
+test framework.
+
+### macOS / Windows
+
+To test your app on macOS or Windows, it is recommended to use [Ledger's VS Code extension](#with-vscode)
+to quickly setup a working test environment.
+
+You can use the following sequence of tasks and commands (all accessible in the **extension sidebar menu**) :
+
+- `Select build target`
+- `Build app`
+
+Then you can choose to execute the functional tests :
+
+- Use `Run tests`.
+
+Or simply run the app on the Speculos emulator :
+
+- `Run with Speculos`.
+
+### Linux (Ubuntu)
+
+On Linux, you can use [Ledger's VS Code extension](#with-vscode) to run the tests.
+If you prefer not to, open a terminal and follow the steps below.
+
+Install the tests requirements :
+
+```shell
+pip install -r tests/requirements.txt
 ```
 
-**Check balance**
-```bash
-cargo run --manifest-path client/Cargo.toml get-balance --account ${LEDGER_ACCOUNT_NUMBER} --wallet  ${WALLET_TYPE}
+Then you can :
+
+Run the functional tests (here for nanos+ but available for any device once you have built the binaries) :
+
+```shell
+pytest tests/ --tb=short -v --device nanosp
 ```
 
-```bash
-# Example
-cargo run --manifest-path client/Cargo.toml get-balance --account 0 --wallet EverWallet
-```
+Or run your app directly with Speculos
 
-**Deploy wallet**
-It only applies to Multisig wallets
-```bash
-cargo run --manifest-path client/Cargo.toml deploy --account ${LEDGER_ACCOUNT_NUMBER} -wallet ${WALLET_TYPE}
-```
-
-```bash
-# Example
-cargo run --manifest-path client/Cargo.toml deploy --account 0 --wallet Multisig2_1
-```
-
-**Send EVER transaction**
-```bash
-cargo run --manifest-path client/Cargo.toml send-transaction \
-    --account ${LEDGER_ACCOUNT_NUMBER} \
-    --wallet  ${WALLET_TYPE} \
-    --amount  ${AMOUNT} \
-    --address ${RECIPIENT_ADDRESS}
-```
-
-```bash
-# Example
-cargo run --manifest-path client/Cargo.toml send-transaction \
-    --account 0 \
-    --wallet Multisig2_1 \
-    --amount 0.1 \
-    --address 0:7094fc3cb69fa1b7bde8e830e2cd74bc9455d93561ce2c562182215686eb45e2
-```
-
-**Get list of supported tokens**
-```bash
-cargo run --manifest-path client/Cargo.toml get-tokens
-```
-
-**Check token balance**
-```bash
-cargo run --manifest-path client/Cargo.toml get-token-balance --account ${LEDGER_ACCOUNT_NUMBER} --wallet ${WALLET_TYPE} --token ${TOKEN_NAME}
-```
-
-```bash
-# Example
-cargo run --manifest-path client/Cargo.toml get-token-balance --account 0 --wallet EverWallet --token WEVER
-```
-
-**Send token transaction**
-```bash
-cargo run --manifest-path client/Cargo.toml send-token-transaction \
-    --account ${LEDGER_ACCOUNT_NUMBER} \
-    --wallet  ${WALLET_TYPE} \
-    --amount  ${AMOUNT} \
-    --address ${RECIPIENT_ADDRESS} \
-    --token   ${TOKEN_NAME}
-```
-
-```bash
-# Example
-cargo run --manifest-path client/Cargo.toml send-token-transaction \
-    --account 0 \
-    --wallet  EverWallet \
-    --amount  1.5 \
-    --address 0:ed7439e12d67d23fcaf701ff3bd4e30d390c1e8e14f6f40d52089590e28d9c70 \
-    --token   WEVER
-```
-
-## Tests
-Some tests require interactive approval on the ledger
-```bash
-cargo run --manifest-path tests/Cargo.toml
+```shell
+speculos --model nanosp build/nanos2/bin/app.elf
 ```
 
 ## Documentation
+
 This follows the specification available in the [`api.md`](doc/api.md)

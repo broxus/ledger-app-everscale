@@ -16,7 +16,7 @@ The application interface can be accessed over HID or BLE
 ## Command APDU
 
 | Field name | Length (bytes) | Description                                                           |
-| ---------- |----------------| --------------------------------------------------------------------- |
+| ---------- | -------------- | --------------------------------------------------------------------- |
 | CLA        | 1              | Instruction class - indicates the type of command                     |
 | INS        | 1              | Instruction code - indicates the specific command                     |
 | P1         | 1              | Instruction parameter 1 for the command                               |
@@ -37,7 +37,7 @@ _This command returns specific application configuration_
 ##### Command
 
 | _CLA_ | _INS_ | _P1_ | _P2_ | _Lc_ |  _CData_ |
-| ----- |:-----:| ---: | ---- |:----:|---------:|
+| ----- | :---: | ---: | ---- | :--: | -------: |
 | E0    |  01   |   00 | 00   |  00  | variable |
 
 ##### Input data
@@ -60,21 +60,20 @@ _This command returns a public key for the given account number_
 
 ##### Command
 
-| _CLA_ | _INS_ | _P1_                                                                             | _P2_ |   _Lc_   |   _CData_ |
-| ----- |:-----:|:---------------------------------------------------------------------------------|------| :------: |----------:|
-| E0    |  02   | 00 : return public key<br/>01 : display public key and confirm before returning  | 00   | variable |  variable |
+| _CLA_ | _INS_ | _P1_                                                                            | _P2_ |   _Lc_   |  _CData_ |
+| ----- | :---: | :------------------------------------------------------------------------------ | ---- | :------: | -------: |
+| E0    |  02   | 00 : return public key<br/>01 : display public key and confirm before returning | 00   | variable | variable |
 
 ##### Input data
 
-| _Description_                       | _Length_ |
-|-------------------------------------|:--------:|
-| An account number to retrieve       |    4     |
-
+| _Description_                 | _Length_ |
+| ----------------------------- | :------: |
+| An account number to retrieve |    4     |
 
 ##### Output data
 
 | _Description_ | _Length_ |
-| ------------- |:--------:|
+| ------------- | :------: |
 | Pubkey length |    1     |
 | Pubkey        |    32    |
 
@@ -89,20 +88,20 @@ To avoid blindly signing message hash the application adds a 4-byte prefix [0xFF
 ##### Command
 
 | _CLA_ | _INS_ | _P1_ | _P2_ |   _Lc_   |  _CData_ |
-| ----- |:-----:| ---: | ---- | :------: |---------:|
+| ----- | :---: | ---: | ---- | :------: | -------: |
 | E0    |  03   |   01 | 00   | variable | variable |
 
 ##### Input data
 
-| _Description_                            | _Length_ |
-|------------------------------------------|:--------:|
-| An account number to retrieve            |    4     |
-| A bytes to sign                          |    32    |
+| _Description_                 | _Length_ |
+| ----------------------------- | :------: |
+| An account number to retrieve |    4     |
+| A bytes to sign               |    32    |
 
 ##### Output data
 
 | _Description_    | _Length_ |
-|------------------| :------: |
+| ---------------- | :------: |
 | Signature length |    1     |
 | Signature        |    64    |
 
@@ -115,20 +114,20 @@ _This command returns an address for the given account number_
 ##### Command
 
 | _CLA_ | _INS_ | _P1_                                                                      | _P2_ |   _Lc_   |  _CData_ |
-| ----- |:-----:|:--------------------------------------------------------------------------|------| :------: |---------:|
+| ----- | :---: | :------------------------------------------------------------------------ | ---- | :------: | -------: |
 | E0    |  04   | 00 : return address<br/>01 : display address and confirm before returning | 00   | variable | variable |
 
 ##### Input data
 
 | _Description_                 | _Length_ |
-|-------------------------------|:--------:|
+| ----------------------------- | :------: |
 | An account number to retrieve |    4     |
 | Wallet number to retrieve     |    1     |
 
 ##### Output data
 
 | _Description_  | _Length_ |
-|----------------|:--------:|
+| -------------- | :------: |
 | Address length |    1     |
 | Address        |    32    |
 
@@ -140,14 +139,14 @@ _This command signs a transaction message_
 
 ##### Command
 
-| _CLA_ | _INS_ | _P1_ | _P2_ |   _Lc_   |        _CData_ |
-| ----- |:-----:| ---: | ---- | :------: |---------------:|
-| E0    |  05   |   01 | 0x01 (last chunk) <br> 0x02 (first chunk) <br> 0x00 (single chunk) <br> 0x03 (intermediate chunk) | variable |       variable |
+| _CLA_ | _INS_ | _P1_ | _P2_                                                                                              |   _Lc_   |  _CData_ |
+| ----- | :---: | ---: | ------------------------------------------------------------------------------------------------- | :------: | -------: |
+| E0    |  05   |   01 | 0x01 (last chunk) <br> 0x02 (first chunk) <br> 0x00 (single chunk) <br> 0x03 (intermediate chunk) | variable | variable |
 
 ##### Input data
 
 | _Description_                                                                  | _Length_ |
-|--------------------------------------------------------------------------------|:--------:|
+| ------------------------------------------------------------------------------ | :------: |
 | An account number to retrieve                                                  |    4     |
 | Original wallet number to derive address                                       |    1     |
 | Decimals                                                                       |    1     |
@@ -162,10 +161,24 @@ _This command signs a transaction message_
 
 ##### Output data
 
-| _Description_   | _Length_ |
-|-----------------| :------: |
-| Address length  |    1     |
-| Signature       |    64    |
+| _Description_  | _Length_ |
+| -------------- | :------: |
+| Address length |    1     |
+| Signature      |    64    |
+
+## Status Words
+
+The following standard Status Words are returned for all APDUs - some specific Status Words can be used for specific commands and are mentioned in the command description.
+
+##### Status Words
+
+| _SW_ |                   _Description_                   |
+| ---- | :-----------------------------------------------: |
+| 6700 |                 Incorrect length                  |
+| 6985 |                 Canceled by user                  |
+| 6B0x |                  Invalid request                  |
+| 6Fxx | Technical problem (Internal error, please report) |
+| 9000 |           Normal ending of the command            |
 
 ## Transport protocol
 
@@ -214,17 +227,3 @@ The application acts as a GATT server defining service UUID D973F2E0-B19E-11E2-9
 When using this service, the client sends requests to the characteristic D973F2E2-B19E-11E2-9E96-0800200C9A66, and gets notified on the characteristic D973F2E1-B19E-11E2-9E96-0800200C9A66 after registering for it.
 
 Requests are encoded using the standard BLE 20 bytes MTU size
-
-## Status Words
-
-The following standard Status Words are returned for all APDUs - some specific Status Words can be used for specific commands and are mentioned in the command description.
-
-##### Status Words
-
-| _SW_ |                   _Description_                    |
-| ---- |:--------------------------------------------------:|
-| 6700 |                  Incorrect length                  |
-| 6982 |  Security status not satisfied (Canceled by user)  |
-| 6B0x |                  Invalid request                   |
-| 6Fxx | Technical problem (Internal error, please report)  |
-| 9000 |            Normal ending of the command            |

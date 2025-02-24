@@ -62,19 +62,26 @@ UX_FLOW(ux_display_address_flow,
         &ux_display_address_flow_4_step);
 
 UX_STEP_NOCB(ux_display_public_flow_1_step,
+             pnn,
+             {
+                 &C_icon_eye,
+                 "Verify",
+                 "Public key",
+             });
+UX_STEP_NOCB(ux_display_public_flow_2_step,
              bnnn_paging,
              {
                  .title = "Public key",
                  .text = data_context.pk_context.public_key_str,
              });
-UX_STEP_CB(ux_display_public_flow_2_step,
+UX_STEP_CB(ux_display_public_flow_3_step,
            pb,
            (*g_validate_callback)(false),
            {
                &C_icon_crossmark,
                "Reject",
            });
-UX_STEP_CB(ux_display_public_flow_3_step,
+UX_STEP_CB(ux_display_public_flow_4_step,
            pb,
            (*g_validate_callback)(true),
            {
@@ -85,7 +92,8 @@ UX_STEP_CB(ux_display_public_flow_3_step,
 UX_FLOW(ux_display_public_flow,
         &ux_display_public_flow_1_step,
         &ux_display_public_flow_2_step,
-        &ux_display_public_flow_3_step);
+        &ux_display_public_flow_3_step,
+        &ux_display_public_flow_4_step);
 
 UX_STEP_NOCB(ux_sign_flow_1_step,
              pnn,

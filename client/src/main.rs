@@ -1,6 +1,6 @@
 use bigdecimal::BigDecimal;
+use std::rc::Rc;
 use std::str::FromStr;
-use std::sync::Arc;
 
 use bigdecimal::num_bigint::ToBigInt;
 use clap::Parser;
@@ -224,7 +224,7 @@ impl Token {
     }
 }
 
-fn get_ledger() -> (Arc<LedgerWallet>, PublicKey) {
+fn get_ledger() -> (Rc<LedgerWallet>, PublicKey) {
     let wallet_manager = initialize_wallet_manager().expect("Couldn't start wallet manager");
 
     // Update device list
@@ -523,7 +523,8 @@ async fn main() -> anyhow::Result<()> {
             match contract {
                 Some(contract) => {
                     let mut balance =
-                        Decimal::from_u128(contract.account.storage.balance.grams.as_u128()).trust_me();
+                        Decimal::from_u128(contract.account.storage.balance.grams.as_u128())
+                            .trust_me();
                     balance.set_scale(EVER_DECIMALS as u32)?;
                     println!("Balance: {} EVER", balance);
                 }

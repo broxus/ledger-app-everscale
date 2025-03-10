@@ -29,3 +29,7 @@ nekoton = { git = "https://github.com/broxus/nekoton.git", default-features = fa
 nekoton-abi = { git = "https://github.com/broxus/nekoton.git" }
 nekoton-utils = { git = "https://github.com/broxus/nekoton.git" }
 nekoton-contracts = { git = "https://github.com/broxus/nekoton.git" }
+
+[dev-dependencies]
+base64 = "0.22"
+serial_test = "3.2.0"

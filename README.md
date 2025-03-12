@@ -219,3 +219,48 @@ speculos --model nanosp build/nanos2/bin/app.elf
 ## Documentation
 
 This follows the specification available in the [`api.md`](doc/api.md)
+
+## Building the application
+
+### Prerequisites
+
+- Install [Node.js](https://nodejs.org) (lts version)
+- Install [Docker](https://docs.docker.com/get-docker/)
+- Setup the Ledger development environment by following the [official documentation](https://developers.ledger.com/docs/nano-app/introduction/)
+- Make sure the Ledger SDK environment variable is properly set:
+  ```
+  export BOLOS_SDK=/path/to/your/sdk
+  ```
+
+### Building
+
+This application can be built in two variants:
+
+- **Everscale** (default)
+- **Venom**
+
+#### Building the Everscale variant (default)
+
+```bash
+# Build with default configuration (Everscale)
+make
+
+# Or explicitly specify Everscale
+make COIN=EVER
+```
+
+#### Building the Venom variant
+
+```bash
+# Build the Venom variant
+make COIN=VENOM
+```
+
+### Loading the application on your device
+
+```bash
+# Connect your Ledger device and run
+make load
+```
+
+When building the application, the appropriate icons and application name will be used based on the selected variant.

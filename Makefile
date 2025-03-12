@@ -25,7 +25,11 @@ include $(BOLOS_SDK)/Makefile.defines
 #        Mandatory configuration       #
 ########################################
 # Application name
+ifeq ($(COIN),VENOM)
+APPNAME = "Venom"
+else
 APPNAME = "Everscale"
+endif
 
 APP_LOAD_FLAGS=--appFlags 0x200
 
@@ -40,10 +44,17 @@ APP_SOURCE_PATH += src
 
 # Application icons following guidelines:
 # https://developers.ledger.com/docs/embedded-app/design-requirements/#device-icon
+ifeq ($(COIN),VENOM)
+ICON_NANOX = icons/app_venom_14px.gif
+ICON_NANOSP = icons/app_venom_14px.gif
+ICON_STAX = icons/app_venom_32px.gif
+ICON_FLEX = icons/app_venom_40px.gif
+else
 ICON_NANOX = icons/app_everscale_14px.gif
 ICON_NANOSP = icons/app_everscale_14px.gif
 ICON_STAX = icons/app_everscale_32px.gif
 ICON_FLEX = icons/app_everscale_40px.gif
+endif
 
 # Application allowed derivation curves.
 # Possibles curves are: secp256k1, secp256r1, ed25519 and bls12381g1
@@ -67,7 +78,9 @@ PATH_APP_LOAD_PARAMS = "44'/396'"   # purpose=coin(44) / coin_type=Testnet(1)
 #   * It must at least contains one value.
 #   * Values can be the app ticker or anything else but should be unique.
 VARIANT_PARAM = COIN
-VARIANT_VALUES = EVER
+
+
+VARIANT_VALUES = EVER VENOM
 
 # Enabling DEBUG flag will enable PRINTF and disable optimizations
 DEBUG = 1

@@ -36,7 +36,7 @@ APP_LOAD_FLAGS=--appFlags 0x200
 # Application version
 APPVERSION_M = 1
 APPVERSION_N = 1
-APPVERSION_P = 0
+APPVERSION_P = 1
 APPVERSION = "$(APPVERSION_M).$(APPVERSION_N).$(APPVERSION_P)"
 
 # Application source files
@@ -80,7 +80,11 @@ PATH_APP_LOAD_PARAMS = "44'/396'"   # purpose=coin(44) / coin_type=Testnet(1)
 VARIANT_PARAM = COIN
 
 
-VARIANT_VALUES = EVER VENOM
+ifeq ($(COIN),VENOM)
+VARIANT_VALUES = VENOM
+else
+VARIANT_VALUES = EVER
+endif
 
 # Enabling DEBUG flag will enable PRINTF and disable optimizations
 DEBUG = 1

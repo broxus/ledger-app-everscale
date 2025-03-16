@@ -305,3 +305,33 @@ fn ledger_sign_large_transaction() -> anyhow::Result<()> {
 
     Ok(())
 }
+
+#[test]
+#[serial]
+fn ledger_many_msig_custodians_transaction() -> anyhow::Result<()> {
+    // Multisig with 15 custodians
+    let boc = base64::engine::general_purpose::STANDARD
+        .decode("te6ccgECHwEAApQAAmuzuttTXRuI0OTWDTFlZ7FEhWjvr98hhG7NC6AuOtq/lwAAAMrQsOrKM+uyhxXYd8eAAAAHwGACAQAIAAAAAQIDzkAQAwIBIAkEAgEgBgUAQUYLBilvnAvo1CkFGNMQGOqQO13kBQQZKVO/Yx8ei1a5KAIBIAgHAEEULBilvnAvo1CkFGNMQGOqQO13kBQQZKVO/Yx8ei1a5KAAQRAsGKW+cC+jUKQUY0xAY6pA7XeQFBBkpU79jHx6LVrkoAIBIA0KAgEgDAsAQQwsGKW+cC+jUKQUY0zAY6pA7XeQFBBkpU79jHy6LVrAoABBCCwYpb5wL6NQpBRfTEBjqkDtd5AUEGSlTv2MfLotWsCgAgEgDw4AQQQsGKW+cC+jUKQUX0yAY6pA7XeQFBBkpU79jHy6LVrAoABBJuwYpb5wL6NQpBRfTMBjqkDtd5AUEGSlTv2MfLotWsCgAgEgGBECASAVEgIBIBQTAEEi7BilvnAvo1CkFF9MwGOoQO13kBQQZKVO/Yx8ui1awKAAQR7sGKW+cC+jUKQUX0zAY6oA7XeQFBBkpU79jHy6LVrAoAIBIBcWAEEa7BilvnAvo1CkFF9MwGOoQO13kBQQZKVO/Yx8ui1awuAAQRbsGKW+cC+jUKQUX0zAY6pA7XeQFBBkpU79jHy6LVrC4AIBIBwZAgEgGxoAQRLsGKW+cC+jUKQUX0zAY6pA7XeQFBBkpU79jHy6LVrC4ABBDuwYpb5wL6NQpBRfTMBjqkDtd5AUEGSlTv2MfLotWsLgAgEgHh0AQQrsGKW+cC+jUKQUX0zAY6pA7XeQFBBkpU79jHy6LVrC4ABBBuwYpb5wL6NQpBRfTMBjqkDtd5AUEGSlTv2MfLotWsLg")?;
+
+    let cell = ton_types::deserialize_tree_of_cells(&mut boc.as_slice())?;
+
+    let message_hash = cell.repr_hash();
+
+    let (ledger, _) = get_ledger();
+
+    let account = 0;
+    let wallet_type = WalletType::SafeMultisig;
+
+    // Get public key
+    let public_key = ledger.get_pubkey(account, false)?;
+
+    let meta = SignTransactionMeta::default();
+
+    let signature =
+        ledger.sign_transaction(account, wallet_type, EVER_DECIMALS, EVER_TICKER, meta, &boc)?;
+    assert!(public_key
+        .verify(message_hash.as_slice(), &signature)
+        .is_ok());
+
+    Ok(())
+}

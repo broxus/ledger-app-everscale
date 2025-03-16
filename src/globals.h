@@ -34,7 +34,7 @@
 
 #define WALLET_ID 0x4BA92D8A
 
-#define MAX_CONTRACT_CELLS_COUNT      7
+#define MAX_CONTRACT_CELLS_COUNT      16
 #define HASHES_BUFFER_SIZE            (MAX_CONTRACT_CELLS_COUNT * HASH_SIZE)
 #define MAX_PUBLIC_KEY_CELL_DATA_SIZE 36  // label(3) + public key(32) + tag(1)
 

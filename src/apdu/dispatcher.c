@@ -99,7 +99,7 @@ int apdu_dispatcher(const command_t* cmd, volatile unsigned int* flags) {
             return handleSign(&buf, flags);
 
         case INS_SIGN_TRANSACTION:
-            if (cmd->p1 != P1_CONFIRM || (cmd->p2 < 0 || cmd->p2 > 3)) {
+            if (cmd->p1 != P1_CONFIRM || cmd->p2 > 3) {
                 return io_send_sw(ERR_WRONG_P1P2);
             }
 

@@ -238,6 +238,7 @@ This application can be built in two variants:
 
 - **Everscale** (default)
 - **Venom**
+- **Hamster Network**
 
 #### Building the Everscale variant (default)
 
@@ -254,6 +255,13 @@ make COIN=EVER
 ```bash
 # Build the Venom variant
 make COIN=VENOM
+```
+
+#### Building the Hamster Network variant
+
+```bash
+# Build the Hamster Network variant
+make COIN=HAMSTER
 ```
 
 ### Loading the application on your device

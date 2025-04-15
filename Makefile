@@ -27,6 +27,8 @@ include $(BOLOS_SDK)/Makefile.defines
 # Application name
 ifeq ($(COIN),VENOM)
 APPNAME = "Venom"
+else ifeq ($(COIN),HAMSTER)
+APPNAME = "Hamster Network"
 else
 APPNAME = "Everscale"
 endif
@@ -49,6 +51,11 @@ ICON_NANOX = icons/app_venom_14px.gif
 ICON_NANOSP = icons/app_venom_14px.gif
 ICON_STAX = icons/app_venom_32px.gif
 ICON_FLEX = icons/app_venom_40px.gif
+else ifeq ($(COIN),HAMSTER)
+ICON_NANOX = icons/app_hamster_14px.gif
+ICON_NANOSP = icons/app_hamster_14px.gif
+ICON_STAX = icons/app_hamster_32px.gif
+ICON_FLEX = icons/app_hamster_40px.gif
 else
 ICON_NANOX = icons/app_everscale_14px.gif
 ICON_NANOSP = icons/app_everscale_14px.gif
@@ -82,6 +89,8 @@ VARIANT_PARAM = COIN
 
 ifeq ($(COIN),VENOM)
 VARIANT_VALUES = VENOM
+else ifeq ($(COIN),HAMSTER)
+VARIANT_VALUES = HAMSTER
 else
 VARIANT_VALUES = EVER
 endif

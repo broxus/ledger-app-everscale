@@ -1,7 +1,4 @@
-#include "os.h"
-#include "cx.h"
 #include "utils.h"
-#include "menu.h"
 
 #include <stdlib.h>
 

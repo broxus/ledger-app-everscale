@@ -2,13 +2,14 @@
 #define _UTILS_H_
 
 #include "os.h"
-#include "cx.h"
 #include "globals.h"
 
 #include <stdint.h>
 #include <stdbool.h>
 
 #ifndef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
+
+#include "cx.h"
 
 int get_public_key(uint32_t accountNumber, uint8_t* publicKeyArray);
 int get_private_key(uint32_t accountNumber, cx_ecfp_private_key_t* privateKey);

@@ -4,6 +4,7 @@
 #include "ui/action/validate.h"
 #include "ui/menu.h"
 #include "nbgl_use_case.h"
+#include "icon_nbgl.h"
 
 static nbgl_contentTagValue_t pairs[10];
 static nbgl_contentTagValueList_t pairList;
@@ -52,7 +53,7 @@ static void review_choice_message(bool choice) {
 void ui_display_address() {
     nbgl_useCaseAddressReview(data_context.addr_context.address_str,
                               NULL,
-                              &C_app_everscale_64px,
+                              &ICON_APP,
                               "Verify Address",
                               NULL,
                               review_choice_address);
@@ -78,18 +79,11 @@ void ui_display_public_key() {
     // Setup the review screen
     nbgl_useCaseReviewLight(TYPE_OPERATION,
                             &content,
-                            &C_app_everscale_64px,
+                            &ICON_APP,
                             "Verify Public Key",
                             NULL,  // No subtitle
                             "Approve",
                             review_choice_pubkey);
-
-    // nbgl_useCaseAddressReview(data_context.pk_context.public_key_str,
-    //                           NULL,
-    //                           &C_app_everscale_40px,
-    //                           "Verify Public Key",
-    //                           NULL,
-    //                           review_choice_pubkey);
 }
 
 void ui_display_sign_transaction(int flow) {
@@ -148,7 +142,7 @@ void ui_display_sign_transaction(int flow) {
     // Setup the review screen
     nbgl_useCaseReview(TYPE_TRANSACTION,
                        &pairList,
-                       &C_app_everscale_64px,
+                       &ICON_APP,
                        "Review transaction",
                        NULL,  // No subtitle
                        "Review transaction",
@@ -171,7 +165,7 @@ void ui_display_sign() {
     // Setup the review screen
     nbgl_useCaseReview(TYPE_MESSAGE,
                        &pairList,
-                       &C_app_everscale_64px,
+                       &ICON_APP,
                        "Sign message",
                        NULL,  // No subtitle
                        "Sign message.",

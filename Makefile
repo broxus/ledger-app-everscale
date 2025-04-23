@@ -79,12 +79,15 @@ PATH_APP_LOAD_PARAMS = "44'/396'"   # purpose=coin(44) / coin_type=Testnet(1)
 #   * Values can be the app ticker or anything else but should be unique.
 VARIANT_PARAM = COIN
 
-
 ifeq ($(COIN),VENOM)
 VARIANT_VALUES = VENOM
+VARIANT_ID = 1
 else
 VARIANT_VALUES = EVER
+VARIANT_ID = 2
 endif
+
+DEFINES += VARIANT_ID=$(VARIANT_ID)
 
 # Enabling DEBUG flag will enable PRINTF and disable optimizations
 DEBUG = 1

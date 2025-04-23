@@ -4,6 +4,7 @@
 #include "nbgl_content.h"
 #include "nbgl_use_case.h"
 #include "menu.h"
+#include "icon_nbgl.h"
 
 //  -----------------------------------------------------------
 //  --------------------- SETTINGS MENU -----------------------
@@ -27,7 +28,7 @@ void app_quit(void) {
 
 void ui_main_menu(void) {
     nbgl_useCaseHomeAndSettings(APPNAME,
-                                &C_app_everscale_64px,
+                                &ICON_APP,
                                 NULL,
                                 INIT_HOME_PAGE,
                                 NULL,

@@ -84,13 +84,6 @@ void ui_display_public_key() {
                             NULL,  // No subtitle
                             "Approve",
                             review_choice_pubkey);
-
-    // nbgl_useCaseAddressReview(data_context.pk_context.public_key_str,
-    //                           NULL,
-    //                           &C_app_everscale_64px,
-    //                           "Verify Public Key",
-    //                           NULL,
-    //                           review_choice_pubkey);
 }
 
 void ui_display_sign_transaction(int flow) {

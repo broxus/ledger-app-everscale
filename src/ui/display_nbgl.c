@@ -121,7 +121,7 @@ void ui_display_sign_transaction(int flow) {
 
     // Address line
     if (strcmp(action, "Transfer") == 0 || strcmp(action, "Deploy") == 0) {
-        pairs[pairIndex].item = "Address";
+        pairs[pairIndex].item = "To";
         pairs[pairIndex].value = (char*) data_context.sign_tr_context.address_str;
         pairIndex++;
     }

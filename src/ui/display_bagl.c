@@ -137,7 +137,7 @@ UX_STEP_NOCB(ux_sign_transaction_amount,
 UX_STEP_NOCB(ux_sign_transaction_address,
              bnnn_paging,
              {
-                 .title = "Address",
+                 .title = "To",
                  .text = data_context.sign_tr_context.address_str,
              });
 UX_STEP_NOCB(ux_sign_transaction_transaction_id,

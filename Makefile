@@ -27,6 +27,8 @@ include $(BOLOS_SDK)/Makefile.defines
 # Application name
 ifeq ($(COIN),VENOM)
 APPNAME = "Venom"
+else ifeq ($(COIN),TYCHO)
+APPNAME = "Tycho"
 else
 APPNAME = "Everscale"
 endif
@@ -49,6 +51,11 @@ ICON_NANOX = icons/app_venom_14px.gif
 ICON_NANOSP = icons/app_venom_14px.gif
 ICON_STAX = icons/app_venom_32px.gif
 ICON_FLEX = icons/app_venom_40px.gif
+else ifeq ($(COIN),TYCHO)
+ICON_NANOX = icons/app_tycho_14px.gif
+ICON_NANOSP = icons/app_tycho_14px.gif
+ICON_STAX = icons/app_tycho_32px.gif
+ICON_FLEX = icons/app_tycho_40px.gif
 else
 ICON_NANOX = icons/app_everscale_14px.gif
 ICON_NANOSP = icons/app_everscale_14px.gif
@@ -81,10 +88,13 @@ VARIANT_PARAM = COIN
 
 ifeq ($(COIN),VENOM)
 VARIANT_VALUES = VENOM
-VARIANT_ID = 1
+VARIANT_ID = 2
+else ifeq ($(COIN),TYCHO)
+VARIANT_VALUES = TYCHO
+VARIANT_ID = 3
 else
 VARIANT_VALUES = EVER
-VARIANT_ID = 2
+VARIANT_ID = 1
 endif
 
 DEFINES += VARIANT_ID=$(VARIANT_ID)

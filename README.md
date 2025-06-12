@@ -256,6 +256,13 @@ make COIN=EVER
 make COIN=VENOM
 ```
 
+#### Building the Tycho variant
+
+```bash
+# Build the Tycho variant
+make COIN=TYCHO
+```
+
 ### Loading the application on your device
 
 ```bash

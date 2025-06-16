@@ -135,7 +135,7 @@ _This command returns an address for the given account number_
 
 #### Description
 
-_This command signs a transaction message_
+_This command signs a transaction message_. You won't find any fees in the transaction structure because the Everscale blockchain has constant fees.
 
 ##### Command
 

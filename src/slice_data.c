@@ -66,7 +66,7 @@ uint8_t SliceData_get_bits(const struct SliceData_t* self, uint16_t offset, uint
         }
 
         ret = (ret >> (8 - r)) >> (8 - bits);
-        return (uint8_t)ret;
+        return (uint8_t) ret;
     }
 }
 
@@ -161,8 +161,7 @@ void SliceData_append(struct SliceData_t* self, uint8_t* in, uint16_t bits, bool
     uint16_t offset = self->data_window_start;
     if (offset % 8 == 0 || bytes == 0) {
         memcpy(self->data + offset / 8, in, bytes ? bytes : 1);
-    }
-    else {
+    } else {
         uint8_t shift = offset % 8;
         uint8_t first_data_byte = offset / 8;
         uint8_t prev = 0;

@@ -1,13 +1,10 @@
 use bigdecimal::BigDecimal;
+use std::rc::Rc;
 use std::str::FromStr;
-use std::sync::Arc;
 
 use bigdecimal::num_bigint::ToBigInt;
 use clap::Parser;
 use ed25519_dalek::{PublicKey, SIGNATURE_LENGTH};
-use everscale_ledger_wallet::ledger::{LedgerWallet, WalletType};
-use everscale_ledger_wallet::locator::Manufacturer;
-use everscale_ledger_wallet::remote_wallet::{initialize_wallet_manager, RemoteWallet};
 use nekoton::core::models::{Expiration, TokenWalletVersion};
 use nekoton::core::token_wallet::{RootTokenContractState, TokenWalletContractState};
 use nekoton::core::ton_wallet::{Gift, MultisigType, TransferAction, DEFAULT_WORKCHAIN};
@@ -22,6 +19,10 @@ use rust_decimal::Decimal;
 use ton_block::{AccountState, GetRepresentationHash, MsgAddressInt};
 use ton_types::{AccountId, SliceData, UInt256};
 use url::Url;
+
+use everscale_ledger_wallet::ledger::{LedgerWallet, SignTransactionMeta, WalletType};
+use everscale_ledger_wallet::locator::Manufacturer;
+use everscale_ledger_wallet::remote_wallet::{initialize_wallet_manager, RemoteWallet};
 
 const EVER_DECIMALS: u8 = 9;
 const EVER_TICKER: &str = "EVER";
@@ -223,7 +224,7 @@ impl Token {
     }
 }
 
-fn get_ledger() -> (Arc<LedgerWallet>, PublicKey) {
+fn get_ledger() -> (Rc<LedgerWallet>, PublicKey) {
     let wallet_manager = initialize_wallet_manager().expect("Couldn't start wallet manager");
 
     // Update device list
@@ -458,21 +459,21 @@ fn prepare_multisig_wallet_deploy(
 fn prepare_token_body(
     tokens: BigUint,
     owner: &MsgAddressInt,
-    destiantion: &MsgAddressInt,
+    destination: &MsgAddressInt,
 ) -> anyhow::Result<SliceData> {
     let payload: ton_types::Cell = Default::default();
 
     let (function_token, input_token) =
         MessageBuilder::new(tip3_1::token_wallet_contract::transfer())
             .arg(BigUint128(tokens)) // amount
-            .arg(destiantion) // recipient owner wallet
+            .arg(destination) // recipient owner wallet
             .arg(BigUint128(INITIAL_BALANCE.into())) // deployWalletValue
             .arg(owner) // remainingGasTo
             .arg(false) // notify
             .arg(payload) // payload
             .build();
 
-    Ok(function_token.encode_internal_input(&input_token)?.into())
+    SliceData::load_builder(function_token.encode_internal_input(&input_token)?)
 }
 
 #[tokio::main]
@@ -512,17 +513,18 @@ async fn main() -> anyhow::Result<()> {
                 AccountId::from(UInt256::from_be_bytes(&bytes)),
             )?;
 
-            let client = everscale_jrpc_client::JrpcClient::new(
+            let client = everscale_rpc_client::RpcClient::new(
                 vec![Url::parse(RPC_ENDPOINT)?],
-                everscale_jrpc_client::JrpcClientOptions::default(),
+                everscale_rpc_client::ClientOptions::default(),
             )
             .await?;
 
-            let contract = client.get_contract_state(&address).await?;
+            let contract = client.get_contract_state(&address, None).await?;
             match contract {
                 Some(contract) => {
                     let mut balance =
-                        Decimal::from_u128(contract.account.storage.balance.grams.0).trust_me();
+                        Decimal::from_u128(contract.account.storage.balance.grams.as_u128())
+                            .trust_me();
                     balance.set_scale(EVER_DECIMALS as u32)?;
                     println!("Balance: {} EVER", balance);
                 }
@@ -553,13 +555,13 @@ async fn main() -> anyhow::Result<()> {
                 AccountId::from(UInt256::from_be_bytes(&bytes)),
             )?;
 
-            let client = everscale_jrpc_client::JrpcClient::new(
+            let client = everscale_rpc_client::RpcClient::new(
                 vec![Url::parse(RPC_ENDPOINT)?],
-                everscale_jrpc_client::JrpcClientOptions::default(),
+                everscale_rpc_client::ClientOptions::default(),
             )
             .await?;
 
-            let contract = client.get_contract_state(&address).await?;
+            let contract = client.get_contract_state(&address, None).await?;
             match contract {
                 Some(contract) => match wallet_type {
                     WalletType::WalletV3 => {
@@ -571,14 +573,16 @@ async fn main() -> anyhow::Result<()> {
                             None,
                         )?;
 
+                        let meta = SignTransactionMeta::default();
+
                         let boc = ton_types::serialize_toc(&payload)?;
 
                         let signature = ledger.sign_transaction(
                             account,
                             wallet_type,
-                            wallet_type,
                             EVER_DECIMALS,
                             EVER_TICKER,
+                            meta,
                             &boc,
                         )?;
 
@@ -593,7 +597,7 @@ async fn main() -> anyhow::Result<()> {
                         let status = client
                             .send_message(
                                 signed_message.message,
-                                everscale_jrpc_client::SendOptions::default(),
+                                everscale_rpc_client::SendOptions::default(),
                             )
                             .await?;
 
@@ -611,12 +615,14 @@ async fn main() -> anyhow::Result<()> {
 
                         let boc = ton_types::serialize_toc(&payload)?;
 
+                        let meta = SignTransactionMeta::default();
+
                         let signature = ledger.sign_transaction(
                             account,
                             wallet_type,
-                            wallet_type,
                             EVER_DECIMALS,
                             EVER_TICKER,
+                            meta,
                             &boc,
                         )?;
 
@@ -631,7 +637,7 @@ async fn main() -> anyhow::Result<()> {
                         let status = client
                             .send_message(
                                 signed_message.message,
-                                everscale_jrpc_client::SendOptions::default(),
+                                everscale_rpc_client::SendOptions::default(),
                             )
                             .await?;
 
@@ -657,14 +663,16 @@ async fn main() -> anyhow::Result<()> {
                             None,
                         )?;
 
+                        let meta = SignTransactionMeta::default();
+
                         let boc = ton_types::serialize_toc(&payload)?;
 
                         let signature = ledger.sign_transaction(
                             account,
                             wallet_type,
-                            wallet_type,
                             EVER_DECIMALS,
                             EVER_TICKER,
+                            meta,
                             &boc,
                         )?;
 
@@ -679,7 +687,7 @@ async fn main() -> anyhow::Result<()> {
                         let status = client
                             .send_message(
                                 signed_message.message,
-                                everscale_jrpc_client::SendOptions::default(),
+                                everscale_rpc_client::SendOptions::default(),
                             )
                             .await?;
 
@@ -709,20 +717,20 @@ async fn main() -> anyhow::Result<()> {
                 AccountId::from(UInt256::from_be_bytes(&bytes)),
             )?;
 
-            let client = everscale_jrpc_client::JrpcClient::new(
+            let client = everscale_rpc_client::RpcClient::new(
                 vec![Url::parse(RPC_ENDPOINT)?],
-                everscale_jrpc_client::JrpcClientOptions::default(),
+                everscale_rpc_client::ClientOptions::default(),
             )
             .await?;
 
-            let contract = client.get_contract_state(&address).await?;
+            let contract = client.get_contract_state(&address, None).await?;
             match contract {
                 Some(_) => {
                     let token: Token = Token::from_str(&token)?;
                     let token_details = token.details();
 
                     let root_contract = client
-                        .get_contract_state(&token_details.root)
+                        .get_contract_state(&token_details.root, None)
                         .await?
                         .trust_me();
 
@@ -732,7 +740,7 @@ async fn main() -> anyhow::Result<()> {
                         &address,
                     )?;
 
-                    let token_contract = client.get_contract_state(&token_address).await?;
+                    let token_contract = client.get_contract_state(&token_address, None).await?;
                     match token_contract {
                         Some(token_contract) => {
                             let state = TokenWalletContractState(&token_contract);
@@ -788,17 +796,17 @@ async fn main() -> anyhow::Result<()> {
                 AccountId::from(UInt256::from_be_bytes(&bytes)),
             )?;
 
-            let client = everscale_jrpc_client::JrpcClient::new(
+            let client = everscale_rpc_client::RpcClient::new(
                 vec![Url::parse(RPC_ENDPOINT)?],
-                everscale_jrpc_client::JrpcClientOptions::default(),
+                everscale_rpc_client::ClientOptions::default(),
             )
             .await?;
 
-            let owner_contract = client.get_contract_state(&owner).await?;
+            let owner_contract = client.get_contract_state(&owner, None).await?;
             match owner_contract {
                 Some(owner_contract) => {
                     let root_contract = client
-                        .get_contract_state(&token_details.root)
+                        .get_contract_state(&token_details.root, None)
                         .await?
                         .trust_me();
                     let owner_token = RootTokenContractState(&root_contract).get_wallet_address(
@@ -819,14 +827,16 @@ async fn main() -> anyhow::Result<()> {
                                 Some(token_body),
                             )?;
 
+                            let meta = SignTransactionMeta::default();
+
                             let boc = ton_types::serialize_toc(&payload)?;
 
                             let signature = ledger.sign_transaction(
                                 account,
                                 wallet_type,
-                                wallet_type,
                                 token_details.decimals,
                                 token_details.ticker,
+                                meta,
                                 &boc,
                             )?;
 
@@ -841,7 +851,7 @@ async fn main() -> anyhow::Result<()> {
                             let status = client
                                 .send_message(
                                     signed_message.message,
-                                    everscale_jrpc_client::SendOptions::default(),
+                                    everscale_rpc_client::SendOptions::default(),
                                 )
                                 .await?;
 
@@ -857,14 +867,16 @@ async fn main() -> anyhow::Result<()> {
                                 Some(token_body),
                             )?;
 
+                            let meta = SignTransactionMeta::default();
+
                             let boc = ton_types::serialize_toc(&payload)?;
 
                             let signature = ledger.sign_transaction(
                                 account,
                                 wallet_type,
-                                wallet_type,
                                 token_details.decimals,
                                 token_details.ticker,
+                                meta,
                                 &boc,
                             )?;
 
@@ -879,7 +891,7 @@ async fn main() -> anyhow::Result<()> {
                             let status = client
                                 .send_message(
                                     signed_message.message,
-                                    everscale_jrpc_client::SendOptions::default(),
+                                    everscale_rpc_client::SendOptions::default(),
                                 )
                                 .await?;
 
@@ -907,14 +919,16 @@ async fn main() -> anyhow::Result<()> {
                                 Some(token_body),
                             )?;
 
+                            let meta = SignTransactionMeta::default();
+
                             let boc = ton_types::serialize_toc(&payload)?;
 
                             let signature = ledger.sign_transaction(
                                 account,
                                 wallet_type,
-                                wallet_type,
                                 token_details.decimals,
                                 token_details.ticker,
+                                meta,
                                 &boc,
                             )?;
 
@@ -929,7 +943,7 @@ async fn main() -> anyhow::Result<()> {
                             let status = client
                                 .send_message(
                                     signed_message.message,
-                                    everscale_jrpc_client::SendOptions::default(),
+                                    everscale_rpc_client::SendOptions::default(),
                                 )
                                 .await?;
 
@@ -966,13 +980,13 @@ async fn main() -> anyhow::Result<()> {
                 AccountId::from(UInt256::from_be_bytes(&bytes)),
             )?;
 
-            let client = everscale_jrpc_client::JrpcClient::new(
+            let client = everscale_rpc_client::RpcClient::new(
                 vec![Url::parse(RPC_ENDPOINT)?],
-                everscale_jrpc_client::JrpcClientOptions::default(),
+                everscale_rpc_client::ClientOptions::default(),
             )
             .await?;
 
-            let contract = client.get_contract_state(&address).await?;
+            let contract = client.get_contract_state(&address, None).await?;
             match contract {
                 Some(contract) => match wallet_type {
                     WalletType::WalletV3 | WalletType::EverWallet => {
@@ -992,14 +1006,16 @@ async fn main() -> anyhow::Result<()> {
                         let (payload, unsigned_message) =
                             prepare_multisig_wallet_deploy(pubkey, wallet_type)?;
 
+                        let meta = SignTransactionMeta::default();
+
                         let boc = ton_types::serialize_toc(&payload)?;
 
                         let signature = ledger.sign_transaction(
                             account,
                             wallet_type,
-                            wallet_type,
                             EVER_DECIMALS,
                             EVER_TICKER,
+                            meta,
                             &boc,
                         )?;
 
@@ -1014,7 +1030,7 @@ async fn main() -> anyhow::Result<()> {
                         let status = client
                             .send_message(
                                 signed_message.message,
-                                everscale_jrpc_client::SendOptions::default(),
+                                everscale_rpc_client::SendOptions::default(),
                             )
                             .await?;
 

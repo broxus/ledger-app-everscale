@@ -6,7 +6,7 @@ authors = ["Broxus team"]
 
 [dependencies]
 anyhow = "1.0"
-bigdecimal = "0.3.0"
+bigdecimal = "0.4.1"
 clap = { version = "4.0.18", features = ["derive"] }
 hex = "0.4.3"
 rust_decimal = "1"
@@ -19,7 +19,7 @@ ton_block = { git = "https://github.com/broxus/ton-labs-block" }
 ton_types = { git = "https://github.com/broxus/ton-labs-types" }
 
 # JRPC client
-everscale-jrpc-client = { git = "https://github.com/broxus/everscale-jrpc.git" }
+everscale-rpc-client = { git = "https://github.com/broxus/everscale-jrpc.git" }
 
 # Ledger wallet
 everscale-ledger-wallet = { git = "https://github.com/broxus/everscale-ledger-wallet.git" }
@@ -29,3 +29,7 @@ nekoton = { git = "https://github.com/broxus/nekoton.git", default-features = fa
 nekoton-abi = { git = "https://github.com/broxus/nekoton.git" }
 nekoton-utils = { git = "https://github.com/broxus/nekoton.git" }
 nekoton-contracts = { git = "https://github.com/broxus/nekoton.git" }
+
+[dev-dependencies]
+base64 = "0.22"
+serial_test = "3.2.0"

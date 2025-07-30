@@ -78,15 +78,13 @@ PATH_APP_LOAD_PARAMS = "44'/396'"
 #   * It must at least contains one value.
 #   * Values can be the app ticker or anything else but should be unique.
 VARIANT_PARAM = COIN
+VARIANT_VALUES = VENOM EVER
 
 ifeq ($(COIN),VENOM)
-VARIANT_VALUES = VENOM
 VARIANT_ID = 1
 else
-VARIANT_VALUES = EVER
 VARIANT_ID = 2
 endif
-
 DEFINES += VARIANT_ID=$(VARIANT_ID)
 
 # Enabling DEBUG flag will enable PRINTF and disable optimizations

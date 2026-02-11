@@ -21,7 +21,6 @@
 #define AMOUNT_LENGHT         16
 #define TO_SIGN_LENGTH        32
 #define SIGN_MAGIC_LENGTH     4
-#define CHAIN_ID_LENGTH       4
 #define SIGNATURE_LENGTH      64
 #define HASH_SIZE             32
 #define MAX_ROOTS_COUNT       1
@@ -41,7 +40,17 @@
 #define FLAG_WITH_WALLET_ID    0x01
 #define FLAG_WITH_WORKCHAIN_ID 0x02
 #define FLAG_WITH_ADDRESS      0x04
-#define FLAG_WITH_CHAIN_ID     0x08
+
+#define SIGN_MODE_MASK                0x18
+#define SIGN_MODE_SHIFT               3
+#define SIGN_MODE_EMPTY               0  // no prefix
+#define SIGN_MODE_SIGNATURE_ID        1  // prefix = global_id (4 bytes)
+#define SIGN_MODE_SIGNATURE_DOMAIN    2  // prefix = SHA256(0x0e1d571b_LE) (32 bytes)
+#define SIGN_MODE_SIGNATURE_DOMAIN_L2 3  // prefix = SHA256(0x71b34ee1_LE || global_id_LE) (32 bytes)
+
+#define GLOBAL_ID_LENGTH             4
+#define TL_TAG_SIGNATURE_DOMAIN      0x0e1d571b
+#define TL_TAG_SIGNATURE_DOMAIN_L2   0x71b34ee1
 
 void reset_app_context(void);
 
@@ -66,7 +75,6 @@ typedef struct PublicKeyContext_t {
 } PublicKeyContext_t;
 
 typedef struct SignContext_t {
-    uint8_t chain_id[CHAIN_ID_LENGTH];
     uint8_t to_sign[SIGN_MAGIC_LENGTH + TO_SIGN_LENGTH];
     uint8_t signature[SIGNATURE_LENGTH];
     uint32_t account_number;
@@ -74,9 +82,9 @@ typedef struct SignContext_t {
 } SignContext_t;
 
 typedef struct SignTransactionContext_t {
-    bool sign_with_chain_id;
-    uint8_t chain_id[CHAIN_ID_LENGTH];
-    uint8_t to_sign[CHAIN_ID_LENGTH + TO_SIGN_LENGTH];
+    uint8_t sign_mode;
+    uint8_t global_id[GLOBAL_ID_LENGTH];
+    uint8_t to_sign[HASH_SIZE + TO_SIGN_LENGTH];
     uint8_t signature[SIGNATURE_LENGTH];
     char address_str[70];
     char amount_str[40];

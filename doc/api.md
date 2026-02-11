@@ -152,11 +152,11 @@ _This command signs a transaction message_. You won't find any fees in the trans
 | Decimals                                                                       |    1     |
 | Ticker length                                                                  |    1     |
 | Ticker                                                                         | variable |
-| Metadata                                                                       |    1     |
-| Current wallet number to parse transaction abi (Optional: metadata b'00000001) |    1     |
-| Workchain ID (Optional: metadata b'00000010)                                   |    1     |
-| Deploy contract address (Optional: metadata b'00000100)                        |    32    |
-| Chain ID (Optional: metadata b'00001000)                                       |    4     |
+| Metadata (bits 0-2: flags, bits 3-4: sign mode)                                |    1     |
+| Current wallet number to parse transaction abi (Optional: metadata bit 0)      |    1     |
+| Workchain ID (Optional: metadata bit 1)                                        |    1     |
+| Deploy contract address (Optional: metadata bit 2)                             |    32    |
+| Global ID (Optional: sign mode = 01 or 11)                                     |    4     |
 | Serialized transaction                                                         | variable |
 
 ##### Output data

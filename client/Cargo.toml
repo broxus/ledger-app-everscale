@@ -7,7 +7,7 @@ authors = ["Broxus team"]
 [dependencies]
 anyhow = "1.0"
 bigdecimal = "0.4.1"
-clap = { version = "4.0.18", features = ["derive"] }
+clap = { version = "4.5", features = ["derive"] }
 hex = "0.4.3"
 rust_decimal = "1"
 tokio = { version = "1.21.2", features = ["sync", "rt-multi-thread", "macros"] }
@@ -25,11 +25,12 @@ everscale-rpc-client = { git = "https://github.com/broxus/everscale-jrpc.git" }
 everscale-ledger-wallet = { git = "https://github.com/broxus/everscale-ledger-wallet.git" }
 
 # Nekoton SDK
-nekoton = { git = "https://github.com/broxus/nekoton.git", default-features = false }
+nekoton = { git = "https://github.com/broxus/nekoton.git", features = ["wallet_core"] }
 nekoton-abi = { git = "https://github.com/broxus/nekoton.git" }
 nekoton-utils = { git = "https://github.com/broxus/nekoton.git" }
 nekoton-contracts = { git = "https://github.com/broxus/nekoton.git" }
 
 [dev-dependencies]
 base64 = "0.22"
+sha2 = "0.11.0-rc.5"
 serial_test = "3.2.0"

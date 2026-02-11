@@ -355,17 +355,59 @@ void prepare_payload_hash(BocContext_t* bc) {
         calc_cell_hash(cell, i);
     }
 
-    if (!data_context.sign_tr_context.sign_with_chain_id) {
-        memcpy(data_context.sign_tr_context.to_sign,
-               &bc->hashes[ROOT_CELL_INDEX * HASH_SIZE],
-               TO_SIGN_LENGTH);
-    } else {
-        memcpy(data_context.sign_tr_context.to_sign,
-               data_context.sign_tr_context.chain_id,
-               CHAIN_ID_LENGTH);
-        memcpy(data_context.sign_tr_context.to_sign + CHAIN_ID_LENGTH,
-               &bc->hashes[ROOT_CELL_INDEX * HASH_SIZE],
-               TO_SIGN_LENGTH);
+    switch (data_context.sign_tr_context.sign_mode) {
+        case SIGN_MODE_SIGNATURE_DOMAIN_L2: {
+            // SHA256(0x71b34ee1_LE || global_id_LE) || root_hash
+            uint8_t tl_buffer[GLOBAL_ID_LENGTH + GLOBAL_ID_LENGTH];
+            uint32_t tag = TL_TAG_SIGNATURE_DOMAIN_L2;
+            memcpy(tl_buffer, &tag, sizeof(tag));
+            memcpy(tl_buffer + sizeof(tag),
+                   data_context.sign_tr_context.global_id,
+                   GLOBAL_ID_LENGTH);
+
+            cx_hash_sha256(tl_buffer,
+                           sizeof(tl_buffer),
+                           data_context.sign_tr_context.to_sign,
+                           HASH_SIZE);
+
+            memcpy(data_context.sign_tr_context.to_sign + HASH_SIZE,
+                   &bc->hashes[ROOT_CELL_INDEX * HASH_SIZE],
+                   TO_SIGN_LENGTH);
+            break;
+        }
+        case SIGN_MODE_SIGNATURE_DOMAIN: {
+            // SHA256(0x0e1d571b_LE) || root_hash
+            uint8_t tl_buffer[GLOBAL_ID_LENGTH];
+            uint32_t tag = TL_TAG_SIGNATURE_DOMAIN;
+            memcpy(tl_buffer, &tag, sizeof(tag));
+
+            cx_hash_sha256(tl_buffer,
+                           sizeof(tl_buffer),
+                           data_context.sign_tr_context.to_sign,
+                           HASH_SIZE);
+
+            memcpy(data_context.sign_tr_context.to_sign + HASH_SIZE,
+                   &bc->hashes[ROOT_CELL_INDEX * HASH_SIZE],
+                   TO_SIGN_LENGTH);
+            break;
+        }
+        case SIGN_MODE_SIGNATURE_ID: {
+            // global_id(4) || root_hash
+            memcpy(data_context.sign_tr_context.to_sign,
+                   data_context.sign_tr_context.global_id,
+                   GLOBAL_ID_LENGTH);
+            memcpy(data_context.sign_tr_context.to_sign + GLOBAL_ID_LENGTH,
+                   &bc->hashes[ROOT_CELL_INDEX * HASH_SIZE],
+                   TO_SIGN_LENGTH);
+            break;
+        }
+        default: {
+            // Empty: root_hash only
+            memcpy(data_context.sign_tr_context.to_sign,
+                   &bc->hashes[ROOT_CELL_INDEX * HASH_SIZE],
+                   TO_SIGN_LENGTH);
+            break;
+        }
     }
 }
 

@@ -4,6 +4,7 @@ use std::str::FromStr;
 use base64::Engine;
 use ed25519_dalek::{Verifier, SIGNATURE_LENGTH};
 use everscale_ledger_wallet::ledger::{SignTransactionMeta, WalletType};
+use sha2::{Digest, Sha256};
 use everscale_ledger_wallet::remote_wallet::RemoteWallet;
 use nekoton::core::models::Expiration;
 use nekoton::core::utils::make_labs_unsigned_message;
@@ -19,6 +20,8 @@ use crate::utils::{
 };
 
 mod utils;
+
+const TL_TAG_SIGNATURE_DOMAIN: u32 = 0x0e1d571b;
 
 // This test requires interactive approval of message signing on the ledger.
 #[test]
@@ -96,7 +99,11 @@ fn ledger_sign_send_transaction() -> anyhow::Result<()> {
 
     let signature =
         ledger.sign_transaction(account, wallet_type, EVER_DECIMALS, EVER_TICKER, meta, &boc)?;
-    assert!(public_key.verify(message_hash, &signature).is_ok());
+
+    let prefix = Sha256::digest(TL_TAG_SIGNATURE_DOMAIN.to_le_bytes());
+    let mut to_verify = prefix.to_vec();
+    to_verify.extend_from_slice(message_hash);
+    assert!(public_key.verify(&to_verify, &signature).is_ok());
 
     Ok(())
 }
@@ -179,7 +186,11 @@ fn ledger_sign_send_token_transaction() -> anyhow::Result<()> {
 
     let signature =
         ledger.sign_transaction(account, wallet_type, USDT_DECIMALS, USDT_TICKER, meta, &boc)?;
-    assert!(public_key.verify(message_hash, &signature).is_ok());
+
+    let prefix = Sha256::digest(TL_TAG_SIGNATURE_DOMAIN.to_le_bytes());
+    let mut to_verify = prefix.to_vec();
+    to_verify.extend_from_slice(message_hash);
+    assert!(public_key.verify(&to_verify, &signature).is_ok());
 
     Ok(())
 }
@@ -209,9 +220,11 @@ fn ledger_sign_confirm_transaction() -> anyhow::Result<()> {
 
     let signature =
         ledger.sign_transaction(account, wallet_type, EVER_DECIMALS, EVER_TICKER, meta, &boc)?;
-    assert!(public_key
-        .verify(message_hash.as_slice(), &signature)
-        .is_ok());
+
+    let prefix = Sha256::digest(TL_TAG_SIGNATURE_DOMAIN.to_le_bytes());
+    let mut to_verify = prefix.to_vec();
+    to_verify.extend_from_slice(message_hash.as_slice());
+    assert!(public_key.verify(&to_verify, &signature).is_ok());
 
     Ok(())
 }
@@ -238,9 +251,11 @@ fn ledger_sign_submit_transaction() -> anyhow::Result<()> {
 
     let signature =
         ledger.sign_transaction(account, wallet_type, USDT_DECIMALS, USDT_TICKER, meta, &boc)?;
-    assert!(public_key
-        .verify(message_hash.as_slice(), &signature)
-        .is_ok());
+
+    let prefix = Sha256::digest(TL_TAG_SIGNATURE_DOMAIN.to_le_bytes());
+    let mut to_verify = prefix.to_vec();
+    to_verify.extend_from_slice(message_hash.as_slice());
+    assert!(public_key.verify(&to_verify, &signature).is_ok());
 
     Ok(())
 }
@@ -268,9 +283,11 @@ fn ledger_sign_burn_transaction() -> anyhow::Result<()> {
 
     let signature =
         ledger.sign_transaction(account, wallet_type, USDT_DECIMALS, USDT_TICKER, meta, &boc)?;
-    assert!(public_key
-        .verify(message_hash.as_slice(), &signature)
-        .is_ok());
+
+    let prefix = Sha256::digest(TL_TAG_SIGNATURE_DOMAIN.to_le_bytes());
+    let mut to_verify = prefix.to_vec();
+    to_verify.extend_from_slice(message_hash.as_slice());
+    assert!(public_key.verify(&to_verify, &signature).is_ok());
 
     Ok(())
 }
@@ -299,9 +316,11 @@ fn ledger_sign_large_transaction() -> anyhow::Result<()> {
 
     let signature =
         ledger.sign_transaction(account, wallet_type, EVER_DECIMALS, EVER_TICKER, meta, &boc)?;
-    assert!(public_key
-        .verify(message_hash.as_slice(), &signature)
-        .is_ok());
+
+    let prefix = Sha256::digest(TL_TAG_SIGNATURE_DOMAIN.to_le_bytes());
+    let mut to_verify = prefix.to_vec();
+    to_verify.extend_from_slice(message_hash.as_slice());
+    assert!(public_key.verify(&to_verify, &signature).is_ok());
 
     Ok(())
 }
@@ -309,29 +328,19 @@ fn ledger_sign_large_transaction() -> anyhow::Result<()> {
 #[test]
 #[serial]
 fn ledger_many_msig_custodians_transaction() -> anyhow::Result<()> {
-    // Multisig with 15 custodians
+    // Multisig with 15 custodians (too large transaction)
     let boc = base64::engine::general_purpose::STANDARD
         .decode("te6ccgECHwEAApQAAmuzuttTXRuI0OTWDTFlZ7FEhWjvr98hhG7NC6AuOtq/lwAAAMrQsOrKM+uyhxXYd8eAAAAHwGACAQAIAAAAAQIDzkAQAwIBIAkEAgEgBgUAQUYLBilvnAvo1CkFGNMQGOqQO13kBQQZKVO/Yx8ei1a5KAIBIAgHAEEULBilvnAvo1CkFGNMQGOqQO13kBQQZKVO/Yx8ei1a5KAAQRAsGKW+cC+jUKQUY0xAY6pA7XeQFBBkpU79jHx6LVrkoAIBIA0KAgEgDAsAQQwsGKW+cC+jUKQUY0zAY6pA7XeQFBBkpU79jHy6LVrAoABBCCwYpb5wL6NQpBRfTEBjqkDtd5AUEGSlTv2MfLotWsCgAgEgDw4AQQQsGKW+cC+jUKQUX0yAY6pA7XeQFBBkpU79jHy6LVrAoABBJuwYpb5wL6NQpBRfTMBjqkDtd5AUEGSlTv2MfLotWsCgAgEgGBECASAVEgIBIBQTAEEi7BilvnAvo1CkFF9MwGOoQO13kBQQZKVO/Yx8ui1awKAAQR7sGKW+cC+jUKQUX0zAY6oA7XeQFBBkpU79jHy6LVrAoAIBIBcWAEEa7BilvnAvo1CkFF9MwGOoQO13kBQQZKVO/Yx8ui1awuAAQRbsGKW+cC+jUKQUX0zAY6pA7XeQFBBkpU79jHy6LVrC4AIBIBwZAgEgGxoAQRLsGKW+cC+jUKQUX0zAY6pA7XeQFBBkpU79jHy6LVrC4ABBDuwYpb5wL6NQpBRfTMBjqkDtd5AUEGSlTv2MfLotWsLgAgEgHh0AQQrsGKW+cC+jUKQUX0zAY6pA7XeQFBBkpU79jHy6LVrC4ABBBuwYpb5wL6NQpBRfTMBjqkDtd5AUEGSlTv2MfLotWsLg")?;
-
-    let cell = ton_types::deserialize_tree_of_cells(&mut boc.as_slice())?;
-
-    let message_hash = cell.repr_hash();
 
     let (ledger, _) = get_ledger();
 
     let account = 0;
     let wallet_type = WalletType::SafeMultisig;
 
-    // Get public key
-    let public_key = ledger.get_pubkey(account, false)?;
-
     let meta = SignTransactionMeta::default();
 
-    let signature =
-        ledger.sign_transaction(account, wallet_type, EVER_DECIMALS, EVER_TICKER, meta, &boc)?;
-    assert!(public_key
-        .verify(message_hash.as_slice(), &signature)
-        .is_ok());
+    let res = ledger.sign_transaction(account, wallet_type, EVER_DECIMALS, EVER_TICKER, meta, &boc);
+    assert!(res.is_err()); // Invalid contract
 
     Ok(())
 }

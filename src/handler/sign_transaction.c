@@ -79,15 +79,14 @@ int handleSignTransaction(buffer_t* cdata,
             memcpy(context->prepend_address, context->address, ADDRESS_LENGTH);
         }
 
-        // Read chain id if present
-        if (metadata & FLAG_WITH_CHAIN_ID) {
-            context->sign_with_chain_id = true;
+        // Extract sign mode from metadata bits 3-4
+        context->sign_mode = (metadata & SIGN_MODE_MASK) >> SIGN_MODE_SHIFT;
 
-            VALIDATE(cdata->size >= cdata->offset + sizeof(context->chain_id), ERR_INVALID_REQUEST);
-            memcpy(context->chain_id, cdata->ptr + cdata->offset, CHAIN_ID_LENGTH);
-            cdata->offset += sizeof(context->chain_id);
-        } else {
-            context->sign_with_chain_id = false;
+        // Sign modes 1 and 3 carry a 4-byte global id
+        if (context->sign_mode & 1) {
+            VALIDATE(cdata->size >= cdata->offset + GLOBAL_ID_LENGTH, ERR_INVALID_REQUEST);
+            memcpy(context->global_id, cdata->ptr + cdata->offset, GLOBAL_ID_LENGTH);
+            cdata->offset += GLOBAL_ID_LENGTH;
         }
     }
     // cdata->offset is a pointer to cdata->ptr, or the number of bytes we moved. here +

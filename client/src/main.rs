@@ -5,14 +5,11 @@ use std::str::FromStr;
 use bigdecimal::num_bigint::ToBigInt;
 use clap::Parser;
 use ed25519_dalek::{PublicKey, SIGNATURE_LENGTH};
-use nekoton::core::models::{Expiration, TokenWalletVersion};
-use nekoton::core::token_wallet::{RootTokenContractState, TokenWalletContractState};
-use nekoton::core::ton_wallet::{Gift, MultisigType, TransferAction, DEFAULT_WORKCHAIN};
-use nekoton::crypto::UnsignedMessage;
 use nekoton::transport::models::ExistingContract;
 use nekoton_abi::num_bigint::BigUint;
 use nekoton_abi::{BigUint128, MessageBuilder};
 use nekoton_contracts::tip3_1;
+use nekoton_contracts::tip3_any::{RootTokenContractState, TokenWalletContractState, TokenWalletVersion};
 use nekoton_utils::{SimpleClock, TrustMe};
 use rust_decimal::prelude::{FromPrimitive, ToPrimitive};
 use rust_decimal::Decimal;
@@ -20,18 +17,22 @@ use ton_block::{AccountState, GetRepresentationHash, MsgAddressInt};
 use ton_types::{AccountId, SliceData, UInt256};
 use url::Url;
 
-use everscale_ledger_wallet::ledger::{LedgerWallet, SignTransactionMeta, WalletType};
+use everscale_ledger_wallet::ledger::{LedgerWallet, SignMode, SignTransactionMeta, WalletType};
 use everscale_ledger_wallet::locator::Manufacturer;
 use everscale_ledger_wallet::remote_wallet::{initialize_wallet_manager, RemoteWallet};
+use nekoton::core::ton_wallet::{Gift, MultisigType, TransferAction, DEFAULT_WORKCHAIN};
+use nekoton::crypto::UnsignedMessage;
+use nekoton::models::Expiration;
 
 const EVER_DECIMALS: u8 = 9;
 const EVER_TICKER: &str = "EVER";
 
 const DEFAULT_EXPIRATION_TIMEOUT: u32 = 60; // sec
-const INITIAL_BALANCE: u64 = 100_000_000; // 0.1 EVER
-const ATTACHED_AMOUNT: u64 = 500_000_000; // 0.5 EVER
+const INITIAL_BALANCE: u128 = 100_000_000; // 0.1 EVER
+const ATTACHED_AMOUNT: u128 = 500_000_000; // 0.5 EVER
 
-const RPC_ENDPOINT: &str = "https://extension-api.broxus.com/rpc";
+// const RPC_ENDPOINT: &str = "https://extension-api.broxus.com/rpc";
+const RPC_ENDPOINT: &str = "http://57.128.192.110:8080/rpc";
 
 #[derive(clap::Parser)]
 struct Args {
@@ -182,7 +183,7 @@ impl FromStr for Token {
 }
 
 impl Token {
-    fn details(&self) -> TokenDetails {
+    fn details(&self) -> TokenDetails<'_> {
         match *self {
             Token::Wever => TokenDetails {
                 ticker: "WEVER",
@@ -252,7 +253,7 @@ fn get_ledger() -> (Rc<LedgerWallet>, PublicKey) {
 
 fn prepare_wallet_v3_transfer(
     pubkey: PublicKey,
-    amount: u64,
+    amount: u128,
     destination: MsgAddressInt,
     contract: ExistingContract,
     body: Option<SliceData>,
@@ -304,7 +305,7 @@ fn prepare_wallet_v3_transfer(
 fn prepare_ever_wallet_transfer(
     pubkey: PublicKey,
     address: MsgAddressInt,
-    amount: u64,
+    amount: u128,
     destination: MsgAddressInt,
     contract: ExistingContract,
     body: Option<SliceData>,
@@ -353,7 +354,7 @@ fn prepare_ever_wallet_transfer(
 fn prepare_multisig_wallet_transfer(
     pubkey: PublicKey,
     address: MsgAddressInt,
-    amount: u64,
+    amount: u128,
     destination: MsgAddressInt,
     wallet_type: WalletType,
     body: Option<SliceData>,
@@ -540,7 +541,7 @@ async fn main() -> anyhow::Result<()> {
             address,
         } => {
             let amount = (Decimal::from_str(&amount)? * Decimal::from(1_000_000_000))
-                .to_u64()
+                .to_u128()
                 .trust_me();
             let destination = MsgAddressInt::from_str(&address)?;
 
@@ -734,8 +735,7 @@ async fn main() -> anyhow::Result<()> {
                         .await?
                         .trust_me();
 
-                    let token_address = RootTokenContractState(&root_contract).get_wallet_address(
-                        &SimpleClock,
+                    let token_address = RootTokenContractState(root_contract.as_context(&SimpleClock)).get_wallet_address(
                         TokenWalletVersion::Tip3,
                         &address,
                     )?;
@@ -743,9 +743,9 @@ async fn main() -> anyhow::Result<()> {
                     let token_contract = client.get_contract_state(&token_address, None).await?;
                     match token_contract {
                         Some(token_contract) => {
-                            let state = TokenWalletContractState(&token_contract);
+                            let state = TokenWalletContractState(token_contract.as_context(&SimpleClock));
                             let balance =
-                                state.get_balance(&SimpleClock, TokenWalletVersion::Tip3)?;
+                                state.get_balance(TokenWalletVersion::Tip3)?;
 
                             println!(
                                 "Balance: {} {}",
@@ -809,8 +809,7 @@ async fn main() -> anyhow::Result<()> {
                         .get_contract_state(&token_details.root, None)
                         .await?
                         .trust_me();
-                    let owner_token = RootTokenContractState(&root_contract).get_wallet_address(
-                        &SimpleClock,
+                    let owner_token = RootTokenContractState(root_contract.as_context(&SimpleClock)).get_wallet_address(
                         TokenWalletVersion::Tip3,
                         &owner,
                     )?;

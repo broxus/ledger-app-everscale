@@ -81,21 +81,25 @@ static int crypto_sign_transaction(void) {
     if (get_private_key(context->account_number, &privateKey) != 0) {
         return -1;
     }
-    if (!context->sign_with_chain_id) {
-        error = cx_eddsa_sign_no_throw(&privateKey,
-                                       CX_SHA512,
-                                       context->to_sign,
-                                       TO_SIGN_LENGTH,
-                                       context->signature,
-                                       SIGNATURE_LENGTH);
-    } else {
-        error = cx_eddsa_sign_no_throw(&privateKey,
-                                       CX_SHA512,
-                                       context->to_sign,
-                                       CHAIN_ID_LENGTH + TO_SIGN_LENGTH,
-                                       context->signature,
-                                       SIGNATURE_LENGTH);
+    size_t to_sign_len;
+    switch (context->sign_mode) {
+        case SIGN_MODE_EMPTY:
+            to_sign_len = TO_SIGN_LENGTH;
+            break;
+        case SIGN_MODE_SIGNATURE_ID:
+            to_sign_len = GLOBAL_ID_LENGTH + TO_SIGN_LENGTH;
+            break;
+        case SIGN_MODE_SIGNATURE_DOMAIN:
+        case SIGN_MODE_SIGNATURE_DOMAIN_L2:
+            to_sign_len = HASH_SIZE + TO_SIGN_LENGTH;
+            break;
     }
+    error = cx_eddsa_sign_no_throw(&privateKey,
+                                   CX_SHA512,
+                                   context->to_sign,
+                                   to_sign_len,
+                                   context->signature,
+                                   SIGNATURE_LENGTH);
     if (error != CX_OK) {
         return -2;
     }

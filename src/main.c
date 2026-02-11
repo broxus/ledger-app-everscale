@@ -76,7 +76,6 @@ void app_main(void) {
             CATCH_OTHER(e) {
                 PRINTF("=> exception: %d\n", e);
                 io_send_sw(e);
-                return;
             }
             FINALLY {
             }

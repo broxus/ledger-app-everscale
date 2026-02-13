@@ -41,16 +41,14 @@
 #define FLAG_WITH_WORKCHAIN_ID 0x02
 #define FLAG_WITH_ADDRESS      0x04
 
-#define SIGN_MODE_MASK                0x18
-#define SIGN_MODE_SHIFT               3
-#define SIGN_MODE_EMPTY               0  // no prefix
-#define SIGN_MODE_SIGNATURE_ID        1  // prefix = global_id (4 bytes)
-#define SIGN_MODE_SIGNATURE_DOMAIN    2  // prefix = SHA256(0x0e1d571b_LE) (32 bytes)
-#define SIGN_MODE_SIGNATURE_DOMAIN_L2 3  // prefix = SHA256(0x71b34ee1_LE || global_id_LE) (32 bytes)
+#define SIGN_MODE_MASK             0x18
+#define SIGN_MODE_SHIFT            3
+#define SIGN_MODE_EMPTY            0  // no prefix
+#define SIGN_MODE_SIGNATURE_ID     1  // prefix = global_id (4 bytes)
+#define SIGN_MODE_SIGNATURE_DOMAIN 2  // prefix = SHA256(0x71b34ee1 + global_id) (32 bytes)
 
-#define GLOBAL_ID_LENGTH             4
-#define TL_TAG_SIGNATURE_DOMAIN      0x0e1d571b
-#define TL_TAG_SIGNATURE_DOMAIN_L2   0x71b34ee1
+#define GLOBAL_ID_LENGTH           4
+#define TL_TAG_SIGNATURE_DOMAIN    0x71b34ee1
 
 void reset_app_context(void);
 

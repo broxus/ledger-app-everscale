@@ -5,11 +5,16 @@ use std::str::FromStr;
 use bigdecimal::num_bigint::ToBigInt;
 use clap::Parser;
 use ed25519_dalek::{PublicKey, SIGNATURE_LENGTH};
+use nekoton::core::ton_wallet::{Gift, MultisigType, TransferAction, DEFAULT_WORKCHAIN};
+use nekoton::crypto::UnsignedMessage;
+use nekoton::models::Expiration;
 use nekoton::transport::models::ExistingContract;
 use nekoton_abi::num_bigint::BigUint;
 use nekoton_abi::{BigUint128, MessageBuilder};
 use nekoton_contracts::tip3_1;
-use nekoton_contracts::tip3_any::{RootTokenContractState, TokenWalletContractState, TokenWalletVersion};
+use nekoton_contracts::tip3_any::{
+    RootTokenContractState, TokenWalletContractState, TokenWalletVersion,
+};
 use nekoton_utils::{SimpleClock, TrustMe};
 use rust_decimal::prelude::{FromPrimitive, ToPrimitive};
 use rust_decimal::Decimal;
@@ -20,9 +25,6 @@ use url::Url;
 use everscale_ledger_wallet::ledger::{LedgerWallet, SignMode, SignTransactionMeta, WalletType};
 use everscale_ledger_wallet::locator::Manufacturer;
 use everscale_ledger_wallet::remote_wallet::{initialize_wallet_manager, RemoteWallet};
-use nekoton::core::ton_wallet::{Gift, MultisigType, TransferAction, DEFAULT_WORKCHAIN};
-use nekoton::crypto::UnsignedMessage;
-use nekoton::models::Expiration;
 
 const EVER_DECIMALS: u8 = 9;
 const EVER_TICKER: &str = "EVER";
@@ -31,8 +33,7 @@ const DEFAULT_EXPIRATION_TIMEOUT: u32 = 60; // sec
 const INITIAL_BALANCE: u128 = 100_000_000; // 0.1 EVER
 const ATTACHED_AMOUNT: u128 = 500_000_000; // 0.5 EVER
 
-// const RPC_ENDPOINT: &str = "https://extension-api.broxus.com/rpc";
-const RPC_ENDPOINT: &str = "http://57.128.192.110:8080/rpc";
+const RPC_ENDPOINT: &str = "https://extension-api.broxus.com/rpc";
 
 #[derive(clap::Parser)]
 struct Args {
@@ -735,17 +736,16 @@ async fn main() -> anyhow::Result<()> {
                         .await?
                         .trust_me();
 
-                    let token_address = RootTokenContractState(root_contract.as_context(&SimpleClock)).get_wallet_address(
-                        TokenWalletVersion::Tip3,
-                        &address,
-                    )?;
+                    let token_address =
+                        RootTokenContractState(root_contract.as_context(&SimpleClock))
+                            .get_wallet_address(TokenWalletVersion::Tip3, &address)?;
 
                     let token_contract = client.get_contract_state(&token_address, None).await?;
                     match token_contract {
                         Some(token_contract) => {
-                            let state = TokenWalletContractState(token_contract.as_context(&SimpleClock));
-                            let balance =
-                                state.get_balance(TokenWalletVersion::Tip3)?;
+                            let state =
+                                TokenWalletContractState(token_contract.as_context(&SimpleClock));
+                            let balance = state.get_balance(TokenWalletVersion::Tip3)?;
 
                             println!(
                                 "Balance: {} {}",
@@ -809,10 +809,9 @@ async fn main() -> anyhow::Result<()> {
                         .get_contract_state(&token_details.root, None)
                         .await?
                         .trust_me();
-                    let owner_token = RootTokenContractState(root_contract.as_context(&SimpleClock)).get_wallet_address(
-                        TokenWalletVersion::Tip3,
-                        &owner,
-                    )?;
+                    let owner_token =
+                        RootTokenContractState(root_contract.as_context(&SimpleClock))
+                            .get_wallet_address(TokenWalletVersion::Tip3, &owner)?;
 
                     let token_body = prepare_token_body(amount, &owner, &destination)?;
 

@@ -3,8 +3,7 @@ use std::str::FromStr;
 
 use base64::Engine;
 use ed25519_dalek::{Verifier, SIGNATURE_LENGTH};
-use everscale_ledger_wallet::ledger::{SignTransactionMeta, WalletType};
-use sha2::{Digest, Sha256};
+use everscale_ledger_wallet::ledger::{SignMode, SignTransactionMeta, WalletType};
 use everscale_ledger_wallet::remote_wallet::RemoteWallet;
 use nekoton::core::models::Expiration;
 use nekoton::core::utils::make_labs_unsigned_message;
@@ -12,6 +11,7 @@ use nekoton::crypto::Signature;
 use nekoton_abi::{BigUint128, MessageBuilder};
 use nekoton_utils::{SimpleClock, TrustMe};
 use serial_test::serial;
+use sha2::{Digest, Sha256};
 use ton_block::MsgAddressInt;
 use ton_types::{AccountId, UInt256};
 
@@ -21,7 +21,7 @@ use crate::utils::{
 
 mod utils;
 
-const TL_TAG_SIGNATURE_DOMAIN: u32 = 0x0e1d571b;
+const TL_TAG_SIGNATURE_DOMAIN: u32 = 0x71b34ee1;
 
 // This test requires interactive approval of message signing on the ledger.
 #[test]
@@ -92,7 +92,8 @@ fn ledger_sign_send_transaction() -> anyhow::Result<()> {
     // Strip empty signature
     data.move_by(SIGNATURE_LENGTH * 8)?;
 
-    let meta = SignTransactionMeta::default();
+    let global_id: i32 = 42;
+    let meta = SignTransactionMeta::new(SignMode::SignatureDomain(global_id as u32), None, None);
 
     let cell = data.into_cell();
     let boc = ton_types::serialize_toc(&cell)?;
@@ -100,7 +101,10 @@ fn ledger_sign_send_transaction() -> anyhow::Result<()> {
     let signature =
         ledger.sign_transaction(account, wallet_type, EVER_DECIMALS, EVER_TICKER, meta, &boc)?;
 
-    let prefix = Sha256::digest(TL_TAG_SIGNATURE_DOMAIN.to_le_bytes());
+    let mut tl_buffer = Vec::new();
+    tl_buffer.extend_from_slice(&TL_TAG_SIGNATURE_DOMAIN.to_le_bytes());
+    tl_buffer.extend_from_slice(&global_id.to_le_bytes());
+    let prefix = Sha256::digest(&tl_buffer);
     let mut to_verify = prefix.to_vec();
     to_verify.extend_from_slice(message_hash);
     assert!(public_key.verify(&to_verify, &signature).is_ok());
@@ -179,7 +183,8 @@ fn ledger_sign_send_token_transaction() -> anyhow::Result<()> {
     // Strip empty signature
     data.move_by(SIGNATURE_LENGTH * 8)?;
 
-    let meta = SignTransactionMeta::default();
+    let global_id: i32 = 42;
+    let meta = SignTransactionMeta::new(SignMode::SignatureId(global_id as u32), None, None);
 
     let cell = data.into_cell();
     let boc = ton_types::serialize_toc(&cell)?;
@@ -187,8 +192,7 @@ fn ledger_sign_send_token_transaction() -> anyhow::Result<()> {
     let signature =
         ledger.sign_transaction(account, wallet_type, USDT_DECIMALS, USDT_TICKER, meta, &boc)?;
 
-    let prefix = Sha256::digest(TL_TAG_SIGNATURE_DOMAIN.to_le_bytes());
-    let mut to_verify = prefix.to_vec();
+    let mut to_verify = global_id.to_be_bytes().to_vec();
     to_verify.extend_from_slice(message_hash);
     assert!(public_key.verify(&to_verify, &signature).is_ok());
 
@@ -221,10 +225,9 @@ fn ledger_sign_confirm_transaction() -> anyhow::Result<()> {
     let signature =
         ledger.sign_transaction(account, wallet_type, EVER_DECIMALS, EVER_TICKER, meta, &boc)?;
 
-    let prefix = Sha256::digest(TL_TAG_SIGNATURE_DOMAIN.to_le_bytes());
-    let mut to_verify = prefix.to_vec();
-    to_verify.extend_from_slice(message_hash.as_slice());
-    assert!(public_key.verify(&to_verify, &signature).is_ok());
+    assert!(public_key
+        .verify(message_hash.as_slice(), &signature)
+        .is_ok());
 
     Ok(())
 }
@@ -252,10 +255,9 @@ fn ledger_sign_submit_transaction() -> anyhow::Result<()> {
     let signature =
         ledger.sign_transaction(account, wallet_type, USDT_DECIMALS, USDT_TICKER, meta, &boc)?;
 
-    let prefix = Sha256::digest(TL_TAG_SIGNATURE_DOMAIN.to_le_bytes());
-    let mut to_verify = prefix.to_vec();
-    to_verify.extend_from_slice(message_hash.as_slice());
-    assert!(public_key.verify(&to_verify, &signature).is_ok());
+    assert!(public_key
+        .verify(message_hash.as_slice(), &signature)
+        .is_ok());
 
     Ok(())
 }
@@ -284,10 +286,9 @@ fn ledger_sign_burn_transaction() -> anyhow::Result<()> {
     let signature =
         ledger.sign_transaction(account, wallet_type, USDT_DECIMALS, USDT_TICKER, meta, &boc)?;
 
-    let prefix = Sha256::digest(TL_TAG_SIGNATURE_DOMAIN.to_le_bytes());
-    let mut to_verify = prefix.to_vec();
-    to_verify.extend_from_slice(message_hash.as_slice());
-    assert!(public_key.verify(&to_verify, &signature).is_ok());
+    assert!(public_key
+        .verify(message_hash.as_slice(), &signature)
+        .is_ok());
 
     Ok(())
 }
@@ -317,10 +318,9 @@ fn ledger_sign_large_transaction() -> anyhow::Result<()> {
     let signature =
         ledger.sign_transaction(account, wallet_type, EVER_DECIMALS, EVER_TICKER, meta, &boc)?;
 
-    let prefix = Sha256::digest(TL_TAG_SIGNATURE_DOMAIN.to_le_bytes());
-    let mut to_verify = prefix.to_vec();
-    to_verify.extend_from_slice(message_hash.as_slice());
-    assert!(public_key.verify(&to_verify, &signature).is_ok());
+    assert!(public_key
+        .verify(message_hash.as_slice(), &signature)
+        .is_ok());
 
     Ok(())
 }

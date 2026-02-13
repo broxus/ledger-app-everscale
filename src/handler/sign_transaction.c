@@ -82,8 +82,9 @@ int handleSignTransaction(buffer_t* cdata,
         // Extract sign mode from metadata bits 3-4
         context->sign_mode = (metadata & SIGN_MODE_MASK) >> SIGN_MODE_SHIFT;
 
-        // Sign modes 1 and 3 carry a 4-byte global id
-        if (context->sign_mode & 1) {
+        // SIGNATURE_ID and SIGNATURE_DOMAIN carry a 4-byte global_id
+        if (context->sign_mode == SIGN_MODE_SIGNATURE_ID ||
+            context->sign_mode == SIGN_MODE_SIGNATURE_DOMAIN) {
             VALIDATE(cdata->size >= cdata->offset + GLOBAL_ID_LENGTH, ERR_INVALID_REQUEST);
             memcpy(context->global_id, cdata->ptr + cdata->offset, GLOBAL_ID_LENGTH);
             cdata->offset += GLOBAL_ID_LENGTH;

@@ -156,7 +156,7 @@ _This command signs a transaction message_
 | Current wallet number to parse transaction abi (Optional: metadata bit 0)      |    1     |
 | Workchain ID (Optional: metadata bit 1)                                        |    1     |
 | Deploy contract address (Optional: metadata bit 2)                             |    32    |
-| Global ID (Optional: sign mode = 01 or 11)                                     |    4     |
+| Global ID (Optional: sign mode = 01 or 10)                                     |    4     |
 | Serialized transaction                                                         | variable |
 
 ##### Output data

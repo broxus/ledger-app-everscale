@@ -83,15 +83,14 @@ static int crypto_sign_transaction(void) {
     }
     size_t to_sign_len;
     switch (context->sign_mode) {
-        case SIGN_MODE_EMPTY:
-            to_sign_len = TO_SIGN_LENGTH;
-            break;
         case SIGN_MODE_SIGNATURE_ID:
             to_sign_len = GLOBAL_ID_LENGTH + TO_SIGN_LENGTH;
             break;
         case SIGN_MODE_SIGNATURE_DOMAIN:
-        case SIGN_MODE_SIGNATURE_DOMAIN_L2:
             to_sign_len = HASH_SIZE + TO_SIGN_LENGTH;
+            break;
+        default:
+            to_sign_len = TO_SIGN_LENGTH;
             break;
     }
     error = cx_eddsa_sign_no_throw(&privateKey,

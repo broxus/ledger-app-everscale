@@ -18,6 +18,7 @@ fn ledger_get_address() -> anyhow::Result<()> {
     ledger.get_address(0, WalletType::Surf, false)?;
     ledger.get_address(0, WalletType::Multisig2, false)?;
     ledger.get_address(0, WalletType::Multisig2_1, false)?;
+    ledger.get_address(0, WalletType::WalletV5R1, false)?;
 
     Ok(())
 }

@@ -159,6 +159,29 @@ _This command signs a transaction message_. You won't find any fees in the trans
 | Global ID (Optional: sign mode = 01 or 10)                                     |    4     |
 | Serialized transaction                                                         | variable |
 
+##### Wallet types
+
+| _Value_ | _Wallet type_         |
+| ------- | --------------------- |
+| 0       | WalletV3              |
+| 1       | EverWallet            |
+| 2       | SafeMultisigWallet    |
+| 3       | SafeMultisigWallet24h |
+| 4       | SetcodeMultisigWallet |
+| 5       | BridgeMultisigWallet  |
+| 6       | SurfWallet            |
+| 7       | Multisig2             |
+| 8       | Multisig2_1           |
+| 9       | WalletV5R1            |
+
+##### Sign modes (metadata bits 3-4)
+
+| _Value_ | _Mode_          | _Description_                                            |
+| ------- | --------------- |----------------------------------------------------------|
+| 00      | Empty           | No prefix, sign root cell hash only                      |
+| 01      | SignatureId     | Prefix = global_id (4 bytes BE)                          |
+| 10      | SignatureDomain | Prefix = SHA256(0x71b34ee1 LE + global_id LE) (32 bytes) |
+
 ##### Output data
 
 | _Description_  | _Length_ |

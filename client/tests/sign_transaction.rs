@@ -6,6 +6,7 @@ use ed25519_dalek::{Verifier, SIGNATURE_LENGTH};
 use everscale_ledger_wallet::ledger::{SignMode, SignTransactionMeta, WalletType};
 use everscale_ledger_wallet::remote_wallet::RemoteWallet;
 use nekoton::core::models::Expiration;
+use nekoton::core::ton_wallet::Gift;
 use nekoton::core::utils::make_labs_unsigned_message;
 use nekoton::crypto::Signature;
 use nekoton_abi::{BigUint128, MessageBuilder};
@@ -341,6 +342,60 @@ fn ledger_many_msig_custodians_transaction() -> anyhow::Result<()> {
 
     let res = ledger.sign_transaction(account, wallet_type, EVER_DECIMALS, EVER_TICKER, meta, &boc);
     assert!(res.is_err()); // Invalid contract
+
+    Ok(())
+}
+
+// This test requires interactive approval of message signing on the ledger.
+#[test]
+#[serial]
+fn ledger_sign_wallet_v5r1_send_transaction() -> anyhow::Result<()> {
+    let (ledger, _) = get_ledger();
+
+    let account = 0;
+    let wallet_type = WalletType::WalletV5R1;
+
+    // Get public key
+    let public_key = ledger.get_pubkey(account, false)?;
+
+    // Transfer parameters
+    let destination = MsgAddressInt::from_str(
+        "0:df112b59eb82792623575194c60d2f547c68d54366644a3a5e02b8132f3c4c56",
+    )?;
+
+    let gift = Gift {
+        flags: 3,
+        bounce: true,
+        destination,
+        amount: 123_456_785_012_345_678,
+        body: None,
+        state_init: None,
+    };
+
+    // Build V5R1 payload directly (no ABI — V5R1 uses binary format)
+    let init_data = nekoton::core::ton_wallet::wallet_v5r1::make_init_data(&public_key);
+
+    let expiration = Expiration::Timeout(DEFAULT_EXPIRATION_TIMEOUT);
+    let (hash, payload) = init_data.make_transfer_payload(vec![gift], expiration.timestamp(&SimpleClock), false)?;
+
+    let cell = payload.into_cell()?;
+    let boc = ton_types::serialize_toc(&cell)?;
+
+    let global_id: i32 = 42;
+    let meta = SignTransactionMeta::new(SignMode::SignatureDomain(global_id as u32), None, None);
+
+    let signature =
+        ledger.sign_transaction(account, wallet_type, EVER_DECIMALS, EVER_TICKER, meta, &boc)?;
+
+    let mut tl_buffer = Vec::new();
+    tl_buffer.extend_from_slice(&TL_TAG_SIGNATURE_DOMAIN.to_le_bytes());
+    tl_buffer.extend_from_slice(&global_id.to_le_bytes());
+
+    let prefix = Sha256::digest(&tl_buffer);
+    let mut to_verify = prefix.to_vec();
+    to_verify.extend_from_slice(hash.as_slice());
+
+    assert!(public_key.verify(&to_verify, &signature).is_ok());
 
     Ok(())
 }

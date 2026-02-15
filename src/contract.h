@@ -22,6 +22,7 @@ enum {
     SURF_WALLET = 6,
     MULTISIG_2 = 7,
     MULTISIG_2_1 = 8,
+    WALLET_V5R1 = 9,
 };
 
 enum {
@@ -38,6 +39,11 @@ enum {
     TOKEN_BURN = 1445284013,                // Burn
     TOKEN_TRANSFER = 1944199491,            // Deploy
     TOKEN_TRANSFER_TO_WALLET = 1185535980,  // Ordinary transfer
+};
+
+enum {
+    WALLET_V5R1_SIGNED_EXTERNAL_PREFIX = 0x7369676E,
+    OUT_ACTION_SEND_MSG = 0x0ec3c86d,
 };
 
 enum { NORMAL_FLAG = 3, ALL_BALANCE_FLAG = 128, ALL_BALANCE_AND_DELETE_FLAG = 160 };

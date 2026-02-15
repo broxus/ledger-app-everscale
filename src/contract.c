@@ -89,6 +89,10 @@ const uint8_t surf_wallet_code_hash[] = {
     0x20, 0x7d, 0xc5, 0x60, 0xc5, 0x95, 0x6d, 0xe1, 0xa2, 0xc1, 0x47, 0x93, 0x56, 0xf8, 0xf3, 0xee,
     0x70, 0xa5, 0x97, 0x67, 0xdb, 0x2b, 0xf4, 0x78, 0x8b, 0x1d, 0x61, 0xad, 0x42, 0xcd, 0xad, 0x82};
 
+const uint8_t wallet_v5r1_code_hash[] = {
+    0x20, 0x83, 0x4b, 0x7b, 0x72, 0xb1, 0x12, 0x14, 0x7e, 0x1b, 0x2f, 0xb4, 0x57, 0xb8, 0x4e, 0x74,
+    0xd1, 0xa3, 0x0f, 0x04, 0xf7, 0x37, 0xd4, 0xf6, 0x2a, 0x66, 0x8e, 0x95, 0x52, 0xd2, 0xb7, 0x2f};
+
 // Cell depths
 const uint32_t safe_multisig_wallet_cell_depth = 0x0C;
 const uint32_t safe_multisig_wallet_24h_cell_depth = 0x0C;
@@ -340,6 +344,95 @@ void compute_multisig_address(uint32_t account_number,
     memcpy(address, bc->hashes, HASH_SIZE);
 }
 
+void compute_wallet_v5r1_address(uint32_t account_number, uint8_t* address) {
+    uint8_t data_hash[HASH_SIZE];
+
+    // Compute data hash
+    // Cell data: is_signature_allowed(1) + seqno(32) + wallet_id(32) + pubkey(256) + extensions(1)
+    // = 322 data bits + completion tag → 41 bytes
+    {
+        uint8_t hash_buffer[43];  // d1(1) + d2(1) + data(41)
+        memset(hash_buffer, 0, sizeof(hash_buffer));
+
+        uint16_t hash_buffer_offset = 0;
+
+        hash_buffer[0] = 0x00;  // d1(1)
+        hash_buffer[1] = 0x51;  // d2(1)
+        hash_buffer_offset += 2;
+
+        // Bit stream: [1] [seqno(32)] [wallet_id(32)] [pubkey(256)] [0] [tag]
+        // All data shifted by 1 bit due to leading is_signature_allowed=1
+        uint8_t source[40];  // seqno(4) + wallet_id(4) + pubkey(32)
+        memset(source, 0, sizeof(uint32_t));
+        writeUint32BE(0x7FFFFF11, source + sizeof(uint32_t));
+
+        // Pubkey
+        uint8_t public_key[PUBLIC_KEY_LENGTH];
+        VALIDATE(get_public_key(account_number, public_key) == 0, ERR_GET_PUBLIC_KEY_FAILED);
+
+        memcpy(source + 8, public_key, PUBLIC_KEY_LENGTH);
+
+        // Pack with 1-bit offset
+        hash_buffer[hash_buffer_offset] = 0x80;  // is_signature_allowed = 1
+        for (int i = 0; i < 40; i++) {
+            hash_buffer[hash_buffer_offset + i] |= source[i] >> 1;
+            hash_buffer[hash_buffer_offset + i + 1] = source[i] << 7;
+        }
+        // extensions = 0 (bit 321, already zero after shift)
+        // Completion tag (bit 322): marks end of non-byte-aligned cell data
+        hash_buffer[hash_buffer_offset + 40] |= 0x20;
+
+        // Calculate data hash
+        int result = cx_hash_sha256(hash_buffer, sizeof(hash_buffer), data_hash, HASH_SIZE);
+        VALIDATE(result == HASH_SIZE, ERR_INVALID_HASH);
+    }
+
+    // Compute address = repr_hash(StateInit cell)
+    //
+    // StateInit TL-B: split_depth=0, special=0, code=1, data=1, library=0
+    // Bits: 00110 + completion tag → 00110_100 = 0x34
+    // code=1 - code cell; data=1 - data cell
+    //
+    // TON repr_hash:
+    //   SHA256( d1 | d2 | data | depth_ref[0] | depth_ref[1] | hash_ref[0] | hash_ref[1] )
+    //
+    // d1 = 0x02
+    // d2 = 0x01
+    // data = 0x34
+    // depth_ref[0] = code_depth (2 bytes BE) = 6
+    // depth_ref[1] = data_depth (2 bytes BE) = 0
+    // hash_ref[0] = code_hash (32 bytes)
+    // hash_ref[1] = data_hash (32 bytes)
+    {
+        uint8_t hash_buffer[71];  // d1(1) + d2(1) + data(1) + depths(4) + code_hash(32) + data_hash(32)
+
+        uint16_t hash_buffer_offset = 0;
+        hash_buffer[0] = 0x02;  // d1
+        hash_buffer[1] = 0x01;  // d2
+        hash_buffer_offset += 2;
+
+        hash_buffer[2] = 0x34;  // StateInit data
+        hash_buffer_offset += 1;
+
+        // code_depth(2 bytes BE) + data_depth(2 bytes BE) = 0x0006 0x0000
+        writeUint32BE(0x60000, hash_buffer + hash_buffer_offset);
+        hash_buffer_offset += sizeof(uint32_t);
+
+        // Code hash
+        memcpy(hash_buffer + hash_buffer_offset,
+               wallet_v5r1_code_hash,
+               sizeof(wallet_v5r1_code_hash));
+        hash_buffer_offset += sizeof(wallet_v5r1_code_hash);
+
+        // Data hash
+        memcpy(hash_buffer + hash_buffer_offset, data_hash, sizeof(data_hash));
+        hash_buffer_offset += sizeof(data_hash);
+
+        int result = cx_hash_sha256(hash_buffer, hash_buffer_offset, address, HASH_SIZE);
+        VALIDATE(result == HASH_SIZE, ERR_INVALID_HASH);
+    }
+}
+
 void get_address(const uint32_t account_number, uint8_t wallet_type, uint8_t* address) {
     switch (wallet_type) {
         case WALLET_V3: {
@@ -411,6 +504,10 @@ void get_address(const uint32_t account_number, uint8_t wallet_type, uint8_t* ad
                                      surf_wallet_code_hash,
                                      surf_wallet_cell_depth,
                                      address);
+            break;
+        }
+        case WALLET_V5R1: {
+            compute_wallet_v5r1_address(account_number, address);
             break;
         }
         default:

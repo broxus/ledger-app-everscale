@@ -429,6 +429,59 @@ uint32_t deserialize_contract_header(struct SliceData_t* slice) {
     return function_id;
 }
 
+uint8_t deserialize_wallet_v5r1(struct SliceData_t* root_slice,
+                                Cell_t* root_cell,
+                                BocContext_t* bc,
+                                Cell_t** out_msg_cell) {
+    // V5R1 header: prefix(32) + wallet_id(32) + expire_at(32) + seqno(32)
+    uint32_t prefix = SliceData_get_next_int(root_slice, 32);
+    VALIDATE(prefix == WALLET_V5R1_SIGNED_EXTERNAL_PREFIX, ERR_INVALID_MESSAGE);
+
+    uint32_t wallet_id = SliceData_get_next_int(root_slice, 32);
+    UNUSED(wallet_id);
+
+    uint32_t expire_at = SliceData_get_next_int(root_slice, 32);
+    UNUSED(expire_at);
+
+    uint32_t seqno = SliceData_get_next_int(root_slice, 32);
+    UNUSED(seqno);
+
+    // has_actions must be 1
+    uint8_t has_actions = SliceData_get_next_bit(root_slice);
+    VALIDATE(has_actions == 1, ERR_INVALID_MESSAGE);
+
+    // Navigate to OutActions cell (first ref of root)
+    uint8_t root_refs_count;
+    uint8_t* root_refs = Cell_get_refs(root_cell, &root_refs_count);
+    VALIDATE(root_refs_count >= 1, ERR_INVALID_MESSAGE);
+
+    uint8_t actions_cell_index = root_refs[0];
+    VALIDATE(actions_cell_index < bc->cells_count, ERR_INVALID_CELL_INDEX);
+    Cell_t* actions_cell = &bc->cells[actions_cell_index];
+
+    SliceData_t actions_slice;
+    SliceData_from_cell(&actions_slice, actions_cell);
+
+    // Parse OutAction::SendMsg: tag(32) + mode(8)
+    uint32_t action_tag = SliceData_get_next_int(&actions_slice, 32);
+    VALIDATE(action_tag == OUT_ACTION_SEND_MSG, ERR_INVALID_MESSAGE);
+
+    uint8_t mode = SliceData_get_next_byte(&actions_slice);
+
+    // OutActions is a linked list built in reverse order.
+    // Each node: ref[0] = prev node (or empty cell at the end), ref[1] = out_msg.
+    // We parse only the last added node to display destination and amount to user.
+    uint8_t actions_refs_count;
+    uint8_t* actions_refs = Cell_get_refs(actions_cell, &actions_refs_count);
+    VALIDATE(actions_refs_count >= 2, ERR_INVALID_MESSAGE);
+
+    uint8_t msg_cell_index = actions_refs[1];
+    VALIDATE(msg_cell_index < bc->cells_count, ERR_INVALID_CELL_INDEX);
+    *out_msg_cell = &bc->cells[msg_cell_index];
+
+    return mode;
+}
+
 void prepend_address_to_cell(uint8_t* cell_buffer,
                              uint16_t cell_buffer_size,
                              struct Cell_t* cell,
@@ -636,6 +689,48 @@ int prepare_to_sign(struct ByteStream_t* src,
 
             // Detach cell_buffer reference from global boc context
             memset(bc, 0, sizeof(boc_context));
+
+            break;
+        }
+        case WALLET_V5R1: {
+            Cell_t* msg_cell;
+            uint8_t mode = deserialize_wallet_v5r1(&root_slice, root_cell, bc, &msg_cell);
+
+            SliceData_t msg_slice;
+            SliceData_from_cell(&msg_slice, msg_cell);
+
+            // Parse internal message header (destination, amount)
+            deserialize_int_message_header(&msg_slice, mode, &dc->sign_tr_context);
+
+            // Set ux sign flow
+            sign_transaction_flow = SIGN_TRANSACTION_FLOW_TRANSFER;
+
+            // Check for StateInit (must be absent for simple transfers)
+            uint8_t state_init_bit = SliceData_get_next_bit(&msg_slice);
+            VALIDATE(state_init_bit == 0, ERR_INVALID_MESSAGE);
+
+            // Check for token body
+            uint8_t msg_refs_count;
+            uint8_t* msg_refs = Cell_get_refs(msg_cell, &msg_refs_count);
+
+            uint8_t body_bit = SliceData_get_next_bit(&msg_slice);
+            if (body_bit || msg_refs_count) {
+                VALIDATE(msg_refs_count >= 1, ERR_INVALID_CELL_INDEX);
+                uint8_t body_cell_index = msg_refs[0];
+                VALIDATE(body_cell_index < bc->cells_count, ERR_INVALID_CELL_INDEX);
+                Cell_t* body_cell = &bc->cells[body_cell_index];
+
+                SliceData_t body_slice;
+                SliceData_from_cell(&body_slice, body_cell);
+
+                sign_transaction_flow =
+                    deserialize_token_body(&msg_slice, &body_slice, &dc->sign_tr_context);
+            }
+
+            // No address prepending for V5R1
+
+            // Calculate payload hash to sign
+            prepare_payload_hash(bc);
 
             break;
         }

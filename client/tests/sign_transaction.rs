@@ -5,6 +5,7 @@ use base64::Engine;
 use ed25519_dalek::{Verifier, SIGNATURE_LENGTH};
 use everscale_ledger_wallet::ledger::{SignMode, SignTransactionMeta, WalletType};
 use everscale_ledger_wallet::remote_wallet::RemoteWallet;
+use nekoton::core::ton_wallet::wallet_v3v4::{InitData, WalletVersion};
 use nekoton::core::models::Expiration;
 use nekoton::core::ton_wallet::Gift;
 use nekoton::core::utils::make_labs_unsigned_message;
@@ -396,6 +397,80 @@ fn ledger_sign_wallet_v5r1_send_transaction() -> anyhow::Result<()> {
     to_verify.extend_from_slice(hash.as_slice());
 
     assert!(public_key.verify(&to_verify, &signature).is_ok());
+
+    Ok(())
+}
+
+// This test requires interactive approval of message signing on the ledger.
+#[test]
+#[serial]
+fn ledger_sign_wallet_v3r1_send_transaction() -> anyhow::Result<()> {
+    ledger_sign_wallet_v4_send_transaction(WalletType::WalletV3R1, WalletVersion::V3R1)
+}
+
+// This test requires interactive approval of message signing on the ledger.
+#[test]
+#[serial]
+fn ledger_sign_wallet_v3r2_send_transaction() -> anyhow::Result<()> {
+    ledger_sign_wallet_v4_send_transaction(WalletType::WalletV3R2, WalletVersion::V3R2)
+}
+
+// This test requires interactive approval of message signing on the ledger.
+#[test]
+#[serial]
+fn ledger_sign_wallet_v4r1_send_transaction() -> anyhow::Result<()> {
+    ledger_sign_wallet_v4_send_transaction(WalletType::WalletV4R1, WalletVersion::V4R1)
+}
+
+// This test requires interactive approval of message signing on the ledger.
+#[test]
+#[serial]
+fn ledger_sign_wallet_v4r2_send_transaction() -> anyhow::Result<()> {
+    ledger_sign_wallet_v4_send_transaction(WalletType::WalletV4R2, WalletVersion::V4R2)
+}
+
+const TON_WALLET_ID: i32 = 0x29A9A317;
+
+fn ledger_sign_wallet_v4_send_transaction(
+    wallet_type: WalletType,
+    version: WalletVersion,
+) -> anyhow::Result<()> {
+    let (ledger, _) = get_ledger();
+
+    let account = 0;
+
+    // Get public key
+    let public_key = ledger.get_pubkey(account, false)?;
+
+    // Transfer parameters
+    let destination = MsgAddressInt::from_str(
+        "0:df112b59eb82792623575194c60d2f547c68d54366644a3a5e02b8132f3c4c56",
+    )?;
+
+    let gift = Gift {
+        flags: 3,
+        bounce: true,
+        destination,
+        amount: 123_456_785_012_345_678,
+        body: None,
+        state_init: None,
+    };
+
+    let expiration = Expiration::Timeout(DEFAULT_EXPIRATION_TIMEOUT);
+
+    let init_data = InitData::from_key(&public_key).with_subwallet_id(TON_WALLET_ID);
+    let (hash, payload) =
+        init_data.make_transfer_payload(vec![gift], expiration.timestamp(&SimpleClock), version)?;
+
+    let cell = payload.into_cell()?;
+    let boc = ton_types::serialize_toc(&cell)?;
+
+    let meta = SignTransactionMeta::default();
+
+    let signature =
+        ledger.sign_transaction(account, wallet_type, EVER_DECIMALS, EVER_TICKER, meta, &boc)?;
+
+    assert!(public_key.verify(hash.as_slice(), &signature).is_ok());
 
     Ok(())
 }

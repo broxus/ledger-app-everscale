@@ -413,6 +413,30 @@ uint32_t deserialize_wallet_v3(struct SliceData_t* slice) {
     return flags;
 }
 
+// Parses TON WalletV3/V4 header: wallet_id + expire_at + seqno [+ opcode(0)] + flags
+uint32_t deserialize_wallet_ton(struct SliceData_t* slice, bool has_opcode) {
+    uint32_t id = SliceData_get_next_int(slice, 32);
+    VALIDATE(id == TON_WALLET_ID, ERR_INVALID_MESSAGE);
+
+    uint32_t expire_at = SliceData_get_next_int(slice, 32);
+    UNUSED(expire_at);
+
+    uint32_t seqno = SliceData_get_next_int(slice, 32);
+    UNUSED(seqno);
+
+    if (has_opcode) {
+        uint8_t opcode = SliceData_get_next_byte(slice);
+        VALIDATE(opcode == 0, ERR_INVALID_MESSAGE);
+    }
+
+    uint8_t flags = SliceData_get_next_byte(slice);
+
+    uint16_t remaining_bits = SliceData_remaining_bits(slice);
+    VALIDATE(remaining_bits == 0, ERR_INVALID_MESSAGE);
+
+    return flags;
+}
+
 uint32_t deserialize_contract_header(struct SliceData_t* slice) {
     uint8_t is_pubkey_present = SliceData_get_next_bit(slice);
     if (is_pubkey_present) {
@@ -464,7 +488,7 @@ uint8_t deserialize_wallet_v5r1(struct SliceData_t* root_slice,
 
     // Parse OutAction::SendMsg: tag(32) + mode(8)
     uint32_t action_tag = SliceData_get_next_int(&actions_slice, 32);
-    VALIDATE(action_tag == OUT_ACTION_SEND_MSG, ERR_INVALID_MESSAGE);
+    VALIDATE(action_tag == WALLET_V5R1_OUT_ACTION_SEND_MSG, ERR_INVALID_MESSAGE);
 
     uint8_t mode = SliceData_get_next_byte(&actions_slice);
 
@@ -730,6 +754,47 @@ int prepare_to_sign(struct ByteStream_t* src,
             // No address prepending for V5R1
 
             // Calculate payload hash to sign
+            prepare_payload_hash(bc);
+
+            break;
+        }
+        case WALLET_V4R1:
+        case WALLET_V4R2:
+        case WALLET_V3R1:
+        case WALLET_V3R2: {
+            bool has_opcode = (dc->sign_tr_context.current_wallet_type == WALLET_V4R1 ||
+                               dc->sign_tr_context.current_wallet_type == WALLET_V4R2);
+            uint8_t flags = deserialize_wallet_ton(&root_slice, has_opcode);
+
+            // Gift
+            VALIDATE(bc->cells_count > GIFT_CELL_INDEX, ERR_INVALID_CELL_INDEX);
+            Cell_t* gift_cell = &bc->cells[GIFT_CELL_INDEX];
+
+            SliceData_t gift_slice;
+            SliceData_from_cell(&gift_slice, gift_cell);
+
+            deserialize_int_message_header(&gift_slice, flags, &dc->sign_tr_context);
+
+            uint8_t state_init_bit = SliceData_get_next_bit(&gift_slice);
+            VALIDATE(state_init_bit == 0, ERR_INVALID_MESSAGE);
+
+            uint8_t gift_refs_count;
+            Cell_get_refs(gift_cell, &gift_refs_count);
+
+            sign_transaction_flow = SIGN_TRANSACTION_FLOW_TRANSFER;
+
+            uint8_t body_bit = SliceData_get_next_bit(&gift_slice);
+            if (body_bit || gift_refs_count) {
+                VALIDATE(bc->cells_count > GIFT_CELL_INDEX + 1, ERR_INVALID_CELL_INDEX);
+                Cell_t* ref_cell = &bc->cells[GIFT_CELL_INDEX + 1];
+
+                SliceData_t ref_slice;
+                SliceData_from_cell(&ref_slice, ref_cell);
+
+                sign_transaction_flow =
+                    deserialize_token_body(&gift_slice, &ref_slice, &dc->sign_tr_context);
+            }
+
             prepare_payload_hash(bc);
 
             break;

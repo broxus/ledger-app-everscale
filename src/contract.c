@@ -124,6 +124,7 @@ const uint8_t surf_wallet[] = {
     0x00, 0x0C};
 
 // Wallets code hash
+// Everscale
 const uint8_t wallet_v3_code_hash[] = {
     0x84, 0xDA, 0xFA, 0x44, 0x9F, 0x98, 0xA6, 0x98, 0x77, 0x89, 0xBA, 0x23, 0x23, 0x58, 0x07, 0x2B,
     0xC0, 0xF7, 0x6D, 0xC4, 0x52, 0x40, 0x02, 0xA5, 0xD0, 0x91, 0x8B, 0x9A, 0x75, 0xD2, 0xD5, 0x99};
@@ -131,6 +132,21 @@ const uint8_t wallet_v3_code_hash[] = {
 const uint8_t ever_wallet_code_hash[] = {
     0x3B, 0xA6, 0x52, 0x8A, 0xB2, 0x69, 0x4C, 0x11, 0x81, 0x80, 0xAA, 0x3B, 0xD1, 0x0D, 0xD1, 0x9F,
     0xF4, 0x00, 0xB9, 0x09, 0xAB, 0x4D, 0xCF, 0x58, 0xFC, 0x69, 0x92, 0x5B, 0x2C, 0x7B, 0x12, 0xA6};
+
+// TON
+const uint8_t wallet_v4r1_code_hash[] = {
+    0x64, 0xDD, 0x54, 0x80, 0x55, 0x22, 0xC5, 0xBE, 0x8A, 0x9D, 0xB5, 0x9C, 0xEA, 0x01, 0x05, 0xCC,
+    0xF0, 0xD0, 0x87, 0x86, 0xCA, 0x79, 0xBE, 0xB8, 0xCB, 0x79, 0xE8, 0x80, 0xA8, 0xD7, 0x32, 0x2D};
+
+const uint8_t wallet_v4r2_code_hash[] = {
+    0xFE, 0xB5, 0xFF, 0x68, 0x20, 0xE2, 0xFF, 0x0D, 0x94, 0x83, 0xE7, 0xE0, 0xD6, 0x2C, 0x81, 0x7D,
+    0x84, 0x67, 0x89, 0xFB, 0x4A, 0xE5, 0x80, 0xC8, 0x78, 0x86, 0x6D, 0x95, 0x9D, 0xAB, 0xD5, 0xC0};
+
+const uint8_t wallet_v3r1_code_hash[] = {
+    0xB6, 0x10, 0x41, 0xA5, 0x8A, 0x79, 0x80, 0xB9, 0x46, 0xE8, 0xFB, 0x9E, 0x19, 0x8E, 0x3C, 0x90,
+    0x4D, 0x24, 0x79, 0x9F, 0xFA, 0x36, 0x57, 0x4E, 0xA4, 0x25, 0x1C, 0x41, 0xA5, 0x66, 0xF5, 0x81};
+
+// wallet_v3r2_code_hash == wallet_v3_code_hash (same code, different wallet_id vs Everscale)
 
 const uint8_t wallet_v5r1_code_hash[] = {
     0x20, 0x83, 0x4b, 0x7b, 0x72, 0xb1, 0x12, 0x14, 0x7e, 0x1b, 0x2f, 0xb4, 0x57, 0xb8, 0x4e, 0x74,
@@ -216,58 +232,57 @@ void find_public_key_cell() {
 
 #ifndef FUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION
 
-void compute_wallet_v3_address(uint32_t account_number, uint8_t* address) {
+void compute_wallet_v3_address(uint32_t account_number,
+                               uint32_t wallet_id,
+                               const uint8_t* code_hash,
+                               uint8_t* address) {
     uint8_t data_hash[HASH_SIZE];
 
-    // Compute data hash
+    // Data cell: seqno(32)=0 + wallet_id(32) + pubkey(256) = 320 bits
+    // d1=0x00, d2=0x50, 40 data bytes (byte-aligned)
     {
-        uint8_t hash_buffer[42];  // d1(1) + d2(1) + data(8) + pubkey(32)
-
+        uint8_t hash_buffer[42];  // d1(1) + d2(1) + seqno+wallet_id(8) + pubkey(32)
         uint16_t hash_buffer_offset = 0;
 
-        hash_buffer[0] = 0x00;  // d1(1)
-        hash_buffer[1] = 0x50;  // d2(1)
+        hash_buffer[0] = 0x00;  // d1
+        hash_buffer[1] = 0x50;  // d2
         hash_buffer_offset += 2;
 
-        // Data
-        writeUint64BE(WALLET_ID, hash_buffer + hash_buffer_offset);
+        // seqno(32)=0 as high 4 bytes, wallet_id(32) as low 4 bytes
+        writeUint64BE(wallet_id, hash_buffer + hash_buffer_offset);
         hash_buffer_offset += sizeof(uint64_t);
 
-        // Pubkey
         uint8_t public_key[PUBLIC_KEY_LENGTH];
         VALIDATE(get_public_key(account_number, public_key) == 0, ERR_GET_PUBLIC_KEY_FAILED);
 
         memcpy(hash_buffer + hash_buffer_offset, public_key, PUBLIC_KEY_LENGTH);
         hash_buffer_offset += PUBLIC_KEY_LENGTH;
 
-        // Calculate data hash
         int result = cx_hash_sha256(hash_buffer, hash_buffer_offset, data_hash, HASH_SIZE);
         VALIDATE(result == HASH_SIZE, ERR_INVALID_HASH);
     }
 
-    // Compute address
+    // StateInit repr_hash: SHA256(d1 | d2 | 0x34 | code_depth(2B) | data_depth(2B) | code_hash | data_hash)
+    // code_depth=0, data_depth=0
     {
-        uint8_t hash_buffer[71];  // d1(1) + d2(1) + data(5) + code_hash(32) + data_hash(32)
+        uint8_t hash_buffer[71];  // d1(1) + d2(1) + data(1) + depths(4) + code_hash(32) + data_hash(32)
 
         uint16_t hash_buffer_offset = 0;
-        hash_buffer[0] = 0x02;  // d1(1)
-        hash_buffer[1] = 0x01;  // d2(1)
+        hash_buffer[0] = 0x02;  // d1
+        hash_buffer[1] = 0x01;  // d2
         hash_buffer_offset += 2;
 
-        // Data
-        hash_buffer[2] = 0x34;
+        hash_buffer[2] = 0x34;  // StateInit data
         hash_buffer_offset += 1;
 
         writeUint32BE(0x00, hash_buffer + hash_buffer_offset);
-        hash_buffer_offset += 4;
+        hash_buffer_offset += sizeof(uint32_t);
 
-        // Code hash
-        memcpy(hash_buffer + hash_buffer_offset, wallet_v3_code_hash, sizeof(wallet_v3_code_hash));
-        hash_buffer_offset += sizeof(wallet_v3_code_hash);
+        memcpy(hash_buffer + hash_buffer_offset, code_hash, HASH_SIZE);
+        hash_buffer_offset += HASH_SIZE;
 
-        // Data hash
-        memcpy(hash_buffer + hash_buffer_offset, data_hash, sizeof(data_hash));
-        hash_buffer_offset += sizeof(data_hash);
+        memcpy(hash_buffer + hash_buffer_offset, data_hash, HASH_SIZE);
+        hash_buffer_offset += HASH_SIZE;
 
         int result = cx_hash_sha256(hash_buffer, hash_buffer_offset, address, HASH_SIZE);
         VALIDATE(result == HASH_SIZE, ERR_INVALID_HASH);
@@ -397,7 +412,7 @@ void compute_wallet_v5r1_address(uint32_t account_number, uint8_t* address) {
         // All data shifted by 1 bit due to leading is_signature_allowed=1
         uint8_t source[40];  // seqno(4) + wallet_id(4) + pubkey(32)
         memset(source, 0, sizeof(uint32_t));
-        writeUint32BE(0x7FFFFF11, source + sizeof(uint32_t));
+        writeUint32BE(TON_WALLET_V5R1_ID, source + sizeof(uint32_t));
 
         // Pubkey
         uint8_t public_key[PUBLIC_KEY_LENGTH];
@@ -466,10 +481,74 @@ void compute_wallet_v5r1_address(uint32_t account_number, uint8_t* address) {
     }
 }
 
+void compute_wallet_v4_address(uint32_t account_number,
+                                const uint8_t* code_hash,
+                                uint8_t* address) {
+    uint8_t data_hash[HASH_SIZE];
+
+    // Data cell: seqno(32) + wallet_id(32) + pubkey(256) + plugin_dict_empty(1) = 321 bits
+    // d1=0x00, d2=0x51, 41 data bytes
+    {
+        uint8_t hash_buffer[43];  // d1(1) + d2(1) + data(41)
+        uint16_t hash_buffer_offset = 0;
+
+        hash_buffer[0] = 0x00;  // d1
+        hash_buffer[1] = 0x51;  // d2
+        hash_buffer_offset += 2;
+
+        // seqno(32)=0 as high 4 bytes, wallet_id(32)=TON_WALLET_ID as low 4 bytes
+        writeUint64BE(TON_WALLET_ID, hash_buffer + hash_buffer_offset);
+        hash_buffer_offset += sizeof(uint64_t);
+
+        // Pubkey
+        uint8_t public_key[PUBLIC_KEY_LENGTH];
+        VALIDATE(get_public_key(account_number, public_key) == 0, ERR_GET_PUBLIC_KEY_FAILED);
+
+        memcpy(hash_buffer + hash_buffer_offset, public_key, PUBLIC_KEY_LENGTH);
+        hash_buffer_offset += PUBLIC_KEY_LENGTH;
+
+        // plugin_dict_empty(1)=0 + completion_tag(1)=1 → 0x40
+        hash_buffer[hash_buffer_offset] = 0x40;
+        hash_buffer_offset += 1;
+
+        int result = cx_hash_sha256(hash_buffer, hash_buffer_offset, data_hash, HASH_SIZE);
+        VALIDATE(result == HASH_SIZE, ERR_INVALID_HASH);
+    }
+
+    // StateInit repr_hash: SHA256(d1 | d2 | 0x34 | code_depth(2B) | data_depth(2B) | code_hash | data_hash)
+    // code_depth = 7, data_depth = 0
+    {
+        uint8_t hash_buffer[71];  // d1(1) + d2(1) + data(1) + depths(4) + code_hash(32) + data_hash(32)
+        uint16_t hash_buffer_offset = 0;
+
+        hash_buffer[0] = 0x02;  // d1
+        hash_buffer[1] = 0x01;  // d2
+        hash_buffer_offset += 2;
+
+        hash_buffer[2] = 0x34;  // StateInit data
+        hash_buffer_offset += 1;
+
+        // code_depth=7, data_depth=0
+        writeUint32BE(0x70000, hash_buffer + hash_buffer_offset);
+        hash_buffer_offset += sizeof(uint32_t);
+
+        // Code hash
+        memcpy(hash_buffer + hash_buffer_offset, code_hash, HASH_SIZE);
+        hash_buffer_offset += HASH_SIZE;
+
+        // Data hash
+        memcpy(hash_buffer + hash_buffer_offset, data_hash, HASH_SIZE);
+        hash_buffer_offset += HASH_SIZE;
+
+        int result = cx_hash_sha256(hash_buffer, hash_buffer_offset, address, HASH_SIZE);
+        VALIDATE(result == HASH_SIZE, ERR_INVALID_HASH);
+    }
+}
+
 void get_address(const uint32_t account_number, uint8_t wallet_type, uint8_t* address) {
     switch (wallet_type) {
         case WALLET_V3: {
-            compute_wallet_v3_address(account_number, address);
+            compute_wallet_v3_address(account_number, WALLET_ID, wallet_v3_code_hash, address);
             break;
         }
         case EVER_WALLET: {
@@ -504,6 +583,13 @@ void get_address(const uint32_t account_number, uint8_t wallet_type, uint8_t* ad
                                      address);
             break;
         }
+        case SURF_WALLET: {
+            compute_multisig_address(account_number,
+                                     surf_wallet,
+                                     sizeof(surf_wallet),
+                                     address);
+            break;
+        }
         case MULTISIG_2: {
             compute_multisig_address(account_number,
                                      multisig_2_wallet,
@@ -518,15 +604,24 @@ void get_address(const uint32_t account_number, uint8_t wallet_type, uint8_t* ad
                                      address);
             break;
         }
-        case SURF_WALLET: {
-            compute_multisig_address(account_number,
-                                     surf_wallet,
-                                     sizeof(surf_wallet),
-                                     address);
-            break;
-        }
         case WALLET_V5R1: {
             compute_wallet_v5r1_address(account_number, address);
+            break;
+        }
+        case WALLET_V4R1: {
+            compute_wallet_v4_address(account_number, wallet_v4r1_code_hash, address);
+            break;
+        }
+        case WALLET_V4R2: {
+            compute_wallet_v4_address(account_number, wallet_v4r2_code_hash, address);
+            break;
+        }
+        case WALLET_V3R1: {
+            compute_wallet_v3_address(account_number, TON_WALLET_ID, wallet_v3r1_code_hash, address);
+            break;
+        }
+        case WALLET_V3R2: {
+            compute_wallet_v3_address(account_number, TON_WALLET_ID, wallet_v3_code_hash, address);
             break;
         }
         default:

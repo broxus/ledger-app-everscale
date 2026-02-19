@@ -38,7 +38,7 @@ extern int LLVMFuzzerTestOneInput(const uint8_t* buf, size_t len) {
     uint8_t buffer[buffer_len];
     hex_to_bytes(boc, buffer);*/
 
-    data_context.sign_tr_context.current_wallet_type = buf[0] % 9;
+    data_context.sign_tr_context.current_wallet_type = buf[0] % 14;
 
     BEGIN_TRY {
         TRY {

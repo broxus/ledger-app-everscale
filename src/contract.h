@@ -50,6 +50,10 @@ enum {
     WALLET_V5R1_OUT_ACTION_SEND_MSG = 0x0ec3c86d,
 };
 
+enum {
+    JETTON_TRANSFER = 0x0f8a7ea5,  // TEP-74 Jetton transfer
+};
+
 enum { NORMAL_FLAG = 3, ALL_BALANCE_FLAG = 128, ALL_BALANCE_AND_DELETE_FLAG = 160 };
 
 struct ByteStream_t;

@@ -243,6 +243,32 @@ int deserialize_token_body(struct SliceData_t* slice,
 
             break;
         }
+        case JETTON_TRANSFER: {
+            // Skip query_id: 64 bits
+            uint64_t query_id = SliceData_get_next_int(slice, 64);
+            UNUSED(query_id);
+
+            // Amount: Coins = VarUInteger 16 (4-bit length + length bytes)
+            uint8_t jetton_amount_len = SliceData_get_next_int(slice, 4);
+            VALIDATE(jetton_amount_len <= AMOUNT_LENGHT, ERR_INVALID_MESSAGE);
+
+            uint8_t amount[AMOUNT_LENGHT];
+            deserialize_value(slice, amount, jetton_amount_len);
+
+            set_amount(amount, jetton_amount_len, NORMAL_FLAG, ctx->decimals, ctx->ticker);
+
+            // Destination: MsgAddress
+            int8_t wc = 0;
+            uint8_t address[ADDRESS_LENGTH];
+            deserialize_address(slice, &wc, address);
+
+            set_dst_address(wc, address);
+
+            // Set ux sign flow
+            sign_transaction_flow = SIGN_TRANSACTION_FLOW_TRANSFER;
+
+            break;
+        }
         default: {
             // All other methods could be treated as plain transfers
 

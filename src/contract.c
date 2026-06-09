@@ -20,6 +20,7 @@
 // Group B layout (bridge_multisig, multisig_2, multisig_2_1, surf):
 //   4 cells: root(0) refs=[3,1] | data-root(1) | pubkey(2) | pruned-code(3)
 
+// clang-format off
 // -- Group A header: ref_size=1, offset_size=2, cells=7, roots=1, absent=0,
 //                   total_cells_size=0x0060 (96 bytes), root_index=0
 #define GROUP_A_HDR 0x01, 0x02, 0x07, 0x01, 0x00, 0x00, 0x60, 0x00
@@ -122,6 +123,7 @@ const uint8_t surf_wallet[] = {
     0x20, 0x7d, 0xc5, 0x60, 0xc5, 0x95, 0x6d, 0xe1, 0xa2, 0xc1, 0x47, 0x93, 0x56, 0xf8, 0xf3, 0xee,
     0x70, 0xa5, 0x97, 0x67, 0xdb, 0x2b, 0xf4, 0x78, 0x8b, 0x1d, 0x61, 0xad, 0x42, 0xcd, 0xad, 0x82,
     0x00, 0x0C};
+// clang-format on
 
 // Wallets code hash
 // Everscale
@@ -151,7 +153,6 @@ const uint8_t wallet_v3r1_code_hash[] = {
 const uint8_t wallet_v5r1_code_hash[] = {
     0x20, 0x83, 0x4b, 0x7b, 0x72, 0xb1, 0x12, 0x14, 0x7e, 0x1b, 0x2f, 0xb4, 0x57, 0xb8, 0x4e, 0x74,
     0xd1, 0xa3, 0x0f, 0x04, 0xf7, 0x37, 0xd4, 0xf6, 0x2a, 0x66, 0x8e, 0x95, 0x52, 0xd2, 0xb7, 0x2f};
-
 
 void deserialize_cells_tree(struct ByteStream_t* src) {
     uint8_t first_byte = ByteStream_read_byte(src);
@@ -262,10 +263,11 @@ void compute_wallet_v3_address(uint32_t account_number,
         VALIDATE(result == HASH_SIZE, ERR_INVALID_HASH);
     }
 
-    // StateInit repr_hash: SHA256(d1 | d2 | 0x34 | code_depth(2B) | data_depth(2B) | code_hash | data_hash)
-    // code_depth=0, data_depth=0
+    // StateInit repr_hash: SHA256(d1 | d2 | 0x34 | code_depth(2B) | data_depth(2B) | code_hash |
+    // data_hash) code_depth=0, data_depth=0
     {
-        uint8_t hash_buffer[71];  // d1(1) + d2(1) + data(1) + depths(4) + code_hash(32) + data_hash(32)
+        uint8_t
+            hash_buffer[71];  // d1(1) + d2(1) + data(1) + depths(4) + code_hash(32) + data_hash(32)
 
         uint16_t hash_buffer_offset = 0;
         hash_buffer[0] = 0x02;  // d1
@@ -452,7 +454,8 @@ void compute_wallet_v5r1_address(uint32_t account_number, uint8_t* address) {
     // hash_ref[0] = code_hash (32 bytes)
     // hash_ref[1] = data_hash (32 bytes)
     {
-        uint8_t hash_buffer[71];  // d1(1) + d2(1) + data(1) + depths(4) + code_hash(32) + data_hash(32)
+        uint8_t
+            hash_buffer[71];  // d1(1) + d2(1) + data(1) + depths(4) + code_hash(32) + data_hash(32)
 
         uint16_t hash_buffer_offset = 0;
         hash_buffer[0] = 0x02;  // d1
@@ -482,8 +485,8 @@ void compute_wallet_v5r1_address(uint32_t account_number, uint8_t* address) {
 }
 
 void compute_wallet_v4_address(uint32_t account_number,
-                                const uint8_t* code_hash,
-                                uint8_t* address) {
+                               const uint8_t* code_hash,
+                               uint8_t* address) {
     uint8_t data_hash[HASH_SIZE];
 
     // Data cell: seqno(32) + wallet_id(32) + pubkey(256) + plugin_dict_empty(1) = 321 bits
@@ -515,10 +518,11 @@ void compute_wallet_v4_address(uint32_t account_number,
         VALIDATE(result == HASH_SIZE, ERR_INVALID_HASH);
     }
 
-    // StateInit repr_hash: SHA256(d1 | d2 | 0x34 | code_depth(2B) | data_depth(2B) | code_hash | data_hash)
-    // code_depth = 7, data_depth = 0
+    // StateInit repr_hash: SHA256(d1 | d2 | 0x34 | code_depth(2B) | data_depth(2B) | code_hash |
+    // data_hash) code_depth = 7, data_depth = 0
     {
-        uint8_t hash_buffer[71];  // d1(1) + d2(1) + data(1) + depths(4) + code_hash(32) + data_hash(32)
+        uint8_t
+            hash_buffer[71];  // d1(1) + d2(1) + data(1) + depths(4) + code_hash(32) + data_hash(32)
         uint16_t hash_buffer_offset = 0;
 
         hash_buffer[0] = 0x02;  // d1
@@ -584,10 +588,7 @@ void get_address(const uint32_t account_number, uint8_t wallet_type, uint8_t* ad
             break;
         }
         case SURF_WALLET: {
-            compute_multisig_address(account_number,
-                                     surf_wallet,
-                                     sizeof(surf_wallet),
-                                     address);
+            compute_multisig_address(account_number, surf_wallet, sizeof(surf_wallet), address);
             break;
         }
         case MULTISIG_2: {
@@ -617,7 +618,10 @@ void get_address(const uint32_t account_number, uint8_t wallet_type, uint8_t* ad
             break;
         }
         case WALLET_V3R1: {
-            compute_wallet_v3_address(account_number, TON_WALLET_ID, wallet_v3r1_code_hash, address);
+            compute_wallet_v3_address(account_number,
+                                      TON_WALLET_ID,
+                                      wallet_v3r1_code_hash,
+                                      address);
             break;
         }
         case WALLET_V3R2: {

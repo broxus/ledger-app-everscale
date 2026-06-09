@@ -31,8 +31,8 @@
 #define MAX_TICKER_LEN 10
 #define MAX_DATA_LEN   1024
 
-#define WALLET_ID      0x4BA92D8A  // Everscale WalletV3
-#define TON_WALLET_ID  0x29A9A317  // TON WalletV3/V4
+#define WALLET_ID          0x4BA92D8A  // Everscale WalletV3
+#define TON_WALLET_ID      0x29A9A317  // TON WalletV3/V4
 #define TON_WALLET_V5R1_ID 0x7FFFFF11  // TON WalletV5R1
 
 #define MAX_CONTRACT_CELLS_COUNT      16
@@ -49,8 +49,8 @@
 #define SIGN_MODE_SIGNATURE_ID     1  // prefix = global_id (4 bytes)
 #define SIGN_MODE_SIGNATURE_DOMAIN 2  // prefix = SHA256(0x71b34ee1 + global_id) (32 bytes)
 
-#define GLOBAL_ID_LENGTH           4
-#define TL_TAG_SIGNATURE_DOMAIN    0x71b34ee1
+#define GLOBAL_ID_LENGTH        4
+#define TL_TAG_SIGNATURE_DOMAIN 0x71b34ee1
 
 void reset_app_context(void);
 

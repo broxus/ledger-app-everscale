@@ -17,10 +17,11 @@ int handleGetAppConfiguration() {
     _Static_assert(PATCH_VERSION >= 0 && PATCH_VERSION <= UINT8_MAX,
                    "PATCH version must be between 0 and 255!");
 
-    return io_send_response_pointer(
-        (const uint8_t*) &(uint8_t[APPVERSION_LEN]){(uint8_t) MAJOR_VERSION,
-                                                    (uint8_t) MINOR_VERSION,
-                                                    (uint8_t) PATCH_VERSION},
-        APPVERSION_LEN,
-        SUCCESS);
+    static const uint8_t app_version[APPVERSION_LEN] = {
+        (uint8_t) MAJOR_VERSION,
+        (uint8_t) MINOR_VERSION,
+        (uint8_t) PATCH_VERSION,
+    };
+
+    return io_send_response_pointer(app_version, APPVERSION_LEN, SUCCESS);
 }
